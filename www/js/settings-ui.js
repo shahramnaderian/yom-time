@@ -69,6 +69,95 @@
     });
   }
 
+
+  function renderReminderControls() {
+    const q = SE.quranReminder && SE.quranReminder.getSettings ? SE.quranReminder.getSettings() : null;
+    const z = SE.zakatReminder && SE.zakatReminder.getSettings ? SE.zakatReminder.getSettings() : null;
+    if (q) {
+      const set = (id, value) => { const el = document.getElementById(id); if (el) el.value = value; };
+      const enabled = document.getElementById("quran-enabled");
+      if (enabled) enabled.checked = !!q.enabled;
+      set("quran-hour", q.hour); set("quran-minute", q.minute); set("quran-pages", q.pages);
+    }
+    if (z) {
+      const set = (id, value) => { const el = document.getElementById(id); if (el) el.value = value; };
+      const enabled = document.getElementById("zakat-enabled");
+      if (enabled) enabled.checked = !!z.enabled;
+      set("zakat-day", z.day); set("zakat-hour", z.hour); set("zakat-minute", z.minute);
+    }
+  }
+
+  function bindReminderControls() {
+    const qEnabled = document.getElementById("quran-enabled");
+    const zEnabled = document.getElementById("zakat-enabled");
+    const qFields = ["quran-hour", "quran-minute", "quran-pages"];
+    const zFields = ["zakat-day", "zakat-hour", "zakat-minute"];
+
+    if (qEnabled && !qEnabled.dataset.bound) {
+      qEnabled.dataset.bound = "1";
+      qEnabled.addEventListener("change", async () => {
+        if (!SE.quranReminder) return;
+        if (qEnabled.checked) await SE.quranReminder.enable();
+        else await SE.quranReminder.disable();
+        toast(lang() === "en" ? "Quran reminder updated" : "یادآوری قرآن به‌روزرسانی شد");
+      });
+    }
+    if (zEnabled && !zEnabled.dataset.bound) {
+      zEnabled.dataset.bound = "1";
+      zEnabled.addEventListener("change", async () => {
+        if (!SE.zakatReminder) return;
+        if (zEnabled.checked) await SE.zakatReminder.enable();
+        else await SE.zakatReminder.disable();
+        toast(lang() === "en" ? "Zakat reminder updated" : "یادآوری زکات به‌روزرسانی شد");
+      });
+    }
+
+    const saveFields = (ids, module, label) => ids.forEach((id) => {
+      const el = document.getElementById(id);
+      if (!el || el.dataset.bound) return;
+      el.dataset.bound = "1";
+      el.addEventListener("change", async () => {
+        const values = {};
+        ids.forEach((field) => {
+          const input = document.getElementById(field);
+          if (input) values[field.replace(label + "-", "")] = Number(input.value);
+        });
+        const cfg = module.getSettings();
+        const map = label === "quran"
+          ? { hour: values.hour, minute: values.minute, pages: values.pages }
+          : { day: values.day, hour: values.hour, minute: values.minute };
+        Object.keys(map).forEach((key) => {
+          const n = map[key];
+          const max = key === "hour" ? 23 : key === "minute" ? 59 : key === "day" ? 31 : 50;
+          const min = key === "pages" || key === "day" ? 1 : 0;
+          if (!Number.isInteger(n) || n < min || n > max) map[key] = cfg[key];
+        });
+        module.setSettings(map);
+        if (cfg.enabled) await module.enable();
+        toast(lang() === "en" ? label + " reminder saved" : "تنظیم یادآوری ذخیره شد");
+      });
+    });
+    if (SE.quranReminder) saveFields(qFields, SE.quranReminder, "quran");
+    if (SE.zakatReminder) saveFields(zFields, SE.zakatReminder, "zakat");
+
+    const qTest = document.getElementById("quran-test");
+    if (qTest && !qTest.dataset.bound) {
+      qTest.dataset.bound = "1";
+      qTest.addEventListener("click", async () => {
+        const r = await SE.quranReminder.testNow(lang());
+        toast(r && r.ok ? (lang() === "en" ? "Test notification sent" : "اعلان آزمایشی ارسال شد") : (lang() === "en" ? "Notification permission required" : "اجازه اعلان لازم است"));
+      });
+    }
+    const zTest = document.getElementById("zakat-test");
+    if (zTest && !zTest.dataset.bound) {
+      zTest.dataset.bound = "1";
+      zTest.addEventListener("click", async () => {
+        const r = await SE.zakatReminder.testNow(lang());
+        toast(r && r.ok ? (lang() === "en" ? "Test notification sent" : "اعلان آزمایشی ارسال شد") : (lang() === "en" ? "Notification permission required" : "اجازه اعلان لازم است"));
+      });
+    }
+  }
+
   function toast(msg) {
     const el = document.getElementById("toast");
     if (!el) return;
@@ -91,6 +180,8 @@
     if (name === "settings") {
       renderSoundOptions();
       renderAlarmToggles();
+      renderReminderControls();
+      bindReminderControls();
     }
   }
 
@@ -136,7 +227,7 @@
     }
   }
 
-  window.SE_settingsUI = { renderSoundOptions, renderAlarmToggles, showView };
+  window.SE_settingsUI = { renderSoundOptions, renderAlarmToggles, renderReminderControls, showView };
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", init);

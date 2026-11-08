@@ -101,3 +101,20 @@ test("converts selected-city wall time to the correct instant independent of dev
     ["2099", "01", "03", "06", "12"]
   );
 });
+
+test("resolves a nonexistent spring-forward wall time by moving forward through the DST gap", () => {
+  const entries = reminder.buildSaturdayEntries([[30, "02:30"]], {
+    year: 2024, month: 3, calendar: "g", timeZone: "Europe/Berlin"
+  });
+  assert.equal(entries.length, 1);
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Europe/Berlin", hourCycle: "h23",
+    year: "numeric", month: "2-digit", day: "2-digit",
+    hour: "2-digit", minute: "2-digit"
+  }).formatToParts(new Date(entries[0].at));
+  const value = type => parts.find(part => part.type === type).value;
+  assert.deepEqual(
+    [value("year"), value("month"), value("day"), value("hour"), value("minute")],
+    ["2024", "03", "30", "03", "30"]
+  );
+});

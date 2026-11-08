@@ -2,10 +2,10 @@
   "use strict";
   const SE = g.SE = g.SE || {};
 
-  const REMINDER_ID = 900028;
+  const REMINDER_ID = 900029;
   const DEFAULTS = {
     enabled: true,
-    day: 28,
+    day: 29,
     hour: 10,
     minute: 0,
     calendar: "j"
@@ -46,7 +46,7 @@
 
   function nextZakatDate(cfg) {
     cfg = cfg || getSettings();
-    const day = cfg.day || 28;
+    const day = cfg.day || 29;
     const hour = cfg.hour != null ? cfg.hour : 10;
     const minute = cfg.minute != null ? cfg.minute : 0;
 
@@ -87,8 +87,8 @@
     return {
       title: isFa ? "یادآوری زکات" : "Zakat reminder",
       body: isFa
-        ? "امروز ۲۸ ماه است — زمان پرداخت زکات 🤲"
-        : "It is the 28th — time to pay Zakat 🤲"
+        ? "امروز ۲۹ ماه است — زمان پرداخت زکات 🤲"
+        : "It is the 29th — time to pay Zakat 🤲"
     };
   }
 

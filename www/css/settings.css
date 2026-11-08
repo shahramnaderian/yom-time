@@ -1,0 +1,83 @@
+/* تنظیمات صدا و آلارم */
+.settings-head { padding: 16px 16px 0; }
+.settings-head h2 { margin: 0; font-size: 1.25rem; }
+.settings-icon { margin-inline-end: 6px; }
+
+.sound-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 12px 0;
+}
+.sound-opt {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 14px;
+  border: 1.5px solid var(--line, #eee);
+  border-radius: 12px;
+  background: var(--surface, #fff);
+  font-family: inherit;
+  font-size: 0.95rem;
+  color: var(--ink);
+  cursor: pointer;
+  text-align: start;
+}
+.sound-opt.selected {
+  border-color: var(--brand, #C22928);
+  background: var(--chip, #FCEAE6);
+}
+.sound-icon { font-size: 1.3rem; width: 1.6em; text-align: center; }
+.sound-label { flex: 1; font-weight: 500; }
+.sound-check { color: var(--brand, #C22928); font-weight: 700; }
+
+.sound-preview-btn {
+  width: 100%;
+  margin-top: 4px;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid var(--brand, #C22928);
+  background: transparent;
+  color: var(--brand, #C22928);
+  font-family: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.alarm-toggles { display: flex; flex-direction: column; gap: 4px; }
+.alarm-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 4px;
+  border-bottom: 1px solid var(--line, #f0f0f0);
+  cursor: pointer;
+}
+.alarm-row:last-child { border-bottom: none; }
+.alarm-name { font-size: 0.95rem; }
+.alarm-row input[type="checkbox"] {
+  position: absolute; opacity: 0; width: 0; height: 0;
+}
+.alarm-row .switch {
+  width: 44px; height: 26px; border-radius: 13px;
+  background: #ccc; position: relative; transition: background .2s; flex-shrink: 0;
+}
+.alarm-row .switch::after {
+  content: ""; position: absolute;
+  width: 22px; height: 22px; border-radius: 50%;
+  background: #fff; top: 2px; inset-inline-start: 2px;
+  transition: transform .2s; box-shadow: 0 1px 3px rgba(0,0,0,.2);
+}
+.alarm-row input:checked + .switch { background: var(--brand, #C22928); }
+.alarm-row input:checked + .switch::after { transform: translateX(-18px); }
+html[dir="ltr"] .alarm-row input:checked + .switch::after { transform: translateX(18px); }
+
+.muted-card {
+  background: transparent; box-shadow: none;
+  border: 1px dashed var(--line, #ddd);
+}
+.muted-card code {
+  font-size: 0.85em; background: var(--chip, #f5f5f5);
+  padding: 2px 6px; border-radius: 4px;
+}

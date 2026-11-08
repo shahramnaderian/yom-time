@@ -177,3 +177,28 @@ button.ghost {
   .date-bar .date-sub { font-size: 0.75rem; }
   .months { grid-template-columns: repeat(3, 1fr); }
 }
+
+
+/* صفحهٔ نخست اوقات شرعی مریوان */
+#view-home { padding-top: 4px; }
+.home-date-card,.home-next-card,.home-times-card {
+ background:#fff;border-radius:26px;margin:16px 16px;padding:22px 20px;
+ box-shadow:0 8px 26px rgba(35,70,105,.06);color:#202d3b;
+}
+.home-date-card h2,.home-next-card h2,.home-times-card h2{font-size:1.15rem;margin:0 0 14px;font-weight:700}
+.home-date-label{color:#6d7b89;margin:0 0 18px}
+.home-date-card label{display:block;color:#657384;font-size:.9rem;margin-bottom:8px}
+.home-date-controls{display:flex;gap:10px;align-items:center}
+.home-date-controls input{flex:1;min-width:0;padding:12px;border:1px solid #dce2e8;border-radius:14px;font:inherit;color:#263746;background:#fff}
+.home-date-controls button{border:0;border-radius:12px;background:#eaf3fa;color:#236b9a;padding:12px 16px;font:inherit}
+.home-next-card{background:#eaf3fa}
+.home-next-line{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:12px 0}
+.home-next-line strong{font-size:1.5rem;color:#246f9e;direction:ltr}
+.home-next-line span{font-size:1.55rem;font-weight:700;direction:ltr;color:#263746}
+.home-next-card small{color:#738292}
+.home-times-list{display:grid;gap:10px}
+.home-prayer-row{display:flex;justify-content:space-between;align-items:center;padding:15px 16px;border:1px solid #e1e6ea;border-radius:16px;background:#fff}
+.home-prayer-name{font-weight:600;color:#263746}
+.home-prayer-row time{font-size:1.15rem;font-weight:700;color:#246f9e;direction:ltr;font-variant-numeric:tabular-nums}
+.home-shortcut{margin:16px;padding:16px;border-radius:16px;background:#fff;color:#246f9e;text-align:center;cursor:pointer}
+@media(max-width:400px){.home-date-card,.home-next-card,.home-times-card{margin:12px 12px;padding:18px}.home-next-line span{font-size:1.25rem}}

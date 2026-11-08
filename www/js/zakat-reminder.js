@@ -175,7 +175,6 @@
             title: msg.title,
             body: msg.body,
             schedule: { at: date },
-            sound: "default",
             extra: { type: "zakat_reminder", day: cfg.day },
             smallIcon: "ic_stat_icon",
             actionTypeId: "OPEN_APP"

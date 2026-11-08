@@ -2,6 +2,8 @@ name: Build Android APK
 
 on:
   push:
+    branches: [main, 'fix/**']
+  pull_request:
     branches: [main]
   workflow_dispatch:
 
@@ -9,7 +11,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: yom-time-android-build
+  group: yom-time-android-build-${{ github.ref }}-${{ github.event_name }}
   cancel-in-progress: true
 
 jobs:
@@ -36,8 +38,8 @@ jobs:
       - name: Check JavaScript syntax
         run: find www/js -type f -name '*.js' -print0 | xargs -0 -n1 node --check
 
-      - name: Test Saturday reminder scheduling
-        run: node --test tests/sabt-reminder.test.js
+      - name: Test reminder and alarm scheduling
+        run: node --test tests/*.test.js
 
       - name: Verify bundled Adhan audio
         run: |

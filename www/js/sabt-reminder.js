@@ -33,6 +33,27 @@
     const hour = Number(m[1]), minute = Number(m[2]);
     return hour <= 23 && minute <= 59 ? { hour, minute } : null;
   }
+  function localDateTimeToTimestamp(year, month, day, hour, minute, timeZone) {
+    if (!timeZone) return new Date(year, month - 1, day, hour, minute, 0, 0).getTime();
+    const formatter = new Intl.DateTimeFormat("en-GB", {
+      timeZone, calendar: "gregory", numberingSystem: "latn",
+      year: "numeric", month: "2-digit", day: "2-digit",
+      hour: "2-digit", minute: "2-digit", second: "2-digit",
+      hourCycle: "h23"
+    });
+    const target = Date.UTC(year, month - 1, day, hour, minute, 0, 0);
+    let instant = target;
+    for (let i = 0; i < 4; i++) {
+      const parts = formatter.formatToParts(new Date(instant));
+      const part = type => Number(parts.find(x => x.type === type).value);
+      const represented = Date.UTC(part("year"), part("month") - 1, part("day"),
+        part("hour"), part("minute"), part("second"));
+      const delta = target - represented;
+      if (!delta) break;
+      instant += delta;
+    }
+    return instant;
+  }
   function buildSaturdayEntries(rows, opts) {
     opts = opts || {};
     if (opts.year == null || opts.month == null) return [];
@@ -44,12 +65,13 @@
         gd = SE.jalali.jalaliToGregorian(Number(opts.year), Number(opts.month), Number(row[0]));
       } else gd = { year: Number(opts.year), month: Number(opts.month), day: Number(row[0]) };
       if (!gd) return;
-      const date = new Date(gd.year, gd.month - 1, gd.day, 0, 0, 0, 0);
-      if (date.getDay() !== 6) return;
+      const weekday = new Date(Date.UTC(gd.year, gd.month - 1, gd.day)).getUTCDay();
+      if (weekday !== 6) return;
       const time = parseTime(row[1]);
       if (!time) return;
-      date.setHours(time.hour, time.minute, 0, 0);
-      out.push({ key: dateKey(date), at: date.getTime(), hour: time.hour, minute: time.minute });
+      const key = String(gd.year) + "-" + String(gd.month).padStart(2, "0") + "-" + String(gd.day).padStart(2, "0");
+      const at = localDateTimeToTimestamp(gd.year, gd.month, gd.day, time.hour, time.minute, opts.timeZone);
+      out.push({ key, at, hour: time.hour, minute: time.minute });
     });
     return out;
   }

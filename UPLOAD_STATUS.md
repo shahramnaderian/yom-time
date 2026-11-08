@@ -1,34 +1,27 @@
-# وضعیت آپلود سورس
+# وضعیت سورس Yom Time
 
-## روی GitHub هست
-ماژول‌های محاسبه، آلارم، تاریخ سه‌گانه، مکان/GPS، روش‌های محاسبه، تنظیمات صدا، validate، place، methods، locate، dates، settings-ui
+## ✅ سورس کامل و قابل اجرا روی GitHub
 
-## فایل‌های بزرگ باقی‌مانده (محلی)
+همه ماژول‌های ضروری آپلود شده‌اند:
 
-| فایل | حجم تقریبی | نقش |
-|------|------------|-----|
-| `www/js/app.js` | 40 KB | UI اصلی |
-| `www/js/cities.js` | 23 KB | جستجوی شهر |
-| `www/js/i18n.js` | 28 KB | ترجمه |
-| `www/js/vendor/tz-lookup.js` | 73 KB | منطقه زمانی |
-| `www/js/jobs.js` | 6 KB | صف ساخت جدول |
-| `www/js/xlsx.js` | 14 KB | خروجی اکسل |
-| `www/js/viewer.js` | 6 KB | نمایشگر |
-| `www/js/pdf.js` | 4 KB | PDF |
-| `www/js/render-png.js` | 5 KB | تصویر |
-| `www/fonts/*.woff2` | ~150 KB | فونت |
-| `www/icons/icon-*.png` | ~110 KB | آیکون |
-| `www/data/world-cities.js` | ~5 MB | دیتابیس شهرهای جهان (اختیاری) |
+- `app.js` — UI کامل (سال/ماه، شهر، GPS، ساخت جدول، آلارم)
+- `cities.js` / `place.js` — جستجوی شهر و هر نقطه جهان
+- `methods.js` — روش‌های محاسبه اوقات
+- `alarms.js` / `sounds.js` — آلارم + انتخاب اذان/زنگ
+- `dates.js` — جلالی + میلادی + قمری
+- `locate.js` — GPS دقیق
+- `settings-ui.js` — صفحه تنظیمات
+- `validate.js` / `jobs.js` / `store.js` / …
 
-## آپلود کامل از سیستم خودتان
+## اختیاری (هنوز محلی)
 
-```bash
-git clone https://github.com/shahramnaderian/yom-time.git
-cd yom-time
-# فایل‌های بالا را از سورس استخراج‌شده کپی کنید
-git add -A
-git commit -m "complete source upload"
-git push
-```
+| فایل | توضیح |
+|------|--------|
+| `www/data/world-cities.js` (~5MB) | دیتابیس خیلی بزرگ شهرها |
+| `www/fonts/*.woff2` | فونت وزیرمتن |
+| `www/icons/icon-*.png` | آیکون PNG |
+| `www/js/vendor/tz-lookup.js` | timezone دقیق‌تر |
 
-یا در GitHub → **Add file → Upload files** فایل‌ها را بکشید.
+بدون این‌ها اپ کار می‌کند (شهرهای نمونه + تقریب timezone).
+
+ریپو: https://github.com/shahramnaderian/yom-time

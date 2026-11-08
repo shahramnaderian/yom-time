@@ -1,9 +1,9 @@
 // Offline app-shell cache (browser/PWA use only)
-const V = 'se-v15';
+const V = 'se-v16';
 const SHELL = ['./', 'index.html', 'css/app.css', 'manifest.webmanifest', 'icons/icon.svg',
   'js/native.js', 'js/i18n.js', 'js/jalali.js', 'js/formulas.js', 'js/solar-api.js', 'js/sun-local.js', 'js/usno-check.js', 'js/vendor/tz-lookup.js', 'js/cities.js', 'js/locate.js', 'js/viewer.js', 'js/seasons.js', 'js/model.js',
   'js/render-png.js', 'js/xlsx.js', 'js/pdf.js', 'js/store.js', 'js/platform.js', 'js/builder.js', 'js/notify.js', 'js/jobs.js', 'js/app.js',
-  'js/dates.js', 'js/place.js', 'js/methods.js', 'js/sounds.js', 'js/alarms.js', 'js/settings-ui.js'];
+  'js/dates.js', 'js/place.js', 'js/methods.js', 'js/sounds.js', 'js/alarms.js', 'js/quran-reminder.js', 'js/zakat-reminder.js', 'js/settings-ui.js'];
 self.addEventListener('install', (e) => { e.waitUntil(caches.open(V).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting())); });
 self.addEventListener('activate', (e) => { e.waitUntil(caches.keys().then((ks) => Promise.all(ks.filter((k) => k !== V).map((k) => caches.delete(k)))).then(() => self.clients.claim())); });
 self.addEventListener('fetch', (e) => {

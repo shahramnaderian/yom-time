@@ -88,6 +88,48 @@
     return new Date(g.year, g.month - 1, g.day, hour, minute, 0, 0);
   }
 
+
+  function upcomingZakatDates(cfg, count) {
+    cfg = cfg || getSettings();
+    count = count || 12;
+    const day = cfg.day || 29;
+    const hour = cfg.hour != null ? cfg.hour : 10;
+    const minute = cfg.minute != null ? cfg.minute : 0;
+    const now = Date.now();
+    const dates = [];
+
+    if (cfg.calendar === "g") {
+      const today = new Date();
+      for (let offset = 0; dates.length < count && offset < count + 3; offset++) {
+        const candidate = new Date(today.getFullYear(), today.getMonth() + offset, day, hour, minute, 0, 0);
+        if (candidate.getDate() === day && candidate.getTime() > now + 5000) dates.push(candidate);
+      }
+      return dates;
+    }
+
+    const current = todayJalali();
+    if (!current) return [nextZakatDate(Object.assign({}, cfg, { calendar: "g" }))];
+    let jy = current.year, jm = current.month;
+    if (current.day > day || (current.day === day && pastTimeToday(hour, minute))) {
+      jm += 1;
+      if (jm > 12) { jm = 1; jy += 1; }
+    }
+
+    for (let i = 0; dates.length < count && i < count + 2; i++) {
+      const targetDay = Math.min(day, daysInJalaliMonth(jy, jm));
+      const converted = (SE.jalali && SE.jalali.jalaliToGregorian)
+        ? SE.jalali.jalaliToGregorian(jy, jm, targetDay)
+        : (SE.dates && SE.dates.j2g ? SE.dates.j2g(jy, jm, targetDay) : null);
+      if (converted) {
+        const candidate = new Date(converted.year, converted.month - 1, converted.day, hour, minute, 0, 0);
+        if (candidate.getTime() > now + 5000) dates.push(candidate);
+      }
+      jm += 1;
+      if (jm > 12) { jm = 1; jy += 1; }
+    }
+    return dates;
+  }
+
   function message(lang) {
     const isFa = lang !== "en";
     return {
@@ -104,7 +146,8 @@
     if (!cfg.enabled && !opts.force) return { ok: false, reason: "disabled" };
 
     const lang = opts.lang || (SE.i18n && SE.i18n.lang) || "fa";
-    const when = nextZakatDate(cfg);
+    const dates = upcomingZakatDates(cfg, 12);
+    const when = dates[0] || nextZakatDate(cfg);
     const msg = message(lang);
 
     if (SE.notify && SE.notify.ensurePermission) {
@@ -116,24 +159,30 @@
     const p = SE.notify && SE.notify.plugin ? SE.notify.plugin() : null;
 
     try {
-      if (isNative && p && p.cancel) {
-        try { await p.cancel({ notifications: [{ id: REMINDER_ID }] }); } catch (e) {}
-      }
-
       if (isNative && p && p.schedule) {
+        const prefs = SE.store && SE.store.prefs;
+        const previous = prefs ? prefs.get("zakatReminderIds", []) : [];
+        const ids = dates.map((date, index) => REMINDER_ID + index);
+        if (p.cancel) {
+          try {
+            const cancelIds = previous.length ? previous : Array.from({ length: 12 }, (_, i) => REMINDER_ID + i);
+            await p.cancel({ notifications: cancelIds.map((id) => ({ id })) });
+          } catch (e) {}
+        }
         await p.schedule({
-          notifications: [{
-            id: REMINDER_ID,
+          notifications: dates.map((date, index) => ({
+            id: ids[index],
             title: msg.title,
             body: msg.body,
-            schedule: { at: when },
+            schedule: { at: date },
             sound: "default",
             extra: { type: "zakat_reminder", day: cfg.day },
             smallIcon: "ic_stat_icon",
             actionTypeId: "OPEN_APP"
-          }]
+          }))
         });
-        return { ok: true, method: "native", at: when.toISOString() };
+        if (prefs) prefs.set("zakatReminderIds", ids);
+        return { ok: true, method: "native", count: dates.length, at: when.toISOString() };
       }
 
       const delay = when.getTime() - Date.now();
@@ -164,7 +213,13 @@
     setSettings({ enabled: false });
     try {
       const p = SE.notify && SE.notify.plugin ? SE.notify.plugin() : null;
-      if (p && p.cancel) await p.cancel({ notifications: [{ id: REMINDER_ID }] });
+      if (p && p.cancel) {
+        const prefs = SE.store && SE.store.prefs;
+        const ids = prefs ? prefs.get("zakatReminderIds", []) : [];
+        const cancelIds = ids.length ? ids : Array.from({ length: 12 }, (_, i) => REMINDER_ID + i);
+        await p.cancel({ notifications: cancelIds.map((id) => ({ id })) });
+        if (prefs) prefs.set("zakatReminderIds", []);
+      }
     } catch (e) {}
     if (g.__zakatReminderTimer) {
       clearTimeout(g.__zakatReminderTimer);
@@ -192,7 +247,7 @@
 
   SE.zakatReminder = {
     REMINDER_ID, DEFAULTS, getSettings, setSettings,
-    nextZakatDate, scheduleOnce, enable, disable, testNow, message
+    nextZakatDate, upcomingZakatDates, scheduleOnce, enable, disable, testNow, message
   };
 
   function autoStart() {

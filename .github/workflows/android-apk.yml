@@ -44,11 +44,28 @@ jobs:
       - name: Generate Android project
         run: npx cap add android
 
-      - name: Install Android notification sounds
+      - name: Install Android notification resources and permissions
         run: |
-          mkdir -p android/app/src/main/res/raw
+          mkdir -p android/app/src/main/res/raw android/app/src/main/res/drawable
           cp www/sounds/adhan.mp3 android/app/src/main/res/raw/adhan.mp3
           cp www/sounds/adhan-fajr.mp3 android/app/src/main/res/raw/adhan_fajr.mp3
+          cat > android/app/src/main/res/drawable/ic_stat_icon.xml <<'EOF'
+          <vector xmlns:android="http://schemas.android.com/apk/res/android"
+              android:width="24dp" android:height="24dp"
+              android:viewportWidth="24" android:viewportHeight="24">
+              <path android:fillColor="#FFFFFFFF"
+                  android:pathData="M12,2a10,10 0,1 0,10 12A8,8 0,0 1,12 2z"/>
+          </vector>
+          EOF
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path("android/app/src/main/AndroidManifest.xml")
+          manifest = path.read_text()
+          permission = '    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />'
+          if "android.permission.SCHEDULE_EXACT_ALARM" not in manifest:
+              manifest = manifest.replace("<application", permission + "\\n    <application", 1)
+              path.write_text(manifest)
+          PY
 
       - name: Sync Capacitor
         run: npx cap sync android

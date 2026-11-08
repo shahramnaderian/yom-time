@@ -80,11 +80,11 @@ function init(){
  setCity(saved&&saved.lat!=null?saved:DEFAULT_CITY);
  input.addEventListener("change",render);
  $("home-today").addEventListener("click",()=>{const t=todayAt(activeCity.tz||"Asia/Tehran");input.value=dateValue(t.year,t.month,t.day);render()});
- const reminderSettings=$("home-reminder-settings");
- if(reminderSettings) reminderSettings.addEventListener("click",()=>{
+ const settingsButton=$("home-reminder-settings");
+ if(settingsButton) settingsButton.addEventListener("click",()=>{
   location.hash="#/settings";
   if(window.SE_settingsUI&&window.SE_settingsUI.showView)window.SE_settingsUI.showView("settings");
-  setTimeout(()=>{const target=$("reminder-settings-start");if(target)target.scrollIntoView({behavior:"smooth",block:"start"})},120);
+  setTimeout(()=>{const target=$("view-settings");if(target)target.scrollIntoView({behavior:"smooth",block:"start"})},120);
  });
  setInterval(render,1000);
 }

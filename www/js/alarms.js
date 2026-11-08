@@ -33,22 +33,29 @@
     return m;
   }
 
-  function timeToDate(hhmm, baseDate, rollPast) {
-    if (!hhmm || typeof hhmm !== "string") return null;
-    const parts = hhmm.split(":");
-    if (parts.length < 2) return null;
-    const h = parseInt(parts[0], 10);
-    const m = parseInt(parts[1], 10);
-    if (isNaN(h) || isNaN(m)) return null;
-    const d = new Date(baseDate.getFullYear(), baseDate.getMonth(), baseDate.getDate(), h, m, 0, 0);
-    if (d.getTime() <= Date.now() - 60000) {
-      if (rollPast) d.setDate(d.getDate() + 1);
-      else return null;
+  function timeToDate(hhmm, baseDate, rollPast, timeZone) {
+    const match = /^(\\d{1,2}):(\\d{2})$/.exec(String(hhmm || ""));
+    if (!match) return null;
+    const h = Number(match[1]), m = Number(match[2]);
+    if (h > 23 || m > 59) return null;
+    const year = baseDate.getUTCFullYear();
+    const month = baseDate.getUTCMonth() + 1;
+    const day = baseDate.getUTCDate();
+    const resolve = (y, mo, d) => timeZone && SE.sabtReminder && SE.sabtReminder.localDateTimeToTimestamp
+      ? SE.sabtReminder.localDateTimeToTimestamp(y, mo, d, h, m, timeZone)
+      : new Date(y, mo - 1, d, h, m, 0, 0).getTime();
+    let timestamp = resolve(year, month, day);
+    let date = new Date(timestamp);
+    if (date.getTime() <= Date.now() - 60000) {
+      if (!rollPast) return null;
+      const next = new Date(Date.UTC(year, month - 1, day + 1));
+      timestamp = resolve(next.getUTCFullYear(), next.getUTCMonth() + 1, next.getUTCDate());
+      date = new Date(timestamp);
     }
-    return d;
+    return date;
   }
 
-  function buildNotifications(row, placeName, lang, dayNumber, targetDate) {
+  function buildNotifications(row, placeName, lang, dayNumber, targetDate, timeZone) {
     const enabled = getEnabled();
     const now = new Date();
     const list = [];
@@ -60,7 +67,7 @@
       if (!enabled[t.key]) return;
       const timeStr = row[t.col];
       if (!timeStr || timeStr === "—" || timeStr === null) return;
-      const when = timeToDate(String(timeStr), targetDate || now, !targetDate);
+      const when = timeToDate(String(timeStr), targetDate || new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate())), !targetDate, timeZone);
       if (!when) return;
 
       const title = isFa ? t.labelFa : t.labelEn;
@@ -113,9 +120,9 @@
         } else {
           gDate = { year: opts.year, month: opts.month, day: dayNumber };
         }
-        if (gDate) targetDate = new Date(gDate.year, gDate.month - 1, gDate.day, 0, 0, 0, 0);
+        if (gDate) targetDate = new Date(Date.UTC(gDate.year, gDate.month - 1, gDate.day));
       }
-      notifications.push(...buildNotifications(row, placeName, lang, dayNumber, targetDate));
+      notifications.push(...buildNotifications(row, placeName, lang, dayNumber, targetDate, opts.timeZone));
     });
 
     if (!notifications.length) return { ok: true, count: 0 };

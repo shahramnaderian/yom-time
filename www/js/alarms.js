@@ -74,12 +74,17 @@
       const sound = (SE.sounds && SE.sounds.soundForNotification)
         ? SE.sounds.soundForNotification(t.key)
         : "default";
+      const soundPref = SE.sounds && SE.sounds.getSoundPref ? SE.sounds.getSoundPref() : "default";
+      const channelId = soundPref === "adhan"
+        ? (t.key === "fajr" ? "prayer-adhan-fajr" : "prayer-adhan")
+        : soundPref === "silent" ? "prayer-silent" : undefined;
 
       list.push({
         id, title, body,
         schedule: { at: when },
         extra: { type: t.key, time: timeStr, place: placeName, dayNumber: dayNum },
         sound: sound,
+        channelId: channelId,
         smallIcon: "ic_stat_icon",
         actionTypeId: "OPEN_APP"
       });

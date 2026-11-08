@@ -4,16 +4,17 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#C22928">
-<title>اوقات شرعی</title>
+<title>اوقات شرعی · Yom Time</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="css/app.css">
+<link rel="stylesheet" href="css/settings.css">
 </head>
 <body>
 <div id="app">
   <header class="hero">
     <div class="hero-bg" aria-hidden="true"></div>
-    <button id="lang" class="lang-btn" type="button" data-i18n="lang_button" data-i18n-aria="lang_aria">English</button>
+    <button id="lang" class="lang-btn" type="button">English</button>
     <div class="hero-row">
       <svg class="logo" viewBox="0 0 64 64" aria-hidden="true" fill="currentColor">
         <circle cx="32" cy="32" r="13"/>
@@ -22,8 +23,8 @@
         </g>
       </svg>
       <div>
-        <h1><span data-i18n="app_title">محاسبهٔ اوقات شرعی</span><small data-i18n="app_title_sub">جدول زمانی ماهانه، برای شهرهای مختلف جهان</small></h1>
-        <p data-i18n="app_formats">خروجی به‌صورت تصویر، PDF و اکسل</p>
+        <h1>محاسبهٔ اوقات شرعی<small>جدول زمانی ماهانه، برای شهرهای مختلف جهان</small></h1>
+        <p>خروجی به‌صورت تصویر، PDF و اکسل</p>
       </div>
     </div>
     <div id="date-bar" class="date-bar" aria-live="polite">
@@ -40,52 +41,69 @@
   <main>
     <section id="view-create" class="view">
       <div class="card">
-        <div class="card-title"><span class="step" data-num="1">۱</span> <span data-i18n="step_ym">سال و ماه</span></div>
+        <div class="card-title"><span class="step">۱</span> سال و ماه</div>
         <div class="year-row">
-          <button class="round" id="year-dec" data-i18n-aria="year_prev" aria-label="سال قبل">−</button>
-          <input id="year" inputmode="numeric" maxlength="4" data-i18n-aria="year_aria" aria-label="سال شمسی">
-          <button class="round" id="year-inc" data-i18n-aria="year_next" aria-label="سال بعد">+</button>
+          <button class="round" id="year-dec">−</button>
+          <input id="year" inputmode="numeric" maxlength="4">
+          <button class="round" id="year-inc">+</button>
         </div>
-        <div id="months" class="months" role="radiogroup" data-i18n-aria="month_aria" aria-label="ماه"></div>
+        <div id="months" class="months" role="radiogroup"></div>
       </div>
-
       <div class="card">
-        <div class="card-title"><span class="step" data-num="2">۲</span> <span data-i18n="step_city">شهر</span></div>
+        <div class="card-title"><span class="step">۲</span> شهر</div>
         <div class="city-wrap">
-          <input id="city" type="text" role="combobox" aria-expanded="false" aria-controls="suggest" aria-autocomplete="list"
-                 autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="جستجوی شهر در سراسر جهان…" data-i18n-ph="city_ph" aria-label="شهر">
-          <button type="button" id="locate-btn" class="ghost" data-i18n="locate">موقعیت من</button>
+          <input id="city" type="text" placeholder="جستجوی شهر در سراسر جهان…" autocomplete="off">
+          <button class="chev" id="city-toggle" type="button">▾</button>
+          <div id="suggest" class="suggest" role="listbox" hidden></div>
         </div>
-        <div id="suggest" class="suggest" role="listbox" hidden></div>
+        <button id="locate" class="locate" type="button">موقعیت جغرافیایی من</button>
+        <div id="picked" class="picked"></div>
+        <div id="recent" class="chips"></div>
       </div>
-
       <div class="card">
-        <div class="card-title"><span class="step" data-num="3">۳</span> <span data-i18n="step_fmt">فرمت خروجی</span></div>
-        <div id="formats" class="formats"></div>
+        <div class="card-title"><span class="step">۳</span> فرمت خروجی</div>
+        <div class="formats" id="formats"></div>
       </div>
-
-      <button id="go" class="primary go" type="button"><span data-i18n="go">ثبت درخواست جدول</span></button>
+      <button id="go" class="primary">ثبت درخواست جدول</button>
       <div id="error" class="notice error" hidden></div>
       <div id="active" class="card active-card" hidden></div>
-      <p class="credit" data-i18n-html="credit"></p>
     </section>
 
     <section id="view-archive" class="view" hidden>
       <div class="archive-head">
-        <h2 data-i18n="archive">بایگانی</h2>
+        <h2>بایگانی</h2>
         <span id="archive-count" class="muted"></span>
       </div>
       <div id="archive-list" class="archive-list"></div>
       <div id="archive-empty" class="empty" hidden>
-        <p data-i18n="archive_empty">هنوز جدولی نساخته‌اید.</p>
-        <button class="secondary" data-go="create" data-i18n="make_first">ساخت اولین جدول</button>
+        <p>هنوز جدولی نساخته‌اید.</p>
+      </div>
+    </section>
+
+    <section id="view-settings" class="view" hidden>
+      <div class="settings-head">
+        <h2>تنظیمات</h2>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="settings-icon">🔔</span> صدای اعلان اوقات</div>
+        <p class="hint">برای آلارم نمازها و یک‌سوم / دو‌سوم شب</p>
+        <div id="sound-options" class="sound-options" role="radiogroup" aria-label="صدای اعلان"></div>
+        <button type="button" id="sound-preview" class="sound-preview-btn">پخش نمونه</button>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="settings-icon">🕌</span> آلارم‌های فعال</div>
+        <div id="alarm-toggles" class="alarm-toggles"></div>
+      </div>
+      <div class="card muted-card">
+        <p class="hint" style="margin:0">برای اذان، فایل <code>adhan.mp3</code> را در پوشه sounds قرار دهید.</p>
       </div>
     </section>
   </main>
 
   <nav class="tabbar">
-    <a href="#/create" data-tab="create"><span data-i18n="tab_create">ساخت جدول</span></a>
-    <a href="#/archive" data-tab="archive"><span data-i18n="tab_archive">بایگانی</span><b id="badge" hidden></b></a>
+    <a href="#/create" data-tab="create"><span>ساخت جدول</span></a>
+    <a href="#/archive" data-tab="archive"><span>بایگانی</span><b id="badge" hidden></b></a>
+    <a href="#/settings" data-tab="settings"><span>تنظیمات</span></a>
   </nav>
 </div>
 
@@ -110,20 +128,19 @@
 <script src="js/locate.js"></script>
 <script src="js/seasons.js"></script>
 <script src="js/model.js"></script>
-<script src="js/render-png.js"></script>
-<script src="js/xlsx.js"></script>
-<script src="js/pdf.js"></script>
 <script src="js/store.js"></script>
 <script src="js/platform.js"></script>
-<script src="js/viewer.js"></script>
 <script src="js/builder.js"></script>
 <script src="js/notify.js"></script>
 <script src="js/jobs.js"></script>
 <script src="js/dates.js"></script>
 <script src="js/place.js"></script>
 <script src="js/methods.js"></script>
+<script src="js/sounds.js"></script>
 <script src="js/alarms.js"></script>
 <script src="js/validate.js"></script>
+<script src="js/location-bridge.js"></script>
+<script src="js/settings-ui.js"></script>
 <script src="js/app.js"></script>
 <script>
 (function() {
@@ -139,18 +156,7 @@
   }
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", function() { setTimeout(refreshDateBar, 50); });
-  } else {
-    setTimeout(refreshDateBar, 50);
-  }
-  setInterval(function() {
-    var now = new Date();
-    if (now.getHours() === 0 && now.getMinutes() === 0) refreshDateBar();
-  }, 60000);
-  document.addEventListener("click", function(e) {
-    if (e.target && (e.target.id === "lang" || (e.target.closest && e.target.closest("#lang")))) {
-      setTimeout(refreshDateBar, 100);
-    }
-  });
+  } else setTimeout(refreshDateBar, 50);
   window.SE_refreshDateBar = refreshDateBar;
 })();
 </script>

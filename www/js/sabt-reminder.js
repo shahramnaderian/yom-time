@@ -82,7 +82,7 @@
           id: notificationId(item.key), title: msg.title,
           body: msg.body + " · " + String(item.hour).padStart(2, "0") + ":" + String(item.minute).padStart(2, "0"),
           schedule: { at: new Date(item.at) },
-          extra: { type: "sabt_reminder", date: item.key, dayStart: item.hour + ":" + String(item.minute).padStart(2, "0") },
+          extra: { type: "sabt_reminder", date: item.key, dayStart: String(item.hour).padStart(2, "0") + ":" + String(item.minute).padStart(2, "0") },
           smallIcon: "ic_stat_icon", actionTypeId: "OPEN_APP"
         }));
         await plugin.schedule({ notifications });

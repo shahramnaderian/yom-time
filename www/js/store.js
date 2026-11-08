@@ -1,27 +1,25 @@
 (function(g) {
   "use strict";
   const SE = g.SE = g.SE || {};
-  const KEY = "yom-time-prefs";
-  function get(key, def) {
-    try {
-      const raw = localStorage.getItem(KEY);
-      if (!raw) return def;
-      const data = JSON.parse(raw);
-      return data[key] !== undefined ? data[key] : def;
-    } catch (e) {
-      return def;
+  const mem = { records: new Map(), kv: new Map() };
+  const prefs = {
+    get(key, def) {
+      try {
+        const v = localStorage.getItem("se_pref_" + key);
+        return v != null ? JSON.parse(v) : def;
+      } catch (e) { return def; }
+    },
+    set(key, val) {
+      try { localStorage.setItem("se_pref_" + key, JSON.stringify(val)); } catch (e) {}
     }
-  }
-  function set(key, value) {
-    try {
-      const raw = localStorage.getItem(KEY);
-      const data = raw ? JSON.parse(raw) : {};
-      data[key] = value;
-      localStorage.setItem(KEY, JSON.stringify(data));
-    } catch (e) {}
-  }
-  SE.store = {
-    prefs: { get, set }
   };
-  if (typeof module !== "undefined" && module.exports) module.exports = SE.store;
+  const cache = {
+    async get(k) { return mem.kv.get(k); },
+    async set(k, v) { mem.kv.set(k, v); }
+  };
+  async function putRecord(rec) { mem.records.set(rec.id, rec); }
+  async function getRecord(id) { return mem.records.get(id) || null; }
+  async function listRecords() { return Array.from(mem.records.values()).sort((a,b)=>b.createdAt-a.createdAt); }
+  async function deleteRecord(id) { mem.records.delete(id); }
+  SE.store = { prefs, cache, putRecord, getRecord, listRecords, deleteRecord };
 })(typeof globalThis !== "undefined" ? globalThis : this);

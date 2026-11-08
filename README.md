@@ -30,6 +30,16 @@ npx cap sync android
 npx cap open android
 ```
 
+## ساخت APK اندروید
+
+با هر push به شاخه `main`، GitHub Actions پروژه Android را ایجاد و APK آزمایشی را می‌سازد. اجرای دستی نیز از زبانه Actions امکان‌پذیر است.
+
+- نام artifact: `yom-time-android-debug-apk`
+- مسیر فایل در خروجی: `app-debug.apk`
+- این خروجی Debug است و برای نصب و آزمایش است، نه انتشار رسمی در فروشگاه.
+
+فایل‌های اذان عبدالباسط هنگام ساخت APK از مخزن [Kiwifu/adhan-mp3](https://github.com/Kiwifu/adhan-mp3) دریافت می‌شوند. منبع آن‌ها را برای استفاده در اپلیکیشن‌های اسلامی و نرم‌افزارهای اوقات نماز آزاد معرفی کرده است؛ انتساب منبع در `www/sounds/README.md` ثبت شده است.
+
 ## یادآوری‌ها
 
 | مورد | زمان پیش‌فرض |

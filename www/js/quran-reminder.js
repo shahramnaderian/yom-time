@@ -65,7 +65,7 @@
             id: REMINDER_ID,
             title: msg.title,
             body: msg.body,
-            schedule: { at: when },
+            schedule: { at: when, repeats: true },
             sound: "default",
             extra: { type: "quran_reminder", pages },
             smallIcon: "ic_stat_icon",

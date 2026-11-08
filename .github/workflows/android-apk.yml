@@ -11,7 +11,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: yom-time-android-build
+  group: yom-time-android-build-${{ github.ref }}-${{ github.event_name }}
   cancel-in-progress: true
 
 jobs:

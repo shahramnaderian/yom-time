@@ -1,7 +1,7 @@
 // Offline app-shell cache (browser/PWA use only)
-const V = 'se-v20';
+const V = 'se-v21';
 const SHELL = [
-  './', 'index.html', 'css/app.css', 'css/settings.css', 'manifest.webmanifest', 'icons/icon.svg',
+  './', 'index.html', 'css/app.css', 'css/settings.css', 'manifest.webmanifest', 'icons/icon.svg', 'sounds/adhan.mp3', 'sounds/adhan-fajr.mp3',
   'js/native.js', 'js/i18n.js', 'js/jalali.js', 'js/formulas.js', 'js/solar-api.js',
   'js/sun-local.js', 'js/usno-check.js', 'js/vendor/tz-lookup.js', 'js/cities.js',
   'js/locate.js', 'js/seasons.js', 'js/model.js', 'js/store.js', 'js/platform.js',

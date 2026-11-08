@@ -51,7 +51,7 @@
     const list = [];
     const isFa = lang !== "en";
     const dayNum = dayNumber != null ? dayNumber : (Array.isArray(row) ? row[0] : null);
-    const dayLabel = dayNum != null ? (isFa ? `روز ${dayNum}` : `Day ${dayNum}`) : "";
+    const dayLabel = dayNum != null ? (isFa ? "روز " + dayNum : "Day " + dayNum) : "";
 
     ALARM_TYPES.forEach((t) => {
       if (!enabled[t.key]) return;
@@ -62,17 +62,21 @@
 
       const title = isFa ? t.labelFa : t.labelEn;
       const body = isFa
-        ? `${placeName || "موقعیت شما"}${dayLabel ? " · " + dayLabel : ""} · ${timeStr}`
-        : `${placeName || "Your location"}${dayLabel ? " · " + dayLabel : ""} · ${timeStr}`;
+        ? (placeName || "موقعیت شما") + (dayLabel ? " · " + dayLabel : "") + " · " + timeStr
+        : (placeName || "Your location") + (dayLabel ? " · " + dayLabel : "") + " · " + timeStr;
 
       const dayKey = when.toISOString().slice(0, 10).replace(/-/g, "");
       const id = Math.abs((t.key + dayKey).split("").reduce((a, c) => ((a << 5) - a) + c.charCodeAt(0), 0)) % 2000000000;
+
+      const sound = (SE.sounds && SE.sounds.soundForNotification)
+        ? SE.sounds.soundForNotification(t.key)
+        : "default";
 
       list.push({
         id, title, body,
         schedule: { at: when },
         extra: { type: t.key, time: timeStr, place: placeName, dayNumber: dayNum },
-        sound: "default",
+        sound: sound,
         smallIcon: "ic_stat_icon",
         actionTypeId: "OPEN_APP"
       });
@@ -109,6 +113,9 @@
           setTimeout(() => {
             if (SE.notify && SE.notify.show) {
               SE.notify.show(n.title, n.body, n.extra && n.extra.type, true);
+            }
+            if (SE.sounds && SE.sounds.onAlarmFire) {
+              SE.sounds.onAlarmFire(n.extra && n.extra.type, n.title, n.body);
             }
           }, delay);
           scheduled++;

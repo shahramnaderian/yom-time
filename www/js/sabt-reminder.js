@@ -42,17 +42,27 @@
       hourCycle: "h23"
     });
     const target = Date.UTC(year, month - 1, day, hour, minute, 0, 0);
-    let instant = target;
-    for (let i = 0; i < 4; i++) {
-      const parts = formatter.formatToParts(new Date(instant));
+    const partsAt = instant => formatter.formatToParts(new Date(instant));
+    const wallTimestamp = parts => {
       const part = type => Number(parts.find(x => x.type === type).value);
-      const represented = Date.UTC(part("year"), part("month") - 1, part("day"),
+      return Date.UTC(part("year"), part("month") - 1, part("day"),
         part("hour"), part("minute"), part("second"));
-      const delta = target - represented;
-      if (!delta) break;
-      instant += delta;
+    };
+    const offsets = new Set();
+    for (let hours = -48; hours <= 48; hours += 6) {
+      const instant = target + hours * 60 * 60 * 1000;
+      offsets.add(wallTimestamp(partsAt(instant)) - instant);
     }
-    return instant;
+    const candidates = Array.from(offsets, offset => {
+      const instant = target - offset;
+      return { instant, wall: wallTimestamp(partsAt(instant)) };
+    });
+    const exact = candidates.filter(x => x.wall === target).sort((a, b) => a.instant - b.instant);
+    if (exact.length) return exact[0].instant;
+    // For a wall time skipped by a DST jump, move forward by the size of the gap.
+    const after = candidates.filter(x => x.wall > target).sort((a, b) => a.wall - b.wall || a.instant - b.instant);
+    if (after.length) return after[0].instant;
+    throw new RangeError("Cannot resolve local time in " + timeZone);
   }
   function buildSaturdayEntries(rows, opts) {
     opts = opts || {};

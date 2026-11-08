@@ -16,6 +16,24 @@
     return LN;
   }
 
+
+  async function ensureChannels() {
+    if (!native()) return true;
+    const p = plugin();
+    if (!p || !p.createChannel) return false;
+    const channels = [
+      { id: "prayer-adhan", name: "اذان", description: "صدای اذان برای اوقات نماز", importance: 5, sound: "adhan.mp3", vibration: true },
+      { id: "prayer-adhan-fajr", name: "اذان صبح", description: "صدای اذان صبح", importance: 5, sound: "adhan_fajr.mp3", vibration: true },
+      { id: "prayer-silent", name: "آلارم بی‌صدا", description: "اعلان بدون صدا برای اوقات نماز", importance: 3, vibration: false }
+    ];
+    try {
+      for (const channel of channels) await p.createChannel(channel);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
   async function ensurePermission() {
     try {
       if (native()) {
@@ -23,6 +41,7 @@
         if (!p) return perm = "unsupported";
         let r = await p.checkPermissions();
         if (r.display !== "granted") r = await p.requestPermissions();
+        if (r.display === "granted") await ensureChannels();
         return perm = r.display === "granted" ? "granted" : "denied";
       }
       if (typeof Notification === "undefined") return perm = "unsupported";

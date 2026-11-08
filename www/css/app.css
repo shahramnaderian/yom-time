@@ -1,0 +1,134 @@
+/* Yom Time – اوقات شرعی */
+@font-face {
+  font-family: Vazirmatn;
+  font-weight: 400;
+  font-display: swap;
+  src: local("Vazirmatn"), url("../fonts/Vazirmatn-Regular.woff2") format("woff2");
+}
+@font-face {
+  font-family: Vazirmatn;
+  font-weight: 500;
+  font-display: swap;
+  src: local("Vazirmatn Medium"), url("../fonts/Vazirmatn-Medium.woff2") format("woff2");
+}
+@font-face {
+  font-family: Vazirmatn;
+  font-weight: 700;
+  font-display: swap;
+  src: local("Vazirmatn Bold"), url("../fonts/Vazirmatn-Bold.woff2") format("woff2");
+}
+
+:root {
+  --primary: #C22928;
+  --bg: #FFF7F4;
+  --text: #1a1a1a;
+  --muted: #666;
+  --card: #fff;
+  --radius: 12px;
+  --font: Vazirmatn, Tahoma, system-ui, sans-serif;
+}
+
+[data-season="spring"] { --primary: #2E7D32; --bg: #F1F8E9; }
+[data-season="summer"] { --primary: #F57C00; --bg: #FFF8E1; }
+[data-season="autumn"] { --primary: #C22928; --bg: #FFF7F4; }
+[data-season="winter"] { --primary: #1565C0; --bg: #E3F2FD; }
+
+* { box-sizing: border-box; }
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100%;
+  direction: rtl;
+}
+
+#app { max-width: 720px; margin: 0 auto; padding: 12px 16px 80px; }
+
+.hero {
+  text-align: center;
+  padding: 24px 0 16px;
+}
+.hero h1 {
+  margin: 0;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+.hero p { margin: 6px 0 0; color: var(--muted); font-size: 0.9rem; }
+
+.card {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin: 12px 0;
+  box-shadow: 0 2px 12px rgba(0,0,0,.06);
+}
+
+button, .btn {
+  font-family: var(--font);
+  border: none;
+  border-radius: 10px;
+  padding: 10px 16px;
+  background: var(--primary);
+  color: #fff;
+  font-weight: 500;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+button:disabled { opacity: .5; cursor: not-allowed; }
+button.ghost {
+  background: transparent;
+  color: var(--primary);
+  border: 1px solid var(--primary);
+}
+
+input, select {
+  font-family: var(--font);
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  font-size: 1rem;
+  background: #fff;
+}
+
+#months {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin: 12px 0;
+}
+#months button {
+  background: #f5f5f5;
+  color: var(--text);
+  padding: 10px 4px;
+  font-size: 0.85rem;
+}
+#months button[aria-checked="true"],
+#months button.now {
+  background: var(--primary);
+  color: #fff;
+}
+
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(100px);
+  background: #333;
+  color: #fff;
+  padding: 12px 20px;
+  border-radius: 12px;
+  opacity: 0;
+  transition: .3s;
+  z-index: 100;
+  max-width: 90%;
+  text-align: center;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+@media (max-width: 480px) {
+  #months { grid-template-columns: repeat(3, 1fr); }
+}

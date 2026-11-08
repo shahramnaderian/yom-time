@@ -56,6 +56,7 @@
         <div id="home-times" class="home-times-list"></div>
       </div>
       <div class="home-shortcut" onclick="location.hash='#/create'">ساخت جدول ماهانه و دریافت خروجی PDF و اکسل ←</div>
+      <button id="home-reminder-settings" class="home-reminder-settings" type="button">⚙ تنظیمات یادآوری‌ها</button>
     </section>
     <section id="view-create" class="view" hidden>
       <div class="card">
@@ -157,8 +158,8 @@
         <div class="card-title"><span class="settings-icon">🕌</span> آلارم‌های فعال</div>
         <div id="alarm-toggles" class="alarm-toggles"></div>
       </div>
-      <div class="card">
-        <div class="card-title"><span class="settings-icon">📖</span> یادآوری مطالعه قرآن</div>
+      <div class="card" id="reminder-settings-start">
+        <div class="card-title"><span class="settings-icon">📖</span> یادآوری مطالعه قرآن (۲ صفحه)</div>
         <label class="alarm-row"><span class="alarm-name">فعال‌سازی یادآوری روزانه</span><input id="quran-enabled" type="checkbox" checked><span class="switch"></span></label>
         <div class="reminder-control">
           <label>ساعت <input id="quran-hour" class="time-input" type="number" min="0" max="23" value="17"></label>

@@ -182,12 +182,16 @@
           toast(lang() === "en" ? "Calculator not ready" : "موتور محاسبه آماده نیست");
           return;
         }
-        const today = SE.dates && SE.dates.today ? SE.dates.today() : null;
-        if (today && SE.alarms && rows.length) {
-          const dayNum = today.jalali ? today.jalali.day : 1;
-          const row = rows.find((r) => r[0] === dayNum) || rows[0];
+        if (SE.alarms && rows.length && SE.alarms.scheduleForMonth) {
           const placeName = SE.place ? SE.place.label(state.city, lang()) : "";
-          await SE.alarms.scheduleForDay(row, placeName, lang(), { dayNumber: dayNum });
+          const alarmResult = await SE.alarms.scheduleForMonth(rows, placeName, lang(), {
+            year: state.year,
+            month: state.month,
+            calendar: state.cal
+          });
+          if (alarmResult && alarmResult.ok === false) {
+            toast(lang() === "en" ? "Notification permission is required for prayer alarms" : "برای فعال‌سازی آلارم نماز، اجازه اعلان لازم است");
+          }
         }
         const active = $("#active");
         if (active) {

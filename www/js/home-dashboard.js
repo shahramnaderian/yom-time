@@ -31,10 +31,40 @@ function setCity(city){
 }
 function injectPicker(){
  const card=document.querySelector(".home-date-card");if(!card||$("home-city-picker"))return;
- const wrap=document.createElement("div");wrap.id="home-city-picker";wrap.innerHTML='<label for="home-city-search">شهر محاسبهٔ اوقات شرعی</label><div class="home-city-control"><input id="home-city-search" type="search" autocomplete="off" placeholder="نام شهر را جست‌وجو کنید"><button id="home-city-gps" type="button">موقعیت من</button></div><div id="home-city-label" class="home-city-current" aria-live="polite"></div><div id="home-city-results" class="home-city-results" role="listbox" hidden></div>';
+ const wrap=document.createElement("div");wrap.id="home-city-picker";wrap.innerHTML='<label for="home-city-search">شهر محاسبهٔ اوقات شرعی</label><div class="home-city-control"><input id="home-city-search" type="search" autocomplete="off" placeholder="نام شهر را جست‌وجو کنید"><button id="home-city-gps" type="button">موقعیت من</button><button id="home-map-toggle" type="button">انتخاب روی نقشه</button></div><div id="home-city-label" class="home-city-current" aria-live="polite"></div><div id="home-city-results" class="home-city-results" role="listbox" hidden></div><div id="home-map-panel" class="home-map-panel" hidden><p>روی نقشه نقطهٔ دلخواه را لمس کنید یا نشانگر را جابه‌جا کنید.</p><div id="home-location-map" role="application" aria-label="نقشه انتخاب مکان"></div><div class="home-map-actions"><span id="home-map-coords"></span><button id="home-map-confirm" type="button">محاسبه اوقات این نقطه</button></div></div>';
  const dateLabel=card.querySelector('label[for="home-date"]');card.insertBefore(wrap,dateLabel);
- const style=document.createElement("style");style.textContent='#home-city-picker{margin:0 0 18px}#home-city-picker>label{display:block;color:#657384;font-size:.9rem;margin-bottom:8px}.home-city-control{display:flex;gap:8px}.home-city-control input{flex:1;min-width:0;padding:11px;border:1px solid #dce2e8;border-radius:12px;font:inherit}.home-city-control button{border:0;border-radius:12px;background:#eaf3fa;color:#236b9a;padding:8px 12px;font:inherit;white-space:nowrap}.home-city-current{font-size:.82rem;color:#718092;margin-top:6px}.home-city-results{position:relative;z-index:5;background:#fff;border:1px solid #e1e6ea;border-radius:12px;overflow:hidden;box-shadow:0 5px 16px #20304012}.home-city-results button{display:block;width:100%;padding:11px 13px;text-align:right;border:0;border-bottom:1px solid #edf0f2;background:#fff;font:inherit;color:#263746}.home-city-results button:last-child{border-bottom:0}';
+ const style=document.createElement("style");style.textContent='#home-city-picker{margin:0 0 18px}#home-city-picker>label{display:block;color:#657384;font-size:.9rem;margin-bottom:8px}.home-city-control{display:flex;gap:8px}.home-city-control input{flex:1;min-width:0;padding:11px;border:1px solid #dce2e8;border-radius:12px;font:inherit}.home-city-control button{border:0;border-radius:12px;background:#eaf3fa;color:#236b9a;padding:8px 12px;font:inherit;white-space:nowrap}.home-city-current{font-size:.82rem;color:#718092;margin-top:6px}.home-map-panel{margin-top:12px;padding:10px;border:1px solid #dce5ec;border-radius:14px;background:#f8fbfd}.home-map-panel p{font-size:.85rem;color:#657384;margin:0 0 8px}#home-location-map{height:280px;border-radius:10px;z-index:1}.home-map-actions{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:9px}.home-map-actions span{font-size:.75rem;color:#657384;direction:ltr}.home-map-actions button{border:0;border-radius:10px;background:#246f9e;color:#fff;padding:10px 12px;font:inherit;font-size:.85rem}.home-city-control #home-map-toggle{background:#e9f3ec;color:#287548}.home-city-results{position:relative;z-index:5;background:#fff;border:1px solid #e1e6ea;border-radius:12px;overflow:hidden;box-shadow:0 5px 16px #20304012}.home-city-results button{display:block;width:100%;padding:11px 13px;text-align:right;border:0;border-bottom:1px solid #edf0f2;background:#fff;font:inherit;color:#263746}.home-city-results button:last-child{border-bottom:0}';
  document.head.appendChild(style);
+ let map=null,mapMarker=null,mapPoint=null;
+ const mapPanel=$("home-map-panel"),mapToggle=$("home-map-toggle");
+ function showMap(){
+  mapPanel.hidden=false;
+  if(!window.L){$("home-map-coords").textContent="نقشه بارگذاری نشد؛ اتصال اینترنت را بررسی کنید.";return}
+  if(!map){
+   const start=activeCity||DEFAULT_CITY;
+   map=L.map("home-location-map").setView([start.lat,start.lng],12);
+   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"© OpenStreetMap"}).addTo(map);
+   map.on("click",e=>setMapPoint(e.latlng.lat,e.latlng.lng));
+   map.on("locationfound",e=>setMapPoint(e.latitude,e.longitude));
+   map.on("locationerror",()=>{$("home-map-coords").textContent="موقعیت فعلی در دسترس نیست؛ نقطه را روی نقشه انتخاب کنید."});
+  }
+  const center=activeCity||DEFAULT_CITY;
+  map.setView([center.lat,center.lng],Math.max(map.getZoom(),12));
+  if(!mapPoint)setMapPoint(center.lat,center.lng);
+  setTimeout(()=>map.invalidateSize(),100);
+ }
+ function setMapPoint(lat,lng){
+  mapPoint={lat:Number(lat),lng:Number(lng)};
+  if(mapMarker)mapMarker.setLatLng([lat,lng]);
+  else mapMarker=L.marker([lat,lng],{draggable:true}).addTo(map).on("dragend",e=>{const p=e.target.getLatLng();setMapPoint(p.lat,p.lng)});
+  $("home-map-coords").textContent=lat.toFixed(5)+", "+lng.toFixed(5);
+ }
+ mapToggle.addEventListener("click",()=>{if(mapPanel.hidden)showMap();else mapPanel.hidden=true});
+ $("home-map-confirm").addEventListener("click",()=>{
+  if(!mapPoint)return;
+  const place=SE.place.fromCoords(mapPoint.lat,mapPoint.lng,{source:"map",label:"نقطهٔ انتخاب‌شده ("+mapPoint.lat.toFixed(4)+", "+mapPoint.lng.toFixed(4)+")"});
+  setCity(place);mapPanel.hidden=true;mapPoint=null;
+ });
  const input=$("home-city-search"),results=$("home-city-results");
  input.addEventListener("input",()=>{
   const q=input.value.trim();if(q.length<1){results.hidden=true;return}

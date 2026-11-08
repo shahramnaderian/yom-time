@@ -73,6 +73,7 @@
   function renderReminderControls() {
     const q = SE.quranReminder && SE.quranReminder.getSettings ? SE.quranReminder.getSettings() : null;
     const z = SE.zakatReminder && SE.zakatReminder.getSettings ? SE.zakatReminder.getSettings() : null;
+    const sabt = SE.sabtReminder && SE.sabtReminder.getSettings ? SE.sabtReminder.getSettings() : null;
     if (q) {
       const set = (id, value) => { const el = document.getElementById(id); if (el) el.value = value; };
       const enabled = document.getElementById("quran-enabled");
@@ -85,13 +86,23 @@
       if (enabled) enabled.checked = !!z.enabled;
       set("zakat-day", z.day); set("zakat-hour", z.hour); set("zakat-minute", z.minute);
     }
+    if (sabt) {
+      const enabled = document.getElementById("sabt-enabled");
+      if (enabled) enabled.checked = !!sabt.enabled;
+      const hour = document.getElementById("sabt-hour");
+      const minute = document.getElementById("sabt-minute");
+      if (hour) hour.value = sabt.hour;
+      if (minute) minute.value = sabt.minute;
+    }
   }
 
   function bindReminderControls() {
     const qEnabled = document.getElementById("quran-enabled");
     const zEnabled = document.getElementById("zakat-enabled");
+    const sabtEnabled = document.getElementById("sabt-enabled");
     const qFields = ["quran-hour", "quran-minute", "quran-pages"];
     const zFields = ["zakat-day", "zakat-hour", "zakat-minute"];
+    const sabtFields = ["sabt-hour", "sabt-minute"];
 
     if (qEnabled && !qEnabled.dataset.bound) {
       qEnabled.dataset.bound = "1";
@@ -100,6 +111,15 @@
         if (qEnabled.checked) await SE.quranReminder.enable();
         else await SE.quranReminder.disable();
         toast(lang() === "en" ? "Quran reminder updated" : "یادآوری قرآن به‌روزرسانی شد");
+      });
+    }
+    if (sabtEnabled && !sabtEnabled.dataset.bound) {
+      sabtEnabled.dataset.bound = "1";
+      sabtEnabled.addEventListener("change", async () => {
+        if (!SE.sabtReminder) return;
+        if (sabtEnabled.checked) await SE.sabtReminder.enable({ lang: lang() });
+        else await SE.sabtReminder.disable();
+        toast(lang() === "en" ? "Saturday reminder updated" : "یادآوری یوم سبت به‌روزرسانی شد");
       });
     }
     if (zEnabled && !zEnabled.dataset.bound) {
@@ -139,6 +159,30 @@
     });
     if (SE.quranReminder) saveFields(qFields, SE.quranReminder, "quran");
     if (SE.zakatReminder) saveFields(zFields, SE.zakatReminder, "zakat");
+    sabtFields.forEach((id) => {
+      const el = document.getElementById(id);
+      if (!el || el.dataset.bound) return;
+      el.dataset.bound = "1";
+      el.addEventListener("change", async () => {
+        const hour = Number(document.getElementById("sabt-hour").value);
+        const minute = Number(document.getElementById("sabt-minute").value);
+        const cfg = SE.sabtReminder.getSettings();
+        SE.sabtReminder.setSettings({
+          hour: Number.isInteger(hour) && hour >= 0 && hour <= 23 ? hour : cfg.hour,
+          minute: Number.isInteger(minute) && minute >= 0 && minute <= 59 ? minute : cfg.minute
+        });
+        if (cfg.enabled) await SE.sabtReminder.enable({ lang: lang() });
+        toast(lang() === "en" ? "Saturday reminder saved" : "زمان یادآوری یوم سبت ذخیره شد");
+      });
+    });
+    const sabtTest = document.getElementById("sabt-test");
+    if (sabtTest && !sabtTest.dataset.bound) {
+      sabtTest.dataset.bound = "1";
+      sabtTest.addEventListener("click", async () => {
+        const r = await SE.sabtReminder.testNow(lang());
+        toast(r && r.ok ? (lang() === "en" ? "Test notification sent" : "اعلان آزمایشی ارسال شد") : (lang() === "en" ? "Notification permission required" : "اجازه اعلان لازم است"));
+      });
+    }
 
     const qTest = document.getElementById("quran-test");
     if (qTest && !qTest.dataset.bound) {

@@ -11,29 +11,148 @@
 </head>
 <body>
 <div id="app">
-  <!-- Content loaded by app.js -->
+  <header class="hero">
+    <div class="hero-bg" aria-hidden="true"></div>
+    <button id="lang" class="lang-btn" type="button" data-i18n="lang_button" data-i18n-aria="lang_aria">English</button>
+    <div class="hero-row">
+      <svg class="logo" viewBox="0 0 64 64" aria-hidden="true" fill="currentColor">
+        <circle cx="32" cy="32" r="13"/>
+        <g stroke="currentColor" stroke-width="4" stroke-linecap="round">
+          <path d="M32 6v8M32 50v8M6 32h8M50 32h8M13.6 13.6l5.7 5.7M44.7 44.7l5.7 5.7M13.6 50.4l5.7-5.7M44.7 19.3l5.7-5.7"/>
+        </g>
+      </svg>
+      <div>
+        <h1><span data-i18n="app_title">محاسبهٔ اوقات شرعی</span><small data-i18n="app_title_sub">جدول زمانی ماهانه، برای شهرهای مختلف جهان</small></h1>
+        <p data-i18n="app_formats">خروجی به‌صورت تصویر، PDF و اکسل</p>
+      </div>
+    </div>
+    <div id="date-bar" class="date-bar" aria-live="polite">
+      <div class="date-weekday" id="date-weekday">—</div>
+      <div class="date-main" id="date-jalali">—</div>
+      <div class="date-sub">
+        <span id="date-gregorian">—</span>
+        <span class="date-sep">·</span>
+        <span id="date-hijri">—</span>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section id="view-create" class="view">
+      <div class="card">
+        <div class="card-title"><span class="step" data-num="1">۱</span> <span data-i18n="step_ym">سال و ماه</span></div>
+        <div class="year-row">
+          <button class="round" id="year-dec" data-i18n-aria="year_prev" aria-label="سال قبل">−</button>
+          <input id="year" inputmode="numeric" maxlength="4" data-i18n-aria="year_aria" aria-label="سال شمسی">
+          <button class="round" id="year-inc" data-i18n-aria="year_next" aria-label="سال بعد">+</button>
+        </div>
+        <div id="months" class="months" role="radiogroup" data-i18n-aria="month_aria" aria-label="ماه"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><span class="step" data-num="2">۲</span> <span data-i18n="step_city">شهر</span></div>
+        <div class="city-wrap">
+          <input id="city" type="text" role="combobox" aria-expanded="false" aria-controls="suggest" aria-autocomplete="list"
+                 autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="جستجوی شهر در سراسر جهان…" data-i18n-ph="city_ph" aria-label="شهر">
+          <button type="button" id="locate-btn" class="ghost" data-i18n="locate">موقعیت من</button>
+        </div>
+        <div id="suggest" class="suggest" role="listbox" hidden></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><span class="step" data-num="3">۳</span> <span data-i18n="step_fmt">فرمت خروجی</span></div>
+        <div id="formats" class="formats"></div>
+      </div>
+
+      <button id="go" class="primary go" type="button"><span data-i18n="go">ثبت درخواست جدول</span></button>
+      <div id="error" class="notice error" hidden></div>
+      <div id="active" class="card active-card" hidden></div>
+      <p class="credit" data-i18n-html="credit"></p>
+    </section>
+
+    <section id="view-archive" class="view" hidden>
+      <div class="archive-head">
+        <h2 data-i18n="archive">بایگانی</h2>
+        <span id="archive-count" class="muted"></span>
+      </div>
+      <div id="archive-list" class="archive-list"></div>
+      <div id="archive-empty" class="empty" hidden>
+        <p data-i18n="archive_empty">هنوز جدولی نساخته‌اید.</p>
+        <button class="secondary" data-go="create" data-i18n="make_first">ساخت اولین جدول</button>
+      </div>
+    </section>
+  </main>
+
+  <nav class="tabbar">
+    <a href="#/create" data-tab="create"><span data-i18n="tab_create">ساخت جدول</span></a>
+    <a href="#/archive" data-tab="archive"><span data-i18n="tab_archive">بایگانی</span><b id="badge" hidden></b></a>
+  </nav>
 </div>
-<script src="js/vendor/tz-lookup.js"></script>
+
+<div id="sheet" class="sheet" hidden>
+  <div class="sheet-backdrop" data-close></div>
+  <div class="sheet-body" role="dialog" aria-modal="true">
+    <div class="sheet-grip"></div>
+    <div id="sheet-content"></div>
+  </div>
+</div>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<script src="js/native.js"></script>
 <script src="js/i18n.js"></script>
 <script src="js/jalali.js"></script>
-<script src="js/seasons.js"></script>
 <script src="js/formulas.js"></script>
-<script src="js/sun-local.js"></script>
 <script src="js/solar-api.js"></script>
+<script src="js/sun-local.js"></script>
 <script src="js/usno-check.js"></script>
-<script src="js/model.js"></script>
-<script src="js/store.js"></script>
+<script src="js/vendor/tz-lookup.js"></script>
 <script src="js/cities.js"></script>
 <script src="js/locate.js"></script>
-<script src="js/native.js"></script>
-<script src="js/platform.js"></script>
-<script src="js/notify.js"></script>
-<script src="js/builder.js"></script>
+<script src="js/seasons.js"></script>
+<script src="js/model.js"></script>
 <script src="js/render-png.js"></script>
-<script src="js/pdf.js"></script>
 <script src="js/xlsx.js"></script>
+<script src="js/pdf.js"></script>
+<script src="js/store.js"></script>
+<script src="js/platform.js"></script>
 <script src="js/viewer.js"></script>
+<script src="js/builder.js"></script>
+<script src="js/notify.js"></script>
 <script src="js/jobs.js"></script>
+<script src="js/dates.js"></script>
+<script src="js/place.js"></script>
+<script src="js/methods.js"></script>
+<script src="js/alarms.js"></script>
+<script src="js/validate.js"></script>
 <script src="js/app.js"></script>
+<script>
+(function() {
+  function refreshDateBar() {
+    if (!window.SE || !SE.dates) return;
+    var lang = (SE.i18n && SE.i18n.lang) || document.documentElement.lang || "fa";
+    var d = SE.dates.displayToday(lang);
+    var el = function(id) { return document.getElementById(id); };
+    if (el("date-weekday")) el("date-weekday").textContent = d.weekday;
+    if (el("date-jalali")) el("date-jalali").textContent = d.jalali;
+    if (el("date-gregorian")) el("date-gregorian").textContent = d.gregorian;
+    if (el("date-hijri")) el("date-hijri").textContent = d.hijri;
+  }
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", function() { setTimeout(refreshDateBar, 50); });
+  } else {
+    setTimeout(refreshDateBar, 50);
+  }
+  setInterval(function() {
+    var now = new Date();
+    if (now.getHours() === 0 && now.getMinutes() === 0) refreshDateBar();
+  }, 60000);
+  document.addEventListener("click", function(e) {
+    if (e.target && (e.target.id === "lang" || (e.target.closest && e.target.closest("#lang")))) {
+      setTimeout(refreshDateBar, 100);
+    }
+  });
+  window.SE_refreshDateBar = refreshDateBar;
+})();
+</script>
 </body>
 </html>

@@ -10,10 +10,12 @@
     }
   };
   let LN = null, onOpen = null, perm = "unknown";
+
   function plugin() {
-    if (!LN) LN = SE.native.plugin("LocalNotifications");
+    if (!LN) LN = SE.native && SE.native.plugin ? SE.native.plugin("LocalNotifications") : null;
     return LN;
   }
+
   async function ensurePermission() {
     try {
       if (native()) {
@@ -30,19 +32,27 @@
       return perm = "unsupported";
     }
   }
+
   const appHidden = () => !!(g.document && document.visibilityState === "hidden");
+
   async function show(title, body, recId, force) {
     if (!force && !appHidden()) return false;
     try {
       if (native()) {
         const p = plugin();
         if (!p || perm === "denied") return false;
-        await p.schedule({ notifications: [{ id: Math.floor(Math.random() * 2e9), title, body, extra: { recId } }] });
+        await p.schedule({
+          notifications: [{
+            id: Math.floor(Math.random() * 2e9),
+            title,
+            body,
+            extra: { recId }
+          }]
+        });
         return true;
       }
       if (typeof Notification === "undefined" || Notification.permission !== "granted") return false;
-      const opts = { body, tag: recId, lang: "fa", dir: "rtl", icon: "icons/icon-192.png" };
-      let n;
+      const opts = { body, tag: String(recId || ""), lang: "fa", dir: "rtl", icon: "icons/icon-192.png" };
       try {
         const reg = navigator.serviceWorker && await navigator.serviceWorker.getRegistration();
         if (reg && reg.showNotification) {
@@ -50,7 +60,7 @@
           return true;
         }
       } catch (e) {}
-      n = new Notification(title, opts);
+      const n = new Notification(title, opts);
       n.onclick = () => {
         try { g.focus(); } catch (e) {}
         if (onOpen) onOpen(recId);
@@ -61,12 +71,13 @@
       return false;
     }
   }
+
   function init(onOpenRecord) {
     onOpen = onOpenRecord;
     const p = plugin();
     if (p && p.addListener) {
       p.addListener("localNotificationActionPerformed", (ev) => {
-        const id = ev && ev.notification && ev.notification.extra && ev.notification.extra.recId;
+        const id = ev && ev.notification && ev.notification.extra && (ev.notification.extra.recId || ev.notification.extra.type);
         if (id && onOpen) onOpen(id);
       });
     }
@@ -76,8 +87,19 @@
       });
     }
   }
-  const ready = (title, rec, force) => show(SE.i18n ? SE.i18n.t("notif_ready") : "جدول آماده شد", title, rec.id, force);
-  const failed = (title, rec, force) => show(SE.i18n ? SE.i18n.t("notif_failed") : "ساخت جدول ناموفق بود", title, rec.id, force);
-  SE.notify = { init, ensurePermission, show, ready, failed, status: () => perm };
+
+  const ready = (title, rec, force) => show(SE.i18n ? SE.i18n.t("notif_ready") : "جدول آماده شد", title, rec && rec.id, force);
+  const failed = (title, rec, force) => show(SE.i18n ? SE.i18n.t("notif_failed") : "ساخت جدول ناموفق بود", title, rec && rec.id, force);
+
+  SE.notify = {
+    init,
+    ensurePermission,
+    show,
+    ready,
+    failed,
+    plugin,
+    status: () => perm
+  };
+
   if (typeof module !== "undefined" && module.exports) module.exports = SE.notify;
 })(typeof globalThis !== "undefined" ? globalThis : this);

@@ -80,6 +80,51 @@
       </div>
     </section>
 
+
+    <section id="view-weekly" class="view" hidden>
+      <div class="settings-head"><h2>جلسات هفتگی</h2></div>
+      <div class="card">
+        <div class="card-title">ثبت جلسهٔ جدید</div>
+        <form id="weekly-form">
+          <input id="weekly-edit-id" type="hidden">
+          <label class="weekly-field">عنوان جلسه
+            <input id="weekly-title" type="text" maxlength="80" placeholder="مثلاً کلاس زبان" required>
+          </label>
+          <div class="weekly-form-row">
+            <label class="weekly-field">روز هفته
+              <select id="weekly-day">
+                <option value="6">شنبه</option><option value="0">یکشنبه</option><option value="1">دوشنبه</option>
+                <option value="2">سه‌شنبه</option><option value="3">چهارشنبه</option><option value="4">پنجشنبه</option><option value="5">جمعه</option>
+              </select>
+            </label>
+            <label class="weekly-field">ساعت
+              <input id="weekly-time" type="time" value="09:00" required>
+            </label>
+          </div>
+          <label class="weekly-field">مکان یا لینک جلسه (اختیاری)
+            <input id="weekly-location" type="text" maxlength="120" placeholder="مثلاً دفتر یا لینک آنلاین">
+          </label>
+          <label class="weekly-field">زمان یادآوری
+            <select id="weekly-reminder">
+              <option value="0">در زمان شروع</option><option value="5">۵ دقیقه قبل</option>
+              <option value="10" selected>۱۰ دقیقه قبل</option><option value="15">۱۵ دقیقه قبل</option>
+              <option value="30">۳۰ دقیقه قبل</option><option value="60">۱ ساعت قبل</option><option value="1440">۱ روز قبل</option>
+            </select>
+          </label>
+          <div class="weekly-form-actions">
+            <button type="submit" class="primary">ذخیرهٔ جلسه</button>
+            <button type="button" id="weekly-cancel" class="ghost" hidden>لغو ویرایش</button>
+          </div>
+        </form>
+      </div>
+      <div class="card">
+        <div class="card-title">برنامهٔ هفتگی من</div>
+        <p class="hint">جلسه‌ها هر هفته در روز و ساعت ثبت‌شده تکرار می‌شوند.</p>
+        <div id="weekly-list" class="weekly-list"></div>
+        <p id="weekly-status" class="hint" role="status" aria-live="polite"></p>
+      </div>
+    </section>
+
     <section id="view-settings" class="view" hidden>
       <div class="settings-head">
         <h2>تنظیمات</h2>
@@ -130,6 +175,7 @@
   <nav class="tabbar">
     <a href="#/create" data-tab="create"><span>ساخت جدول</span></a>
     <a href="#/archive" data-tab="archive"><span>بایگانی</span><b id="badge" hidden></b></a>
+    <a href="#/weekly" data-tab="weekly"><span>جلسات</span></a>
     <a href="#/settings" data-tab="settings"><span>تنظیمات</span></a>
   </nav>
 </div>
@@ -168,6 +214,7 @@
 <script src="js/quran-reminder.js"></script>
 <script src="js/zakat-reminder.js"></script>
 <script src="js/sabt-reminder.js"></script>
+<script src="js/weekly-sessions.js"></script>
 <script src="js/validate.js"></script>
 <script src="js/location-bridge.js"></script>
 <script src="js/settings-ui.js"></script>

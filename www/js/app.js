@@ -247,6 +247,7 @@
     bindGo();
     bindTabs();
     bindLang();
+    if (SE.weeklySessions) SE.weeklySessions.init({ toast });
     if (!state.city && SE.place && SE.place.defaultPlace) setCity(SE.place.defaultPlace());
     if (window.SE_refreshDateBar) SE_refreshDateBar();
   }

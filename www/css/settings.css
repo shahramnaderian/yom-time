@@ -78,3 +78,21 @@ html[dir="ltr"] .alarm-row input:checked + .switch::after { transform: translate
 .reminder-control .time-input { width: 76px; }
 
 /* یادآوری هفتگی یوم سبت */
+
+/* برنامهٔ جلسات هفتگی */
+.weekly-field { display:flex; flex-direction:column; gap:6px; margin:12px 0; color:var(--muted); font-size:.9rem; }
+.weekly-field input, .weekly-field select { width:100%; min-width:0; padding:11px 12px; border:1px solid var(--line); border-radius:10px; background:#fff; color:var(--ink); font:inherit; }
+.weekly-form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.weekly-form-actions { display:flex; gap:10px; align-items:center; }
+.weekly-form-actions .primary { flex:1; width:auto; margin:12px 0 0; }
+.weekly-form-actions .ghost { margin-top:12px; }
+.weekly-list { display:flex; flex-direction:column; gap:10px; }
+.weekly-session { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px; border:1px solid var(--line); border-radius:12px; }
+.weekly-session.is-disabled { opacity:.55; }
+.weekly-session-main { display:flex; flex-direction:column; gap:4px; min-width:0; }
+.weekly-session-main strong { font-size:1rem; }
+.weekly-session-main span { color:var(--brand); font-weight:600; }
+.weekly-session-main small { color:var(--muted); overflow-wrap:anywhere; }
+.weekly-session-actions { display:flex; flex-direction:column; gap:6px; flex-shrink:0; }
+.weekly-session-actions button { border:1px solid var(--line); border-radius:8px; padding:6px 10px; background:var(--chip); color:var(--ink); font:inherit; cursor:pointer; }
+@media(max-width:380px) { .weekly-form-row { grid-template-columns:1fr; gap:0; } }

@@ -76,3 +76,5 @@ html[dir="ltr"] .alarm-row input:checked + .switch::after { transform: translate
   font-size: .85rem;
 }
 .reminder-control .time-input { width: 76px; }
+
+/* یادآوری هفتگی یوم سبت */

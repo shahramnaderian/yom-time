@@ -158,7 +158,7 @@
     }
     return { ok: false };
   }
-  SE.sabtReminder = { REMINDER_ID, DEFAULTS, getSettings, setSettings, buildSaturdayEntries, scheduleFromMonth, schedule, enable, disable, testNow, message };
+  SE.sabtReminder = { REMINDER_ID, DEFAULTS, getSettings, setSettings, localDateTimeToTimestamp, buildSaturdayEntries, scheduleFromMonth, schedule, enable, disable, testNow, message };
   function autoStart() { try { if (getSettings().enabled) schedule({}); } catch (e) {} }
   if (g.document) {
     if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", () => setTimeout(autoStart, 1100));

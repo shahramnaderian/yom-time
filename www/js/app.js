@@ -182,6 +182,11 @@
           toast(lang() === "en" ? "Calculator not ready" : "موتور محاسبه آماده نیست");
           return;
         }
+        if (SE.sabtReminder && rows.length && SE.sabtReminder.scheduleFromMonth) {
+          await SE.sabtReminder.scheduleFromMonth(rows, {
+            year: state.year, month: state.month, calendar: state.cal, lang: lang()
+          });
+        }
         if (SE.alarms && rows.length && SE.alarms.scheduleForMonth) {
           const placeName = SE.place ? SE.place.label(state.city, lang()) : "";
           const alarmResult = await SE.alarms.scheduleForMonth(rows, placeName, lang(), {

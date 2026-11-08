@@ -2,11 +2,23 @@
   "use strict";
   const SE = g.SE = g.SE || {};
   const REMINDER_ID = 900031;
-  const DEFAULTS = { enabled: true, hour: 9, minute: 0 };
+  const DEFAULTS = { enabled: true, hour: 0, minute: 0, version: 2 };
+
+  // Migrate the earlier 09:00 default to the start of Saturday.
+  function migrate(saved) {
+    const old = Object.assign({}, saved || {});
+    if (!old.version || old.version < 2) {
+      old.hour = 0;
+      old.minute = 0;
+      old.version = 2;
+      if (SE.store && SE.store.prefs) SE.store.prefs.set("sabtReminder", Object.assign({}, DEFAULTS, old));
+    }
+    return old;
+  }
 
   function getSettings() {
     const saved = SE.store && SE.store.prefs ? SE.store.prefs.get("sabtReminder", DEFAULTS) : DEFAULTS;
-    return Object.assign({}, DEFAULTS, saved || {});
+    return Object.assign({}, DEFAULTS, migrate(saved));
   }
   function setSettings(partial) {
     const next = Object.assign(getSettings(), partial || {});

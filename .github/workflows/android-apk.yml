@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: yom-time-android-build
@@ -36,35 +36,10 @@ jobs:
       - name: Check JavaScript syntax
         run: find www/js -type f -name '*.js' -print0 | xargs -0 -n1 node --check
 
-      - name: Download and prepare Adhan audio
+      - name: Verify bundled Adhan audio
         run: |
-          mkdir -p www/sounds
-          curl --fail --location --retry 3 \
-            'https://raw.githubusercontent.com/Kiwifu/adhan-mp3/main/Abdulbasit_Abdusamad_1_-_Egypt_(%D8%B9%D8%A8%D8%AF_%D8%A7%D9%84%D8%A8%D8%A7%D8%B3%D8%B7_%D8%B9%D8%A8%D8%AF_%D8%A7%D9%84%D8%B5%D9%85%D8%AF_-_%D9%85%D8%B5%D8%B1).mp3' \
-            --output www/sounds/adhan.mp3
-          curl --fail --location --retry 3 \
-            'https://raw.githubusercontent.com/Kiwifu/adhan-mp3/main/Abdulbasit_Abdusamad_6_-_Fajr_Egypt_(%D8%B9%D8%A8%D8%AF_%D8%A7%D9%84%D8%A8%D8%A7%D8%B3%D8%B7_%D8%B9%D8%A8%D8%AF_%D8%A7%D9%84%D8%B5%D9%85%D8%AF_-_%D9%81%D8%AC%D8%B1_%D9%85%D8%B5%D8%B1).mp3' \
-            --output www/sounds/adhan-fajr.mp3
           test -s www/sounds/adhan.mp3
           test -s www/sounds/adhan-fajr.mp3
-
-      - name: Store Adhan audio in the repository
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git fetch origin main
-          for audio in www/sounds/adhan.mp3 www/sounds/adhan-fajr.mp3; do
-            if ! git cat-file -e "origin/main:$audio" 2>/dev/null; then
-              git add "$audio"
-            fi
-          done
-          if git diff --cached --quiet; then
-            echo "Adhan audio is already stored in the repository."
-          else
-            git commit -m "chore: add Abdulbasit Adhan audio [skip ci]"
-            git pull --rebase origin main
-            git push origin HEAD:main
-          fi
 
       - name: Generate Android project
         run: npx cap add android

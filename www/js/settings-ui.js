@@ -89,10 +89,6 @@
     if (sabt) {
       const enabled = document.getElementById("sabt-enabled");
       if (enabled) enabled.checked = !!sabt.enabled;
-      const hour = document.getElementById("sabt-hour");
-      const minute = document.getElementById("sabt-minute");
-      if (hour) hour.value = sabt.hour;
-      if (minute) minute.value = sabt.minute;
     }
   }
 
@@ -102,7 +98,6 @@
     const sabtEnabled = document.getElementById("sabt-enabled");
     const qFields = ["quran-hour", "quran-minute", "quran-pages"];
     const zFields = ["zakat-day", "zakat-hour", "zakat-minute"];
-    const sabtFields = ["sabt-hour", "sabt-minute"];
 
     if (qEnabled && !qEnabled.dataset.bound) {
       qEnabled.dataset.bound = "1";
@@ -159,22 +154,6 @@
     });
     if (SE.quranReminder) saveFields(qFields, SE.quranReminder, "quran");
     if (SE.zakatReminder) saveFields(zFields, SE.zakatReminder, "zakat");
-    sabtFields.forEach((id) => {
-      const el = document.getElementById(id);
-      if (!el || el.dataset.bound) return;
-      el.dataset.bound = "1";
-      el.addEventListener("change", async () => {
-        const hour = Number(document.getElementById("sabt-hour").value);
-        const minute = Number(document.getElementById("sabt-minute").value);
-        const cfg = SE.sabtReminder.getSettings();
-        SE.sabtReminder.setSettings({
-          hour: Number.isInteger(hour) && hour >= 0 && hour <= 23 ? hour : cfg.hour,
-          minute: Number.isInteger(minute) && minute >= 0 && minute <= 59 ? minute : cfg.minute
-        });
-        if (cfg.enabled) await SE.sabtReminder.enable({ lang: lang() });
-        toast(lang() === "en" ? "Saturday reminder saved" : "زمان یادآوری یوم سبت ذخیره شد");
-      });
-    });
     const sabtTest = document.getElementById("sabt-test");
     if (sabtTest && !sabtTest.dataset.bound) {
       sabtTest.dataset.bound = "1";

@@ -15,7 +15,13 @@
     const s = SE.store && SE.store.prefs
       ? SE.store.prefs.get("zakatReminder", DEFAULTS)
       : DEFAULTS;
-    return Object.assign({}, DEFAULTS, s || {});
+    const merged = Object.assign({}, DEFAULTS, s || {});
+    if (s && s.day === 28 && !s._migrated29) {
+      merged.day = 29;
+      merged._migrated29 = true;
+      if (SE.store && SE.store.prefs) SE.store.prefs.set("zakatReminder", merged);
+    }
+    return merged;
   }
 
   function setSettings(partial) {

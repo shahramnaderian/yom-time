@@ -202,3 +202,8 @@ button.ghost {
 .home-prayer-row time{font-size:1.15rem;font-weight:700;color:#246f9e;direction:ltr;font-variant-numeric:tabular-nums}
 .home-shortcut{margin:16px;padding:16px;border-radius:16px;background:#fff;color:#246f9e;text-align:center;cursor:pointer}
 @media(max-width:400px){.home-date-card,.home-next-card,.home-times-card{margin:12px 12px;padding:18px}.home-next-line span{font-size:1.25rem}}
+
+
+.home-reminder-settings{display:block;width:calc(100% - 32px);margin:0 16px 18px;padding:14px 18px;border:1px solid #dce5ec;border-radius:16px;background:#fff;color:#246f9e;font:inherit;font-weight:700;cursor:pointer;box-shadow:0 5px 18px rgba(35,70,105,.05)}
+.home-reminder-settings:active{transform:translateY(1px)}
+#reminder-settings-start{scroll-margin-top:18px}

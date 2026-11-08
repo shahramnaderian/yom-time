@@ -1,0 +1,29 @@
+{
+  "name": "یوم‌تایم — اوقات شرعی",
+  "short_name": "یوم‌تایم",
+  "description": "محاسبه دقیق اوقات شرعی برای هر نقطه از جهان",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#FFF7F4",
+  "theme_color": "#C22928",
+  "lang": "fa",
+  "dir": "rtl",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

@@ -63,7 +63,7 @@ jobs:
           manifest = path.read_text()
           permission = '    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />'
           if "android.permission.SCHEDULE_EXACT_ALARM" not in manifest:
-              manifest = manifest.replace("<application", permission + "\\n    <application", 1)
+              manifest = manifest.replace("<application", permission + "\n    <application", 1)
               path.write_text(manifest)
           PY
 

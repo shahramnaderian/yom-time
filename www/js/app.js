@@ -184,7 +184,7 @@
         }
         if (SE.sabtReminder && rows.length && SE.sabtReminder.scheduleFromMonth) {
           await SE.sabtReminder.scheduleFromMonth(rows, {
-            year: state.year, month: state.month, calendar: state.cal, lang: lang()
+            year: state.year, month: state.month, calendar: state.cal, timeZone: state.city.tz || null, lang: lang()
           });
         }
         if (SE.alarms && rows.length && SE.alarms.scheduleForMonth) {

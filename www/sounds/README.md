@@ -1,27 +1,22 @@
 # فایل‌های اذان
 
-برای پخش اذان به‌جای زنگ، فایل‌های صوتی را اینجا قرار دهید:
+فایل‌های زیر هنگام ساخت APK اندروید توسط GitHub Actions دریافت و در بسته برنامه قرار می‌گیرند:
 
-| فایل | کاربرد |
-|------|--------|
-| `adhan.mp3` | اذان عمومی |
-| `adhan-fajr.mp3` | اذان صبح (اختیاری) |
+- `adhan.mp3` — اذان عمومی با صدای عبدالباسط عبدالصمد
+- `adhan-fajr.mp3` — اذان صبح با صدای عبدالباسط عبدالصمد
 
-## اندروید (Capacitor)
+در اندروید نیز نسخه‌های اعلان در مسیر `android/app/src/main/res/raw/` با نام‌های `adhan.mp3` و `adhan_fajr.mp3` قرار می‌گیرند.
 
-```
-android/app/src/main/res/raw/adhan.mp3
-android/app/src/main/res/raw/adhan_fajr.mp3
-```
+## منبع و انتساب
 
-نام در `res/raw` فقط حروف کوچک و زیرخط.
+منبع فایل‌ها: [Kiwifu/adhan-mp3](https://github.com/Kiwifu/adhan-mp3)، فایل‌های عبدالباسط عبدالصمد (مصر). توضیحات مخزن منبع، استفاده در اپلیکیشن‌های اسلامی و نرم‌افزارهای اوقات نماز را آزاد معرفی می‌کند. پیش از انتشار تجاری، شرایط مجوز هر ضبط را دوباره بررسی کنید.
 
-## انتخاب در اپ
+## انتخاب صدا در برنامه
 
 ```js
 SE.sounds.setSoundPref("adhan");   // اذان
 SE.sounds.setSoundPref("default"); // صدای اعلان
-SE.sounds.setSoundPref("system");  // زنگ گوشی
+SE.sounds.setSoundPref("system");  // صدای گوشی
 SE.sounds.setSoundPref("silent");  // بی‌صدا
 SE.sounds.preview("adhan");        // پیش‌نمایش
 ```

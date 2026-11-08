@@ -34,7 +34,7 @@
   }
 
   function timeToDate(hhmm, baseDate, rollPast, timeZone) {
-    const match = /^(\\d{1,2}):(\\d{2})$/.exec(String(hhmm || ""));
+    const match = /^(\d{1,2}):(\d{2})$/.exec(String(hhmm || ""));
     if (!match) return null;
     const h = Number(match[1]), m = Number(match[2]);
     if (h > 23 || m > 59) return null;

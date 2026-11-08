@@ -33,7 +33,7 @@
     return m;
   }
 
-  function timeToDate(hhmm, baseDate) {
+  function timeToDate(hhmm, baseDate, rollPast) {
     if (!hhmm || typeof hhmm !== "string") return null;
     const parts = hhmm.split(":");
     if (parts.length < 2) return null;
@@ -41,11 +41,14 @@
     const m = parseInt(parts[1], 10);
     if (isNaN(h) || isNaN(m)) return null;
     const d = new Date(baseDate.getFullYear(), baseDate.getMonth(), baseDate.getDate(), h, m, 0, 0);
-    if (d.getTime() <= Date.now() - 60000) d.setDate(d.getDate() + 1);
+    if (d.getTime() <= Date.now() - 60000) {
+      if (rollPast) d.setDate(d.getDate() + 1);
+      else return null;
+    }
     return d;
   }
 
-  function buildNotifications(row, placeName, lang, dayNumber) {
+  function buildNotifications(row, placeName, lang, dayNumber, targetDate) {
     const enabled = getEnabled();
     const now = new Date();
     const list = [];
@@ -57,7 +60,7 @@
       if (!enabled[t.key]) return;
       const timeStr = row[t.col];
       if (!timeStr || timeStr === "—" || timeStr === null) return;
-      const when = timeToDate(String(timeStr), now);
+      const when = timeToDate(String(timeStr), targetDate || now, !targetDate);
       if (!when) return;
 
       const title = isFa ? t.labelFa : t.labelEn;
@@ -84,26 +87,44 @@
     return list;
   }
 
-  async function scheduleForDay(row, placeName, lang, opts) {
+  async function scheduleForMonth(rows, placeName, lang, opts) {
     opts = opts || {};
     const p = SE.notify && SE.notify.plugin ? SE.notify.plugin() : null;
     const isNative = SE.platform && SE.platform.isNative && SE.platform.isNative();
 
     if (SE.notify && SE.notify.ensurePermission) {
       const status = await SE.notify.ensurePermission();
-      if (status === "denied" || status === "unsupported") {
-        return { ok: false, reason: status };
-      }
+      if (status === "denied" || status === "unsupported") return { ok: false, reason: status };
     }
 
-    const dayNumber = opts.dayNumber != null ? opts.dayNumber : (Array.isArray(row) ? row[0] : null);
-    const notifications = buildNotifications(row, placeName, lang, dayNumber);
+    const notifications = [];
+    (rows || []).forEach((row) => {
+      const dayNumber = Array.isArray(row) ? row[0] : null;
+      let targetDate = null;
+      if (opts.year != null && opts.month != null && dayNumber != null) {
+        let gDate = null;
+        if ((opts.calendar || "j") === "j" && SE.jalali && SE.jalali.jalaliToGregorian) {
+          gDate = SE.jalali.jalaliToGregorian(opts.year, opts.month, dayNumber);
+        } else {
+          gDate = { year: opts.year, month: opts.month, day: dayNumber };
+        }
+        if (gDate) targetDate = new Date(gDate.year, gDate.month - 1, gDate.day, 0, 0, 0, 0);
+      }
+      notifications.push(...buildNotifications(row, placeName, lang, dayNumber, targetDate));
+    });
+
     if (!notifications.length) return { ok: true, count: 0 };
 
     try {
       if (isNative && p && p.schedule) {
+        const prefs = SE.store && SE.store.prefs;
+        const previous = prefs ? prefs.get("prayerNotificationIds", []) : [];
+        if (previous.length && p.cancel) {
+          try { await p.cancel({ notifications: previous.map((id) => ({ id })) }); } catch (e) {}
+        }
         await p.schedule({ notifications });
-        return { ok: true, count: notifications.length, method: "native", dayNumber };
+        if (prefs) prefs.set("prayerNotificationIds", notifications.map((n) => n.id));
+        return { ok: true, count: notifications.length, method: "native" };
       }
 
       let scheduled = 0;
@@ -111,31 +132,30 @@
         const delay = n.schedule.at.getTime() - Date.now();
         if (delay > 0 && delay < 24 * 60 * 60 * 1000) {
           setTimeout(() => {
-            if (SE.notify && SE.notify.show) {
-              SE.notify.show(n.title, n.body, n.extra && n.extra.type, true);
-            }
-            if (SE.sounds && SE.sounds.onAlarmFire) {
-              SE.sounds.onAlarmFire(n.extra && n.extra.type, n.title, n.body);
-            }
+            if (SE.notify && SE.notify.show) SE.notify.show(n.title, n.body, n.extra && n.extra.type, true);
+            if (SE.sounds && SE.sounds.onAlarmFire) SE.sounds.onAlarmFire(n.extra && n.extra.type, n.title, n.body);
           }, delay);
           scheduled++;
         }
       }
-      return { ok: true, count: scheduled, method: "web", dayNumber };
+      return { ok: true, count: scheduled, method: "web" };
     } catch (e) {
       return { ok: false, error: String(e.message || e) };
     }
   }
 
+  async function scheduleForDay(row, placeName, lang, opts) {
+    opts = opts || {};
+    return scheduleForMonth([row], placeName, lang, opts);
+  }
+
   async function cancelAll() {
     try {
       const p = SE.notify && SE.notify.plugin ? SE.notify.plugin() : null;
-      if (p && p.cancel && p.getPending) {
-        const pending = await p.getPending();
-        if (pending && pending.notifications && pending.notifications.length) {
-          await p.cancel({ notifications: pending.notifications.map(n => ({ id: n.id })) });
-        }
-      }
+      const prefs = SE.store && SE.store.prefs;
+      const ids = prefs ? prefs.get("prayerNotificationIds", []) : [];
+      if (p && p.cancel && ids.length) await p.cancel({ notifications: ids.map((id) => ({ id })) });
+      if (prefs) prefs.set("prayerNotificationIds", []);
       return true;
     } catch (e) {
       return false;
@@ -145,7 +165,7 @@
   SE.alarms = {
     ALARM_TYPES, DEFAULT_ENABLED,
     getEnabled, setEnabled, toggle,
-    buildNotifications, scheduleForDay, cancelAll
+    buildNotifications, scheduleForDay, scheduleForMonth, cancelAll
   };
 
   if (typeof module !== "undefined" && module.exports) module.exports = SE.alarms;

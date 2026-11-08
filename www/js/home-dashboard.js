@@ -83,7 +83,7 @@ function init(){
  const reminderSettings=$("home-reminder-settings");
  if(reminderSettings) reminderSettings.addEventListener("click",()=>{
   location.hash="#/settings";
-  if(SE.settingsUI&&SE.settingsUI.showView)SE.settingsUI.showView("settings");
+  if(window.SE_settingsUI&&window.SE_settingsUI.showView)window.SE_settingsUI.showView("settings");
   setTimeout(()=>{const target=$("reminder-settings-start");if(target)target.scrollIntoView({behavior:"smooth",block:"start"})},120);
  });
  setInterval(render,1000);

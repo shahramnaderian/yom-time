@@ -103,18 +103,20 @@ test("converts selected-city wall time to the correct instant independent of dev
 });
 
 test("resolves a nonexistent spring-forward wall time by moving forward through the DST gap", () => {
-  const entries = reminder.buildSaturdayEntries([[30, "02:30"]], {
-    year: 2024, month: 3, calendar: "g", timeZone: "Europe/Berlin"
-  });
-  assert.equal(entries.length, 1);
+  const at = reminder.localDateTimeToTimestamp(2024, 3, 31, 2, 30, "Europe/Berlin");
   const parts = new Intl.DateTimeFormat("en-GB", {
     timeZone: "Europe/Berlin", hourCycle: "h23",
     year: "numeric", month: "2-digit", day: "2-digit",
     hour: "2-digit", minute: "2-digit"
-  }).formatToParts(new Date(entries[0].at));
+  }).formatToParts(new Date(at));
   const value = type => parts.find(part => part.type === type).value;
   assert.deepEqual(
     [value("year"), value("month"), value("day"), value("hour"), value("minute")],
-    ["2024", "03", "30", "03", "30"]
+    ["2024", "03", "31", "03", "30"]
   );
+});
+
+test("chooses the earlier occurrence for an ambiguous fall-back wall time", () => {
+  const at = reminder.localDateTimeToTimestamp(2024, 10, 27, 2, 30, "Europe/Berlin");
+  assert.equal(at, Date.UTC(2024, 9, 27, 0, 30));
 });

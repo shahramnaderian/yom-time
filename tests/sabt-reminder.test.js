@@ -35,7 +35,7 @@ test("builds a Saturday reminder at the exact dayStart time", () => {
 
 test("ignores invalid times and non-Saturday rows", () => {
   const entries = reminder.buildSaturdayEntries(
-    [[3, "24:00"], [4, "06:15"], [10, "06:60"], [17, "06:20"]],
+    [[3, "24:00"], [4, "06:15"], [10, "06:60"], [18, "06:20"]],
     { year: 2099, month: 1, calendar: "g" }
   );
   assert.deepEqual(entries, []);

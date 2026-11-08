@@ -2,23 +2,12 @@
   "use strict";
   const SE = g.SE = g.SE || {};
   const REMINDER_ID = 900031;
-  const DEFAULTS = { enabled: true, hour: 0, minute: 0, version: 2 };
-
-  // Migrate the earlier 09:00 default to the start of Saturday.
-  function migrate(saved) {
-    const old = Object.assign({}, saved || {});
-    if (!old.version || old.version < 2) {
-      old.hour = 0;
-      old.minute = 0;
-      old.version = 2;
-      if (SE.store && SE.store.prefs) SE.store.prefs.set("sabtReminder", Object.assign({}, DEFAULTS, old));
-    }
-    return old;
-  }
-
+  const DEFAULTS = { enabled: true, upcoming: [], version: 3 };
   function getSettings() {
     const saved = SE.store && SE.store.prefs ? SE.store.prefs.get("sabtReminder", DEFAULTS) : DEFAULTS;
-    return Object.assign({}, DEFAULTS, migrate(saved));
+    const cfg = Object.assign({}, DEFAULTS, saved || {});
+    cfg.upcoming = Array.isArray(cfg.upcoming) ? cfg.upcoming : [];
+    return cfg;
   }
   function setSettings(partial) {
     const next = Object.assign(getSettings(), partial || {});
@@ -26,25 +15,58 @@
     return next;
   }
   function message(lang) {
-    const en = lang === "en";
-    return {
-      title: en ? "Yom Sabt reminder" : "یادآوری یوم سبت",
-      body: en ? "Yom Sabt: buying and selling are prohibited." : "یوم سبت؛ خرید و فروش ممنوع است."
-    };
+    return lang === "en"
+      ? { title: "Yom Sabt reminder", body: "Yom Sabt: buying and selling are prohibited." }
+      : { title: "یادآوری یوم سبت", body: "یوم سبت؛ خرید و فروش ممنوع است." };
   }
-  function nextSaturday(cfg) {
-    cfg = cfg || getSettings();
-    const now = new Date();
-    const date = new Date(now.getFullYear(), now.getMonth(), now.getDate(), cfg.hour, cfg.minute, 0, 0);
-    const daysUntil = (6 - now.getDay() + 7) % 7;
-    date.setDate(date.getDate() + daysUntil);
-    if (date.getTime() <= now.getTime() + 5000) date.setDate(date.getDate() + 7);
-    return date;
+  function dateKey(d) {
+    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+  }
+  function notificationId(key) {
+    let h = 0;
+    for (let i = 0; i < key.length; i++) h = ((h << 5) - h + key.charCodeAt(i)) | 0;
+    return 910000 + Math.abs(h) % 80000;
+  }
+  function parseTime(value) {
+    const m = /^(\d{1,2}):(\d{2})$/.exec(String(value || ""));
+    if (!m) return null;
+    const hour = Number(m[1]), minute = Number(m[2]);
+    return hour <= 23 && minute <= 59 ? { hour, minute } : null;
+  }
+  function buildSaturdayEntries(rows, opts) {
+    opts = opts || {};
+    if (opts.year == null || opts.month == null) return [];
+    const out = [];
+    (rows || []).forEach(row => {
+      if (!Array.isArray(row) || row[0] == null) return;
+      let gd;
+      if ((opts.calendar || "j") === "j" && SE.jalali && SE.jalali.jalaliToGregorian) {
+        gd = SE.jalali.jalaliToGregorian(Number(opts.year), Number(opts.month), Number(row[0]));
+      } else gd = { year: Number(opts.year), month: Number(opts.month), day: Number(row[0]) };
+      if (!gd) return;
+      const date = new Date(gd.year, gd.month - 1, gd.day, 0, 0, 0, 0);
+      if (date.getDay() !== 6) return;
+      const time = parseTime(row[1]);
+      if (!time) return;
+      date.setHours(time.hour, time.minute, 0, 0);
+      out.push({ key: dateKey(date), at: date.getTime(), hour: time.hour, minute: time.minute });
+    });
+    return out;
+  }
+  async function cancelScheduled() {
+    const plugin = SE.notify && SE.notify.plugin ? SE.notify.plugin() : null;
+    const ids = (getSettings().scheduledIds || []).concat([REMINDER_ID]).filter((v, i, a) => a.indexOf(v) === i);
+    if (plugin && plugin.cancel && ids.length) {
+      try { await plugin.cancel({ notifications: ids.map(id => ({ id })) }); } catch (e) {}
+    }
+    if (g.__sabtReminderTimer) { clearTimeout(g.__sabtReminderTimer); g.__sabtReminderTimer = null; }
   }
   async function schedule(opts) {
     opts = opts || {};
     const cfg = getSettings();
     if (!cfg.enabled && !opts.force) return { ok: false, reason: "disabled" };
+    const upcoming = cfg.upcoming.filter(x => x && x.at > Date.now()).sort((a, b) => a.at - b.at).slice(0, 12);
+    if (!upcoming.length) return { ok: false, reason: "no_table_data" };
     const lang = opts.lang || (SE.i18n && SE.i18n.lang) || "fa";
     const msg = message(lang);
     if (SE.notify && SE.notify.ensurePermission) {
@@ -54,61 +76,57 @@
     const native = SE.platform && SE.platform.isNative && SE.platform.isNative();
     const plugin = SE.notify && SE.notify.plugin ? SE.notify.plugin() : null;
     try {
+      await cancelScheduled();
       if (native && plugin && plugin.schedule) {
-        if (plugin.cancel) {
-          try { await plugin.cancel({ notifications: [{ id: REMINDER_ID }] }); } catch (e) {}
-        }
-        await plugin.schedule({ notifications: [{
-          id: REMINDER_ID, title: msg.title, body: msg.body,
-          schedule: { on: { weekday: 7, hour: cfg.hour, minute: cfg.minute }, repeats: true },
-          extra: { type: "sabt_reminder" }, smallIcon: "ic_stat_icon", actionTypeId: "OPEN_APP"
-        }] });
-        return { ok: true, method: "native", weekday: 7, hour: cfg.hour, minute: cfg.minute };
+        const notifications = upcoming.map(item => ({
+          id: notificationId(item.key), title: msg.title,
+          body: msg.body + " · " + String(item.hour).padStart(2, "0") + ":" + String(item.minute).padStart(2, "0"),
+          schedule: { at: new Date(item.at) },
+          extra: { type: "sabt_reminder", date: item.key, dayStart: item.hour + ":" + String(item.minute).padStart(2, "0") },
+          smallIcon: "ic_stat_icon", actionTypeId: "OPEN_APP"
+        }));
+        await plugin.schedule({ notifications });
+        setSettings({ scheduledIds: notifications.map(n => n.id) });
+        return { ok: true, method: "native", count: notifications.length, next: upcoming[0] };
       }
-      const when = nextSaturday(cfg);
-      if (g.__sabtReminderTimer) clearTimeout(g.__sabtReminderTimer);
+      const next = upcoming[0];
       g.__sabtReminderTimer = setTimeout(async () => {
         if (SE.notify && SE.notify.show) await SE.notify.show(msg.title, msg.body, "sabt", true);
-        else if (typeof Notification !== "undefined" && Notification.permission === "granted") {
-          new Notification(msg.title, { body: msg.body, dir: "rtl", lang: lang });
-        }
+        else if (typeof Notification !== "undefined" && Notification.permission === "granted")
+          new Notification(msg.title, { body: msg.body, dir: "rtl", lang });
+        setSettings({ upcoming: getSettings().upcoming.filter(x => x.key !== next.key) });
         schedule({ lang, force: true });
-      }, Math.max(0, when.getTime() - Date.now()));
-      return { ok: true, method: "web", at: when.toISOString() };
-    } catch (error) {
-      return { ok: false, error: String(error.message || error) };
-    }
+      }, Math.max(0, next.at - Date.now()));
+      return { ok: true, method: "web", count: upcoming.length, next };
+    } catch (error) { return { ok: false, error: String(error.message || error) }; }
   }
-  async function enable(opts) {
-    setSettings({ enabled: true });
-    return schedule(opts);
+  async function scheduleFromMonth(rows, opts) {
+    const entries = buildSaturdayEntries(rows, opts);
+    if (!entries.length) return { ok: false, reason: "no_saturday_rows" };
+    const byDate = new Map(getSettings().upcoming.filter(x => x && x.at > Date.now()).map(x => [x.key, x]));
+    entries.forEach(x => byDate.set(x.key, x));
+    const upcoming = Array.from(byDate.values()).sort((a, b) => a.at - b.at).slice(0, 12);
+    setSettings({ upcoming, version: 3 });
+    return getSettings().enabled ? schedule({ lang: opts && opts.lang }) : { ok: true, scheduled: false, count: upcoming.length };
   }
+  async function enable(opts) { setSettings({ enabled: true }); return schedule(opts); }
   async function disable() {
     setSettings({ enabled: false });
-    try {
-      const plugin = SE.notify && SE.notify.plugin ? SE.notify.plugin() : null;
-      if (plugin && plugin.cancel) await plugin.cancel({ notifications: [{ id: REMINDER_ID }] });
-    } catch (e) {}
-    if (g.__sabtReminderTimer) { clearTimeout(g.__sabtReminderTimer); g.__sabtReminderTimer = null; }
+    await cancelScheduled();
+    setSettings({ scheduledIds: [] });
     return { ok: true };
   }
   async function testNow(lang) {
     const msg = message(lang || "fa");
     if (SE.notify && SE.notify.ensurePermission) await SE.notify.ensurePermission();
-    if (SE.notify && SE.notify.show) {
-      await SE.notify.show(msg.title, msg.body, "sabt", true);
-      return { ok: true };
-    }
+    if (SE.notify && SE.notify.show) { await SE.notify.show(msg.title, msg.body, "sabt", true); return { ok: true }; }
     if (typeof Notification !== "undefined") {
       if (Notification.permission !== "granted") await Notification.requestPermission();
-      if (Notification.permission === "granted") {
-        new Notification(msg.title, { body: msg.body, dir: "rtl", lang: lang || "fa" });
-        return { ok: true };
-      }
+      if (Notification.permission === "granted") { new Notification(msg.title, { body: msg.body, dir: "rtl", lang: lang || "fa" }); return { ok: true }; }
     }
     return { ok: false };
   }
-  SE.sabtReminder = { REMINDER_ID, DEFAULTS, getSettings, setSettings, nextSaturday, schedule, enable, disable, testNow, message };
+  SE.sabtReminder = { REMINDER_ID, DEFAULTS, getSettings, setSettings, buildSaturdayEntries, scheduleFromMonth, schedule, enable, disable, testNow, message };
   function autoStart() { try { if (getSettings().enabled) schedule({}); } catch (e) {} }
   if (g.document) {
     if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", () => setTimeout(autoStart, 1100));

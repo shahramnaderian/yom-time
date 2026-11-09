@@ -96,3 +96,18 @@ html[dir="ltr"] .alarm-row input:checked + .switch::after { transform: translate
 .weekly-session-actions { display:flex; flex-direction:column; gap:6px; flex-shrink:0; }
 .weekly-session-actions button { border:1px solid var(--line); border-radius:8px; padding:6px 10px; background:var(--chip); color:var(--ink); font:inherit; cursor:pointer; }
 @media(max-width:380px) { .weekly-form-row { grid-template-columns:1fr; gap:0; } }
+
+/* پیگیری عبادت روزانه */
+.worship-section-title{font-weight:700;margin:16px 0 8px}
+.worship-prayers{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.worship-prayer{display:flex;align-items:center;gap:9px;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--bg);cursor:pointer}
+.worship-prayer input{width:20px;height:20px;accent-color:var(--brand)}
+#worship-date,#worship-quran-pages,#worship-dhikr-count{width:100%;padding:11px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink);font:inherit}
+.worship-report-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.worship-report-grid>div{display:flex;flex-direction:column;gap:3px;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--bg)}
+.worship-report-grid strong{font-size:1.25rem;color:var(--brand)}
+.worship-report-grid span{font-size:.8rem;color:var(--muted)}
+.worship-progress{height:9px;background:var(--chip);border-radius:99px;overflow:hidden;margin:14px 0 7px}
+.worship-progress span{display:block;height:100%;background:var(--brand);border-radius:99px}
+#worship-weekly-report>small{color:var(--muted)}
+@media(max-width:480px){.tabbar a{font-size:.72rem;padding:6px 2px}.tabbar{gap:0}}

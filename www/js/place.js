@@ -100,15 +100,9 @@
   }
 
   function allCities() {
-    if (g.SE_WORLD && g.SE_WORLD.cities) return g.SE_WORLD.cities;
-    let list = SAMPLE_CITIES.slice();
-    if (SE.cities && SE.cities.list) {
-      try {
-        const extra = SE.cities.list();
-        if (Array.isArray(extra)) list = list.concat(extra);
-      } catch (e) {}
-    }
-    return list;
+    if (g.SE_WORLD && Array.isArray(g.SE_WORLD.cities)) return g.SE_WORLD.cities;
+    // SAMPLE_CITIES is the canonical local index; the helper module reads from it.
+    return SAMPLE_CITIES.slice();
   }
 
   function findNearest(lat, lng, maxKm) {

@@ -9,7 +9,7 @@
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="css/app.css">
 <link rel="stylesheet" href="css/settings.css">
-<style>.date-sub [hidden]{display:none!important}</style>
+<style>.date-sub [hidden]{display:none!important}#home-date-native{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;inset-inline-start:-10000px}</style>
 </head>
 <body>
 <div id="app">
@@ -44,7 +44,7 @@
         <h2 hidden>اوقات شرعی مریوان</h2>
         <p id="home-date-label" class="home-date-label" hidden></p>
         <label for="home-date" hidden>انتخاب تاریخ</label>
-        <div class="home-date-controls" hidden><input id="home-date" type="date"><button id="home-today" type="button">امروز</button></div>
+        <div class="home-date-controls" hidden><input id="home-date" type="text" inputmode="none" readonly aria-label="تاریخ شمسی"><input id="home-date-native" type="date" tabindex="-1" aria-hidden="true"><button id="home-today" type="button">امروز</button></div>
       </div>
       <div class="home-next-card">
         <h2 id="home-next-name">رویداد بعدی</h2>

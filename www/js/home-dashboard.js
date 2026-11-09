@@ -90,24 +90,67 @@ function injectPicker(){
  mapToggle.addEventListener("click",()=>{if(mapPanel.hidden)showMap();else mapPanel.hidden=true});
  $("home-map-confirm").addEventListener("click",()=>{
   if(!mapPoint)return;
-  const place=SE.place.fromCoords(mapPoint.lat,mapPoint.lng,{source:"map",label:"نقطهٔ انتخاب‌شده ("+mapPoint.lat.toFixed(4)+", "+mapPoint.lng.toFixed(4)+")"});
+  if(liveWatch!=null&&navigator.geolocation){navigator.geolocation.clearWatch(liveWatch);liveWatch=null}
+  const place=SE.place.fromCoords(mapPoint.lat,mapPoint.lng,{source:"gps-confirmed",label:"موقعیت تأییدشده"});
   setCity(place);mapPanel.hidden=true;mapPoint=null;
  });
  const input=$("home-city-search"),results=$("home-city-results");
+ let searchTimer=null,searchController=null,lastSearch="",liveWatch=null;
+ function renderCityResults(hits){
+  results.replaceChildren();
+  hits.forEach(c=>{
+   const b=document.createElement("button");b.type="button";b.setAttribute("role","option");
+   const title=c.city||c.name||"مکان";const country=c.countryName||c.country||"";
+   b.textContent=title+(country?" · "+country:"");
+   b.addEventListener("click",()=>{if(liveWatch!=null&&navigator.geolocation){navigator.geolocation.clearWatch(liveWatch);liveWatch=null}setCity(c);results.hidden=true;input.value=cityLabel(c)});
+   results.appendChild(b);
+  });
+  results.hidden=!hits.length;
+ }
+ async function searchGlobalCities(q){
+  if(searchController)searchController.abort();
+  searchController=new AbortController();const signal=searchController.signal;
+  const local=SE.place&&SE.place.search?SE.place.search(q,20):[];
+  renderCityResults(local);
+  try{
+   const url="https://photon.komoot.io/api/?q="+encodeURIComponent(q)+"&limit=12&lang=fa";
+   const response=await fetch(url,{signal,headers:{Accept:"application/json"}});
+   if(!response.ok)throw new Error("Geocoding unavailable");
+   const data=await response.json();
+   if(input.value.trim()!==q)return;
+   const seen=new Set(local.map(c=>Number(c.lat).toFixed(3)+","+Number(c.lng).toFixed(3)));
+   const remote=(data.features||[]).map(feature=>{
+    const p=feature.properties||{},xy=feature.geometry&&feature.geometry.coordinates||[];
+    const lng=Number(xy[0]),lat=Number(xy[1]);if(!Number.isFinite(lat)||!Number.isFinite(lng))return null;
+    const city=p.city||p.name||p.locality||p.district||p.county||p.state||"مکان انتخاب‌شده";
+    const key=lat.toFixed(3)+","+lng.toFixed(3);if(seen.has(key))return null;seen.add(key);
+    return {lat,lng,city,cityEn:p.name||p.city||city,country:p.countrycode||p.country||null,countryName:p.country||"",tz:SE.place.detectTimezone(lat,lng),source:"geocoder",label:[city,p.state,p.country].filter(Boolean).join("، ")};
+   }).filter(Boolean);
+   renderCityResults(local.concat(remote));
+  }catch(e){if(e.name!=="AbortError"&&input.value.trim()===q&&local.length===0){results.hidden=true}}
+ }
  input.addEventListener("input",()=>{
-  const q=input.value.trim();if(q.length<1){results.hidden=true;return}
-  let hits=SE.place&&SE.place.search?SE.place.search(q,15):[];
-  if("مریوان".includes(q)||"marivan".includes(q.toLowerCase()))hits=[DEFAULT_CITY,...hits.filter(x=>x.city!=="مریوان")];
-  if(!hits.length){results.hidden=true;return}
-  results.innerHTML=hits.map((c,i)=>'<button type="button" role="option" data-index="'+i+'">'+cityLabel(c)+' <small>· '+c.tz+'</small></button>').join("");
-  results.hidden=false;
-  results.querySelectorAll("button").forEach((b,i)=>b.addEventListener("click",()=>{setCity(hits[i]);results.hidden=true}));
+  const q=input.value.trim();if(q.length<2){if(searchController)searchController.abort();results.hidden=true;return}
+  clearTimeout(searchTimer);searchTimer=setTimeout(()=>searchGlobalCities(q),450);
  });
- input.addEventListener("keydown",e=>{if(e.key==="Escape")results.hidden=true;if(e.key==="Enter"){const first=results.querySelector("button");if(first)first.click()}});
+ input.addEventListener("keydown",e=>{if(e.key==="Escape"){results.hidden=true;if(searchController)searchController.abort()}if(e.key==="Enter"){const first=results.querySelector("button");if(first)first.click()}});
  $("home-city-gps").addEventListener("click",async()=>{
-  const b=$("home-city-gps");b.disabled=true;const old=b.textContent;b.textContent="در حال یافتن…";
-  try{const p=await SE.place.currentPosition();if(!p.city){p.city="موقعیت من";p.label="موقعیت من"}setCity(p)}
-  catch(e){alert("دسترسی به موقعیت مکانی ممکن نیست. لطفاً مجوز مکان‌یابی را بررسی کنید.")}
+  const b=$("home-city-gps");b.disabled=true;const old=b.textContent;b.textContent="در حال یافتن موقعیت آنلاین…";
+  try{
+   const p=await SE.locate.gps(true,25000);
+   await showMap();
+   setMapPoint(p.lat,p.lng);
+   if(map)map.setView([p.lat,p.lng],16);
+   mapPanel.hidden=false;
+   const coordLabel=$("home-map-coords");coordLabel.textContent="موقعیت زنده GPS · "+p.lat.toFixed(5)+", "+p.lng.toFixed(5)+" · برای تأیید دکمه پایین را بزنید";
+   if(liveWatch!=null&&navigator.geolocation)navigator.geolocation.clearWatch(liveWatch);
+   if(navigator.geolocation&&map){
+    liveWatch=navigator.geolocation.watchPosition(pos=>{
+     setMapPoint(pos.coords.latitude,pos.coords.longitude);
+     coordLabel.textContent="موقعیت زنده GPS · دقت ±"+Math.round(pos.coords.accuracy)+" متر · برای تأیید دکمه پایین را بزنید";
+    },()=>{}, {enableHighAccuracy:true,maximumAge:2000,timeout:20000});
+   }
+  }catch(e){alert("دسترسی به موقعیت مکانی ممکن نیست. لطفاً GPS و مجوز مکان‌یابی را بررسی کنید.")}
   finally{b.disabled=false;b.textContent=old}
  });
 }
@@ -122,14 +165,17 @@ function render(){
  const list=names.map(([key,label])=>({key,label,time:nightKeys.includes(key)?nightTimes[key]:ev[key]})).filter(x=>x.time);
  $("home-times").innerHTML=list.map(x=>{
   const p=homeAlarmPrefs()[x.key]||{enabled:false,minutes:10,sound:"system"};
-  const controls='<div class="home-alarm-controls"><label class="home-alarm-toggle" title="فعال‌سازی آلارم"><input type="checkbox" data-home-alarm="'+x.key+'" '+(p.enabled?'checked':'')+'><span>🔔</span></label>'+(p.enabled?'<div class="home-alarm-options"><label>اعلان قبل از زمان<select data-home-minutes="'+x.key+'">'+[1,5,10,15,20,30,45,60,90,120].map(n=>'<option value="'+n+'" '+(Number(p.minutes)===n?'selected':'')+'>'+fa(n)+' دقیقه قبل</option>').join('')+'</select></label><label>صدای آلارم<select data-home-sound="'+x.key+'"><option value="system" '+((p.sound||"system")==="system"?'selected':'')+'>زنگ گوشی</option><option value="adhan" '+(p.sound==="adhan"?'selected':'')+'>اذان</option></select></label></div>':'')+'</div>';
+  const controls='<div class="home-alarm-controls"><label class="home-alarm-toggle" title="وضعیت آلارم">وضعیت آلارم<select data-home-alarm="'+x.key+'"><option value="off" '+(!p.enabled?'selected':'')+'>خاموش</option><option value="on" '+(p.enabled?'selected':'')+'>روشن</option></select></label><div class="home-alarm-options" '+(!p.enabled?'hidden':'')+'><label>اعلان قبل از زمان<select data-home-minutes="'+x.key+'">'+[1,5,10,15,20,30,45,60,90,120,150,180,240].map(n=>'<option value="'+n+'" '+(Number(p.minutes)===n?'selected':'')+'>'+fa(n)+' دقیقه قبل</option>').join('')+'</select></label><label>صدای آلارم<select data-home-sound="'+x.key+'"><option value="system" '+((p.sound||"system")==="system"?'selected':'')+'>زنگ گوشی</option><option value="adhan" '+(p.sound==="adhan"?'selected':'')+'>اذان</option></select></label></div></div>';
   return '<div class="home-prayer-row home-prayer-row-alarm"><div class="home-prayer-name">'+x.label+'</div><time>'+fa(x.time)+'</time>'+controls+'</div>';
  }).join("");
- $("home-times").querySelectorAll("[data-home-alarm]").forEach(el=>el.addEventListener("change",()=>{saveHomeAlarm(el.dataset.homeAlarm,{enabled:el.checked});render()}));
+ $("home-times").querySelectorAll("[data-home-alarm]").forEach(el=>el.addEventListener("change",()=>{
+  const enabled=el.value==="on",options=el.closest(".home-alarm-controls").querySelector(".home-alarm-options");
+  saveHomeAlarm(el.dataset.homeAlarm,{enabled});if(options)options.hidden=!enabled;
+ }));
  $("home-times").querySelectorAll("[data-home-minutes]").forEach(el=>el.addEventListener("change",()=>saveHomeAlarm(el.dataset.homeMinutes,{minutes:Number(el.value)})));
  $("home-times").querySelectorAll("[data-home-sound]").forEach(el=>el.addEventListener("change",()=>saveHomeAlarm(el.dataset.homeSound,{sound:el.value})));
  if(!render._homeAlarmInteractions){const root=$("home-times");["pointerdown","touchstart","click"].forEach(type=>root.addEventListener(type,e=>{if(e.target.closest(".home-alarm-options"))e.stopPropagation()},true));render._homeAlarmInteractions=true;}
- if(!render._homeAlarmStyle){const st=document.createElement("style");st.textContent=".home-prayer-row-alarm{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:8px}.home-prayer-row-alarm .home-alarm-controls{grid-column:1/-1;display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap;border-top:1px solid #edf0f2;padding-top:10px}.home-alarm-toggle{display:inline-flex;align-items:center;justify-content:center;min-width:46px;height:42px;border-radius:11px;background:#edf5fa;cursor:pointer}.home-alarm-toggle input{position:absolute;opacity:0}.home-alarm-toggle:has(input:checked){background:#dcefe2}.home-alarm-options{display:flex;flex:1;gap:10px;flex-wrap:wrap}.home-alarm-options label{display:flex;flex:1;min-width:135px;flex-direction:column;gap:5px;color:#657384;font-size:.8rem}.home-alarm-options select{width:100%;min-height:42px;border:1px solid #dce2e8;border-radius:10px;padding:8px;background:#fff;color:#35495a;font:inherit;font-size:.88rem}.home-alarm-toggle input:focus-visible+span{outline:2px solid #246f9e}";document.head.appendChild(st);render._homeAlarmStyle=true;}
+ if(!render._homeAlarmStyle){const st=document.createElement("style");st.textContent=".home-prayer-row-alarm{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:8px}.home-prayer-row-alarm .home-alarm-controls{grid-column:1/-1;display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap;border-top:1px solid #edf0f2;padding-top:10px}.home-alarm-toggle{display:flex;align-items:center;gap:8px;min-width:120px;border-radius:11px;background:#edf5fa;padding:6px 9px;color:#657384;font-size:.8rem}.home-alarm-toggle select{min-width:74px;border:1px solid #dce2e8;border-radius:9px;background:#fff;padding:8px;font:inherit;color:#263746}.home-alarm-options[hidden]{display:none!important}.home-alarm-options{display:flex;flex:1;gap:10px;flex-wrap:wrap}.home-alarm-options label{display:flex;flex:1;min-width:135px;flex-direction:column;gap:5px;color:#657384;font-size:.8rem}.home-alarm-options select{width:100%;min-height:42px;border:1px solid #dce2e8;border-radius:10px;padding:8px;background:#fff;color:#35495a;font:inherit;font-size:.88rem}.home-alarm-toggle input:focus-visible+span{outline:2px solid #246f9e}";document.head.appendChild(st);render._homeAlarmStyle=true;}
  const now=new Date(),local=todayAt(tz);
  let next=list.find(x=>{const [h,m]=x.time.split(":").map(Number);return h*60+m>local.hour*60+local.minute});
  let target={year:local.year,month:local.month,day:local.day};

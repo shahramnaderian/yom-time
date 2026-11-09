@@ -110,6 +110,29 @@
     </section>
 
 
+    <section id="view-worship" class="view" hidden>
+      <div class="settings-head"><h2>پیگیری عبادت روزانه</h2></div>
+      <div class="card">
+        <div class="card-title">ثبت فعالیت‌های روزانه</div>
+        <label class="weekly-field">تاریخ
+          <input id="worship-date" type="date">
+        </label>
+        <div class="worship-section-title">نمازهای روزانه</div>
+        <div id="worship-prayers" class="worship-prayers"></div>
+        <label class="weekly-field">تعداد صفحه‌های قرآن
+          <input id="worship-quran-pages" type="number" min="0" max="1000" step="1" value="0">
+        </label>
+        <label class="weekly-field">تعداد ذکرها
+          <input id="worship-dhikr-count" type="number" min="0" max="1000000" step="1" value="0">
+        </label>
+        <p id="worship-status" class="hint" role="status" aria-live="polite"></p>
+      </div>
+      <div class="card">
+        <div class="card-title">گزارش هفت روز اخیر</div>
+        <div id="worship-weekly-report"></div>
+      </div>
+    </section>
+
     <section id="view-weekly" class="view" hidden>
       <div class="settings-head"><h2>جلسات هفتگی</h2></div>
       <div class="card">
@@ -213,7 +236,7 @@
   <nav class="tabbar">
     <a href="#/home" data-tab="home" class="active" aria-current="page"><span>اوقات شرعی</span></a><a href="#/create" data-tab="create"><span>جدول ماهانه</span></a>
     <a href="#/archive" data-tab="archive"><span>بایگانی</span><b id="badge" hidden></b></a>
-    <a href="#/weekly" data-tab="weekly"><span>جلسات</span></a>
+    <a href="#/worship" data-tab="worship"><span>عبادت</span></a><a href="#/weekly" data-tab="weekly"><span>جلسات</span></a>
     <a href="#/settings" data-tab="settings"><span>تنظیمات</span></a>
   </nav>
 </div>
@@ -253,6 +276,7 @@
 <script src="js/zakat-reminder.js"></script>
 <script src="js/sabt-reminder.js"></script>
 <script src="js/weekly-sessions.js"></script>
+<script src="js/worship-tracker.js"></script>
 <script src="js/validate.js"></script>
 <script src="js/location-bridge.js"></script>
 <script src="js/settings-ui.js"></script>

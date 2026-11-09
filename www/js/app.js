@@ -227,7 +227,8 @@
           const alarmResult = await SE.alarms.scheduleForMonth(rows, placeName, lang(), {
             year: state.year,
             month: state.month,
-            calendar: state.cal
+            calendar: state.cal,
+            timeZone: state.city.tz || null
           });
           if (alarmResult && alarmResult.ok === false) {
             toast(lang() === "en" ? "Notification permission is required for prayer alarms" : "برای فعال‌سازی آلارم نماز، اجازه اعلان لازم است");

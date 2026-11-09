@@ -73,6 +73,8 @@
     }
   }
 
+  SE.setSelectedCity = setCity;
+
   function bindCity() {
     const input = $("#city");
     const suggest = $("#suggest");

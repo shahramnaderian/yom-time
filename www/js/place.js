@@ -172,7 +172,7 @@
 
   function timesFor(place, year, month, day, methodId) {
     if (!place || place.lat == null || place.lng == null) throw new Error("مکان مشخص نیست");
-    const method = methodId || (SE.methods && SE.methods.getCurrentMethod ? SE.methods.getCurrentMethod() : "tehran");
+    const method = methodId || (SE.methods && SE.methods.getCurrentMethod ? SE.methods.getCurrentMethod() : "legacy");
     const tz = place.tz || detectTimezone(place.lat, place.lng);
     if (SE.methods && SE.methods.computeDay) {
       return SE.methods.computeDay(place.lat, place.lng, year, month, day, tz, method);

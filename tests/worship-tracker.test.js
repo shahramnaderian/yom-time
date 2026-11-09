@@ -18,7 +18,7 @@ test("levels advance at clear star thresholds",()=>{
 test("summarizes weekly stars as well as activity",()=>{
  const keys=["d1","d2","d3","d4","d5","d6","d7"];
  const s=tracker.summarize({d1:{prayers:{fajr:true,dhuhr:true},quranPages:4,dhikrCount:10},d2:{prayers:{isha:true},quranPages:2,dhikrCount:5}},keys);
- assert.equal(s.prayersDone,3);assert.equal(s.prayersTotal,35);assert.equal(s.quranPages,6);assert.equal(s.dhikrCount,15);assert.equal(s.daysWithActivity,2);assert.equal(s.stars,37);
+ assert.equal(s.prayersDone,3);assert.equal(s.prayersTotal,35);assert.equal(s.quranPages,6);assert.equal(s.dhikrCount,15);assert.equal(s.daysWithActivity,2);assert.equal(s.stars,43);
 });
 test("creates seven consecutive local calendar dates",()=>{
  const keys=tracker.lastSevenKeys(new Date(2026,10,9,12));

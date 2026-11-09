@@ -10,7 +10,8 @@ const DEFAULT_HOME_ALARMS=Object.fromEntries(names.map(([key])=>[key,{enabled:fa
 function homeAlarmPrefs(){
  const saved=SE.store&&SE.store.prefs?SE.store.prefs.get("homeEventAlarms",null):null;
  const legacy=SE.store&&SE.store.prefs?SE.store.prefs.get("nightEventAlarms",{}):{};
- const out=Object.assign({},DEFAULT_HOME_ALARMS,saved||{});
+ const out=Object.assign({},DEFAULT_HOME_ALARMS);
+ names.forEach(([key])=>{out[key]=Object.assign({},DEFAULT_HOME_ALARMS[key],saved&&saved[key]||{});});
  nightKeys.forEach(k=>{if(!saved&&legacy[k])out[k]=Object.assign({},out[k],legacy[k]);});
  return out;
 }
@@ -219,7 +220,7 @@ async function scheduleHomeAlarms(){
     const p=prefs[key]||{};if(!p.enabled)continue;
     const tm=nightKeys.includes(key)?nightTimes[key]:ev[key];if(!tm)continue;
     const hm=tm.split(":").map(Number);
-    events.push({key,label,at:instantAt(y,m,d,hm[0],hm[1],tz),minutes:Number(p.minutes)||0,sound:p.sound||"system"});
+    events.push({key,label,at:instantAt(y,m,d,hm[0],hm[1],tz),minutes:Number.isFinite(Number(p.minutes))?Math.max(0,Number(p.minutes)):5,sound:p.sound||"system"});
    }
   }
   await SE.alarms.scheduleHomeEvents(events,cityLabel(activeCity));

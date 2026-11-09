@@ -2,7 +2,7 @@
 "use strict";
 const SE=window.SE=window.SE||{};
 const $=id=>document.getElementById(id);
-const DEFAULT_CITY={lat:35.5219,lng:46.176,tz:"Asia/Tehran",city:"مریوان",cityEn:"Marivan",country:"IR",countryName:"ایران",source:"default"};
+const DEFAULT_CITY={lat:35.6892,lng:51.3890,tz:"Asia/Tehran",city:"تهران",cityEn:"Tehran",country:"IR",countryName:"ایران",source:"default"};
 const names=[["fajr","نماز صبح"],["sunrise","طلوع خورشید"],["dhuhr","نماز ظهر"],["asr","نماز عصر"],["maghrib","نماز مغرب"],["isha","نماز عشا"]];
 const fa=s=>String(s).replace(/\d/g,d=>"۰۱۲۳۴۵۶۷۸۹"[d]);
 let activeCity=null;
@@ -29,6 +29,16 @@ function setCity(city){
  const t=todayAt(activeCity.tz||"Asia/Tehran");$("home-date").value=dateValue(t.year,t.month,t.day);
  render();
 }
+let leafletPromise=null;
+function loadLeaflet(){
+ if(window.L)return Promise.resolve(window.L);
+ if(leafletPromise)return leafletPromise;
+ leafletPromise=new Promise((resolve,reject)=>{
+  if(!document.querySelector("link[data-leaflet-css]")){const link=document.createElement("link");link.rel="stylesheet";link.href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";link.dataset.leafletCss="1";document.head.appendChild(link)}
+  const script=document.createElement("script");script.src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";script.onload=()=>resolve(window.L);script.onerror=()=>{leafletPromise=null;reject(new Error("Leaflet load failed"))};document.head.appendChild(script);
+ });
+ return leafletPromise;
+}
 function injectPicker(){
  const card=document.querySelector(".home-date-card");if(!card||$("home-city-picker"))return;
  const wrap=document.createElement("div");wrap.id="home-city-picker";wrap.innerHTML='<label for="home-city-search">شهر محاسبهٔ اوقات شرعی</label><div class="home-city-control"><input id="home-city-search" type="search" autocomplete="off" placeholder="نام شهر را جست‌وجو کنید"><button id="home-city-gps" type="button">موقعیت من</button><button id="home-map-toggle" type="button">انتخاب روی نقشه</button></div><div id="home-city-label" class="home-city-current" aria-live="polite"></div><div id="home-city-results" class="home-city-results" role="listbox" hidden></div><div id="home-map-panel" class="home-map-panel" hidden><p>روی نقشه نقطهٔ دلخواه را لمس کنید یا نشانگر را جابه‌جا کنید.</p><div id="home-location-map" role="application" aria-label="نقشه انتخاب مکان"></div><div class="home-map-actions"><span id="home-map-coords"></span><button id="home-map-confirm" type="button">محاسبه اوقات این نقطه</button></div></div>';
@@ -37,9 +47,10 @@ function injectPicker(){
  document.head.appendChild(style);
  let map=null,mapMarker=null,mapPoint=null;
  const mapPanel=$("home-map-panel"),mapToggle=$("home-map-toggle");
- function showMap(){
+ async function showMap(){
   mapPanel.hidden=false;
-  if(!window.L){$("home-map-coords").textContent="نقشه بارگذاری نشد؛ اتصال اینترنت را بررسی کنید.";return}
+  $("home-map-coords").textContent="در حال آماده‌سازی نقشه…";
+  try{await loadLeaflet()}catch(e){$("home-map-coords").textContent="نقشه بارگذاری نشد؛ اتصال اینترنت را بررسی کنید.";return}
   if(!map){
    const start=activeCity||DEFAULT_CITY;
    map=L.map("home-location-map").setView([start.lat,start.lng],12);
@@ -107,7 +118,8 @@ function init(){
  const input=$("home-date");if(!input)return;
  injectPicker();
  const saved=SE.store&&SE.store.prefs?SE.store.prefs.get("homeCity",null):null;
- setCity(saved&&saved.lat!=null?saved:DEFAULT_CITY);
+ const isOldDefault=saved&&(saved.source==="default"||saved.city==="مریوان"||saved.cityEn==="Marivan");
+ setCity(saved&&saved.lat!=null&&!isOldDefault?saved:DEFAULT_CITY);
  input.addEventListener("change",render);
  $("home-today").addEventListener("click",()=>{const t=todayAt(activeCity.tz||"Asia/Tehran");input.value=dateValue(t.year,t.month,t.day);render()});
  const settingsButton=$("home-reminder-settings");
@@ -118,5 +130,5 @@ function init(){
  });
  setInterval(render,1000);
 }
-if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>setTimeout(init,100));else setTimeout(init,100);
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});else init();
 })();

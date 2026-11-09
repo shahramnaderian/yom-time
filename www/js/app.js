@@ -248,7 +248,7 @@
     bindTabs();
     bindLang();
     if (SE.weeklySessions) SE.weeklySessions.init({ toast });
-    if (!state.city) setCity({ lat: 35.5219, lng: 46.176, tz: "Asia/Tehran", city: "مریوان", cityEn: "Marivan", country: "IR", countryName: "ایران", source: "default" });
+    if (!state.city) setCity({ lat: 35.6892, lng: 51.3890, tz: "Asia/Tehran", city: "تهران", cityEn: "Tehran", country: "IR", countryName: "ایران", source: "default" });
     if (location.hash === "#/create") { $("#view-home").hidden = true; $("#view-create").hidden = false; }
     if (window.SE_refreshDateBar) SE_refreshDateBar();
   }

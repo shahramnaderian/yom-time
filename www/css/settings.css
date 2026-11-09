@@ -111,3 +111,19 @@ html[dir="ltr"] .alarm-row input:checked + .switch::after { transform: translate
 .worship-progress span{display:block;height:100%;background:var(--brand);border-radius:99px}
 #worship-weekly-report>small{color:var(--muted)}
 @media(max-width:480px){.tabbar a{font-size:.72rem;padding:6px 2px}.tabbar{gap:0}}
+
+/* بازی‌وارسازی و ستاره‌های عبادت */
+.worship-wallet-card{background:linear-gradient(135deg,#fff8d9,#fff);border:1px solid #f0d98a}
+.worship-wallet-top{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.worship-wallet-caption{display:block;color:#755b14;font-size:.85rem}
+.worship-star-count{display:block;color:#8a5a00;font-size:1.8rem;margin-top:3px}
+.worship-level-icon{font-size:2.8rem}
+.worship-level-row{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:12px;color:#725718}
+.worship-level-row span{font-size:.88rem}
+.worship-level-track{height:10px;border-radius:20px;background:#f1e7c5;overflow:hidden;margin:12px 0 6px}
+.worship-level-track span{display:block;height:100%;border-radius:20px;background:linear-gradient(90deg,#e5a900,#f7d65b)}
+#worship-wallet small{color:#806a35}
+.worship-howto{display:flex;flex-direction:column;gap:7px;background:var(--chip)}
+.worship-howto span{font-size:.9rem}
+.worship-howto small{color:var(--muted);line-height:1.7}
+.worship-prayer small{margin-inline-start:auto;color:#9a6b00;font-weight:700;white-space:nowrap}

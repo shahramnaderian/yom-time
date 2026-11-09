@@ -300,6 +300,7 @@
       bindReminderControls();
       renderCustomReminder();
       bindCustomReminder();
+      bindQibla();
     }
   }
 

@@ -139,8 +139,11 @@
               countryName:place.countryName || "", tz:place.tz || (SE.place.detectTimezone ? SE.place.detectTimezone(place.lat, place.lng) : "UTC"),
               source:place.source || "archive-search", label:place.label || null
             };
-            SE.selectedCity = chosen;
-            if (SE.store && SE.store.prefs) SE.store.prefs.set("homeCity", chosen);
+            if (SE.setSelectedCity) SE.setSelectedCity(chosen);
+            else {
+              SE.selectedCity = chosen;
+              if (SE.store && SE.store.prefs) SE.store.prefs.set("homeCity", chosen);
+            }
             cityInput.value = cityName(chosen);
             citySuggest.hidden = true;
             generateMonth(false);

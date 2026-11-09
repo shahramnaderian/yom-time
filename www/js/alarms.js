@@ -155,7 +155,6 @@
   }
 
   async function scheduleHomeEvents(events, placeName) {
-    if (SE.notify && SE.notify.ensurePermission) { const status = await SE.notify.ensurePermission(); if (status === "denied" || status === "unsupported") return {ok:false,reason:status}; }
     const p = SE.notify && SE.notify.plugin ? SE.notify.plugin() : null;
     const native = SE.platform && SE.platform.isNative && SE.platform.isNative();
     const prefs = SE.store && SE.store.prefs;
@@ -167,6 +166,7 @@
       const lead = Number(e.minutes)||0;
       return {id,title:e.label,body:(placeName||"موقعیت شما")+" · "+e.label+" · "+(lead?lead+" دقیقه قبل":"اکنون"),schedule:{at:when},extra:{type:e.key,homeNight:true},smallIcon:"ic_stat_icon",actionTypeId:"OPEN_APP"};
     });
+    if (notifications.length && SE.notify && SE.notify.ensurePermission) { const status = await SE.notify.ensurePermission(); if (status === "denied" || status === "unsupported") return {ok:false,reason:status}; }
     try {
       if (native && p && p.schedule) {
         if(previous.length && p.cancel) { try { await p.cancel({notifications:previous.map(id=>({id}))}); } catch(e) {} }

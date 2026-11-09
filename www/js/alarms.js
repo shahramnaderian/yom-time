@@ -81,7 +81,7 @@
 
       list.push({
         id, title, body,
-        schedule: { at: when },
+        schedule: { at: when, allowWhileIdle: true },
         extra: { type: t.key, time: timeStr, place: placeName, dayNumber: dayNum },
         sound: sound,
         channelId: channelId,
@@ -208,7 +208,7 @@
         if (when.getTime() <= Date.now()+15000) continue;
         const dayKey = when.getFullYear()*10000+(when.getMonth()+1)*100+when.getDate();
         const id = 300000000 + (dayKey % 1000000);
-        notifications.push({id,title:"یادآوری دلخواه",body:title,schedule:{at:when},extra:{type:"custom-reminder",soundMode},channelId:soundMode==="adhan"?"custom-reminder-adhan":"custom-reminder-ringtone",sound:soundMode==="adhan"?"adhan.mp3":"default",smallIcon:"ic_stat_icon",actionTypeId:"OPEN_APP"});
+        notifications.push({id,title:"یادآوری دلخواه",body:title,schedule:{at:when,allowWhileIdle:true},extra:{type:"custom-reminder",soundMode},channelId:soundMode==="adhan"?"custom-reminder-adhan":"custom-reminder-ringtone",sound:soundMode==="adhan"?"adhan.mp3":"default",smallIcon:"ic_stat_icon",actionTypeId:"OPEN_APP"});
       }
       if (notifications.length && SE.notify && SE.notify.ensurePermission) {
         const status = await SE.notify.ensurePermission();

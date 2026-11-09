@@ -47,12 +47,14 @@
 
   function timeToDate(hhmm, baseDate, rollPast, timeZone) {
     if (!hhmm || typeof hhmm !== "string") return null;
-    const match = /^(\\d{1,2}):(\\d{2})$/.exec(hhmm);
+    const match = /^(\d{1,2}):(\d{2})$/.exec(hhmm);
     if (!match) return null;
     const h = Number(match[1]), m = Number(match[2]);
     if (h > 23 || m > 59) return null;
     const reference = baseDate || new Date();
-    let day = dateParts(reference, timeZone);
+    let day = baseDate
+      ? { year: baseDate.getUTCFullYear(), month: baseDate.getUTCMonth() + 1, day: baseDate.getUTCDate() }
+      : dateParts(reference, timeZone);
     const toInstant = value => {
       if (timeZone && SE.sabtReminder && SE.sabtReminder.localDateTimeToTimestamp) {
         return new Date(SE.sabtReminder.localDateTimeToTimestamp(value.year, value.month, value.day, h, m, timeZone));
@@ -81,7 +83,7 @@
       if (!enabled[t.key]) return;
       const timeStr = row[t.col];
       if (!timeStr || timeStr === "—" || timeStr === null) return;
-      const when = timeToDate(String(timeStr), targetDate || now, !targetDate, timeZone);
+      const when = timeToDate(String(timeStr), targetDate, !targetDate, timeZone);
       if (!when) return;
 
       // Prayer alarms are scheduled five minutes before the actual event.

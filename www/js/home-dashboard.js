@@ -193,7 +193,7 @@ async function scheduleHomeAlarms(){
   const tz=activeCity.tz||"Asia/Tehran",now=todayAt(tz),events=[],prefs=homeAlarmPrefs();
   for(let offset=0;offset<3;offset++){
    const dt=new Date(Date.UTC(now.year,now.month-1,now.day+offset)),y=dt.getUTCFullYear(),m=dt.getUTCMonth()+1,d=dt.getUTCDate();
-   const ev=SE.place.timesFor(activeCity,y,m,d,SE.methods&&SE.methods.getCurrentMethod?SE.methods.getCurrentMethod():"tehran");
+   const ev=SE.place.timesFor(activeCity,y,m,d,SE.methods&&SE.methods.getCurrentMethod?SE.methods.getCurrentMethod():"legacy");
    const nightTimes={nightEnd:ev.nauticalBegin,night1:ev.night1,night2:ev.night2};
    for(const [key,label] of names){
     const p=prefs[key]||{};if(!p.enabled)continue;

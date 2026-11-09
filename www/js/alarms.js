@@ -33,22 +33,43 @@
     return m;
   }
 
-  function timeToDate(hhmm, baseDate, rollPast) {
-    if (!hhmm || typeof hhmm !== "string") return null;
-    const parts = hhmm.split(":");
-    if (parts.length < 2) return null;
-    const h = parseInt(parts[0], 10);
-    const m = parseInt(parts[1], 10);
-    if (isNaN(h) || isNaN(m)) return null;
-    const d = new Date(baseDate.getFullYear(), baseDate.getMonth(), baseDate.getDate(), h, m, 0, 0);
-    if (d.getTime() <= Date.now() - 60000) {
-      if (rollPast) d.setDate(d.getDate() + 1);
-      else return null;
+  function dateParts(date, timeZone) {
+    if (timeZone) {
+      const parts = new Intl.DateTimeFormat("en-CA", {
+        timeZone, calendar: "gregory", numberingSystem: "latn",
+        year: "numeric", month: "2-digit", day: "2-digit"
+      }).formatToParts(date);
+      const value = type => Number(parts.find(part => part.type === type).value);
+      return { year: value("year"), month: value("month"), day: value("day") };
     }
-    return d;
+    return { year: date.getFullYear(), month: date.getMonth() + 1, day: date.getDate() };
   }
 
-  function buildNotifications(row, placeName, lang, dayNumber, targetDate) {
+  function timeToDate(hhmm, baseDate, rollPast, timeZone) {
+    if (!hhmm || typeof hhmm !== "string") return null;
+    const match = /^(\\d{1,2}):(\\d{2})$/.exec(hhmm);
+    if (!match) return null;
+    const h = Number(match[1]), m = Number(match[2]);
+    if (h > 23 || m > 59) return null;
+    const reference = baseDate || new Date();
+    let day = dateParts(reference, timeZone);
+    const toInstant = value => {
+      if (timeZone && SE.sabtReminder && SE.sabtReminder.localDateTimeToTimestamp) {
+        return new Date(SE.sabtReminder.localDateTimeToTimestamp(value.year, value.month, value.day, h, m, timeZone));
+      }
+      return new Date(value.year, value.month - 1, value.day, h, m, 0, 0);
+    };
+    let instant = toInstant(day);
+    if (instant.getTime() <= Date.now() - 60000) {
+      if (!rollPast) return null;
+      const next = new Date(Date.UTC(day.year, day.month - 1, day.day + 1));
+      day = { year: next.getUTCFullYear(), month: next.getUTCMonth() + 1, day: next.getUTCDate() };
+      instant = toInstant(day);
+    }
+    return instant;
+  }
+
+  function buildNotifications(row, placeName, lang, dayNumber, targetDate, timeZone) {
     const enabled = getEnabled();
     const now = new Date();
     const list = [];
@@ -60,7 +81,7 @@
       if (!enabled[t.key]) return;
       const timeStr = row[t.col];
       if (!timeStr || timeStr === "—" || timeStr === null) return;
-      const when = timeToDate(String(timeStr), targetDate || now, !targetDate);
+      const when = timeToDate(String(timeStr), targetDate || now, !targetDate, timeZone);
       if (!when) return;
 
       // Prayer alarms are scheduled five minutes before the actual event.
@@ -104,7 +125,7 @@
 
     if (SE.notify && SE.notify.ensurePermission) {
       const status = await SE.notify.ensurePermission();
-      if (status === "denied" || status === "unsupported") return { ok: false, reason: status };
+      if (status !== "granted") return { ok: false, reason: status || "permission_required" };
     }
 
     const notifications = [];
@@ -118,9 +139,9 @@
         } else {
           gDate = { year: opts.year, month: opts.month, day: dayNumber };
         }
-        if (gDate) targetDate = new Date(gDate.year, gDate.month - 1, gDate.day, 0, 0, 0, 0);
+        if (gDate) targetDate = new Date(Date.UTC(gDate.year, gDate.month - 1, gDate.day, 0, 0, 0, 0));
       }
-      notifications.push(...buildNotifications(row, placeName, lang, dayNumber, targetDate));
+      notifications.push(...buildNotifications(row, placeName, lang, dayNumber, targetDate, opts.timeZone || null));
     });
 
     const prefs = SE.store && SE.store.prefs;
@@ -183,7 +204,7 @@
       const soundMode=e.sound==="adhan"?"adhan":"system";
       return {id,title:e.label,body:(placeName||"موقعیت شما")+" · "+e.label+" · "+(lead?lead+" دقیقه قبل":"اکنون"),schedule:{at:when,allowWhileIdle:true},extra:{type:e.key,homeEventAlarm:true,soundMode},channelId:soundMode==="adhan"?"home-event-adhan-v2":"home-event-ringtone-v2",sound:soundMode==="adhan"?"adhan.mp3":"default",smallIcon:"ic_stat_icon",actionTypeId:"OPEN_APP"};
     });
-    if (notifications.length && SE.notify && SE.notify.ensurePermission) { const status = await SE.notify.ensurePermission(); if (status === "denied" || status === "unsupported") return {ok:false,reason:status}; }
+    if (notifications.length && SE.notify && SE.notify.ensurePermission) { const status = await SE.notify.ensurePermission(); if (status !== "granted") return {ok:false,reason:status || "permission_required"}; }
     try {
       if (native && p && p.schedule) {
         if(previous.length && p.cancel) { try { await p.cancel({notifications:previous.map(id=>({id}))}); } catch(e) {} }
@@ -256,7 +277,7 @@
   SE.alarms = {
     ALARM_TYPES, DEFAULT_ENABLED,
     getEnabled, setEnabled, toggle,
-    buildNotifications, scheduleForDay, scheduleForMonth, scheduleHomeEvents, scheduleCustomReminder, cancelAll
+    buildNotifications, timeToDate, scheduleForDay, scheduleForMonth, scheduleHomeEvents, scheduleCustomReminder, cancelAll
   };
 
   if (typeof module !== "undefined" && module.exports) module.exports = SE.alarms;

@@ -218,6 +218,71 @@
     toast._t = setTimeout(() => el.classList.remove("show"), 2200);
   }
 
+  function bindQibla() {
+    const view = document.getElementById("view-settings");
+    if (!view) return;
+    let card = document.getElementById("qibla-card");
+    if (!card) {
+      card = document.createElement("div");
+      card.className = "card";
+      card.id = "qibla-card";
+      card.innerHTML =
+        '<div class="card-title"><span class="settings-icon">🧭</span>' + (lang() === "en" ? "Qibla direction" : "قبله‌یاب") + '</div>' +
+        '<p class="hint">' + (lang() === "en" ? "Find the direction to the Kaaba using your current location and phone compass." : "برای نمایش جهت کعبه، موقعیت مکانی و قطب‌نمای گوشی استفاده می‌شود.") + '</p>' +
+        '<div id="qibla-compass" style="width:164px;height:164px;border:2px solid var(--line);border-radius:50%;margin:14px auto;display:flex;align-items:center;justify-content:center;position:relative;background:var(--surface,#fff)">' +
+          '<span style="position:absolute;top:8px;font-weight:700">N</span><span id="qibla-arrow" style="font-size:66px;line-height:1;color:var(--brand,#C22928);transform:rotate(0deg);transition:transform .15s">↑</span>' +
+        '</div>' +
+        '<p id="qibla-degree" style="text-align:center;font-weight:700;margin:6px 0"></p>' +
+        '<p id="qibla-status" class="hint" role="status" aria-live="polite">' + (lang() === "en" ? "Tap the button to determine your direction." : "برای تعیین جهت قبله، دکمه را بزنید.") + '</p>' +
+        '<button type="button" id="qibla-start" class="primary">' + (lang() === "en" ? "Find Qibla" : "یافتن جهت قبله") + '</button>';
+      const first = view.querySelector(".card");
+      view.insertBefore(card, first || view.firstChild);
+    }
+    const btn = card.querySelector("#qibla-start");
+    if (!btn || btn.dataset.bound) return;
+    btn.dataset.bound = "1";
+    btn.addEventListener("click", async () => {
+      const status = card.querySelector("#qibla-status");
+      const degree = card.querySelector("#qibla-degree");
+      const arrow = card.querySelector("#qibla-arrow");
+      const isEn = lang() === "en";
+      btn.disabled = true;
+      status.textContent = isEn ? "Getting your location…" : "در حال دریافت موقعیت مکانی…";
+      try {
+        if (!SE.locate || !SE.locate.locate) throw new Error(isEn ? "Location service unavailable" : "سرویس موقعیت مکانی در دسترس نیست");
+        const pos = await SE.locate.locate({ ask: true, ipFallback: false, timeout: 20000 });
+        const lat1 = pos.lat * Math.PI / 180, lon1 = pos.lng * Math.PI / 180;
+        const lat2 = 21.4225 * Math.PI / 180, lon2 = 39.8262 * Math.PI / 180;
+        const dLon = lon2 - lon1;
+        const y = Math.sin(dLon) * Math.cos(lat2);
+        const x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLon);
+        const bearing = (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
+        degree.textContent = (isEn ? "Qibla bearing: " : "زاویه قبله از شمال: ") + Math.round(bearing) + "°";
+        status.textContent = isEn ? "Turn your phone flat and allow compass access if prompted." : "گوشی را افقی نگه دارید؛ در صورت درخواست، دسترسی قطب‌نما را تأیید کنید.";
+        const update = (e) => {
+          let heading = null;
+          if (typeof e.webkitCompassHeading === "number") heading = e.webkitCompassHeading;
+          else if (e.absolute && typeof e.alpha === "number") heading = (360 - e.alpha) % 360;
+          else if (typeof e.alpha === "number") heading = (360 - e.alpha) % 360;
+          if (heading != null && Number.isFinite(heading)) arrow.style.transform = "rotate(" + (bearing - heading) + "deg)";
+        };
+        if (window.DeviceOrientationEvent && typeof window.DeviceOrientationEvent.requestPermission === "function") {
+          const permission = await window.DeviceOrientationEvent.requestPermission();
+          if (permission !== "granted") throw new Error(isEn ? "Compass permission denied" : "اجازه استفاده از قطب‌نما داده نشد");
+        }
+        window.removeEventListener("deviceorientation", update);
+        window.removeEventListener("deviceorientationabsolute", update);
+        window.addEventListener("deviceorientation", update, true);
+        window.addEventListener("deviceorientationabsolute", update, true);
+        btn.textContent = isEn ? "Refresh direction" : "به‌روزرسانی جهت";
+      } catch (e) {
+        status.textContent = e && e.code === "DENIED"
+          ? (isEn ? "Location permission denied. Enable it in phone settings." : "اجازه موقعیت مکانی داده نشد؛ آن را در تنظیمات گوشی فعال کنید.")
+          : String(e && e.message || (isEn ? "Could not determine Qibla." : "تعیین جهت قبله ممکن نشد."));
+      } finally { btn.disabled = false; }
+    });
+  }
+
   function showView(name) {
     document.querySelectorAll(".view").forEach((v) => {
       v.hidden = v.id !== "view-" + name;

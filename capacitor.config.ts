@@ -2,7 +2,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'app.yomtime.owghat',
-  appName: 'یوم‌تایم — اوقات شرعی',
+  appName: 'yom ti',
   webDir: 'www',
   server: {
     androidScheme: 'https'

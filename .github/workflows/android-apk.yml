@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: yom-time-android-build-${{ github.ref }}-${{ github.event_name }}
@@ -99,24 +99,22 @@ jobs:
           values = root / "values"
           values.mkdir(parents=True, exist_ok=True)
           (values / "ic_launcher_background.xml").write_text(
-              '<resources><color name="ic_launcher_background">#063B50</color></resources>\n')
+              '<resources><color name="ic_launcher_background">#063B50</color></resources>\\n')
           adaptive = root / "mipmap-anydpi-v26"
           adaptive.mkdir(parents=True, exist_ok=True)
           icon_xml = (
               '<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">'
               '<background android:drawable="@color/ic_launcher_background"/>'
               '<foreground android:drawable="@drawable/ic_launcher_foreground"/>'
-              '</adaptive-icon>\n')
+              '</adaptive-icon>\\n')
           (adaptive / "ic_launcher.xml").write_text(icon_xml)
           (adaptive / "ic_launcher_round.xml").write_text(icon_xml)
-          # Explicitly point both launcher variants at the artwork rendered from
-          # www/icons/icon.svg, so the installed Android app uses the app logo.
           import re
           manifest = Path("android/app/src/main/AndroidManifest.xml")
           xml = manifest.read_text()
-          xml, count = re.subn(r'<application\b([^>]*)>', lambda m:
-              '<application' + re.sub(r'\s+android:(?:roundIcon|icon)="[^"]*"',
-                  '', m.group(1)) +
+          xml, count = re.subn(r'<application\\b([^>]*)>', lambda m:
+              '<application' + re.sub(r'\\s+android:(?:roundIcon|icon)="[^"]*"', '',
+                  m.group(1)) +
               ' android:icon="@mipmap/ic_launcher" android:roundIcon="@mipmap/ic_launcher_round">',
               xml, count=1)
           if count != 1:
@@ -137,7 +135,7 @@ jobs:
           manifest = path.read_text()
           permission = '    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />'
           if "android.permission.SCHEDULE_EXACT_ALARM" not in manifest:
-              manifest = manifest.replace("<application", permission + "\n    <application", 1)
+              manifest = manifest.replace("<application", permission + "\\n    <application", 1)
               path.write_text(manifest)
           PY
 
@@ -157,3 +155,16 @@ jobs:
           path: android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 30
+
+      - name: Publish shareable APK download
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: android-latest
+          name: Latest Android APK
+          target_commitish: ${{ github.sha }}
+          files: android/app/build/outputs/apk/debug/app-debug.apk
+          overwrite_files: true
+          make_latest: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

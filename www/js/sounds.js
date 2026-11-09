@@ -89,8 +89,9 @@
     return { ok: false, reason: "no_adhan_file" };
   }
 
-  async function onAlarmFire(alarmType, title, body) {
-    const pref = getSoundPref();
+  async function onAlarmFire(alarmType, title, body, opts) {
+    opts = opts || {};
+    const pref = opts.soundMode === "adhan" ? "adhan" : opts.soundMode === "system" ? "system" : getSoundPref();
     if (pref === "silent") return;
 
     if (pref === "adhan") {

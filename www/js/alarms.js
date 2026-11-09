@@ -164,7 +164,8 @@
       const dayKey = when.toISOString().slice(0,10).replace(/-/g,"");
       const id = Math.abs((e.key + dayKey + "home").split("").reduce((a,c)=>((a<<5)-a)+c.charCodeAt(0),0)) % 2000000000;
       const lead = Number(e.minutes)||0;
-      return {id,title:e.label,body:(placeName||"موقعیت شما")+" · "+e.label+" · "+(lead?lead+" دقیقه قبل":"اکنون"),schedule:{at:when},extra:{type:e.key,homeNight:true},smallIcon:"ic_stat_icon",actionTypeId:"OPEN_APP"};
+      const soundMode=e.sound==="adhan"?"adhan":"system";
+      return {id,title:e.label,body:(placeName||"موقعیت شما")+" · "+e.label+" · "+(lead?lead+" دقیقه قبل":"اکنون"),schedule:{at:when},extra:{type:e.key,homeNight:true,soundMode},channelId:soundMode==="adhan"?"night-adhan":"night-ringtone",sound:soundMode==="adhan"?"adhan.mp3":"default",smallIcon:"ic_stat_icon",actionTypeId:"OPEN_APP"};
     });
     if (notifications.length && SE.notify && SE.notify.ensurePermission) { const status = await SE.notify.ensurePermission(); if (status === "denied" || status === "unsupported") return {ok:false,reason:status}; }
     try {
@@ -176,7 +177,7 @@
       }
       if(previous.length && native && p && p.cancel) { try { await p.cancel({notifications:previous.map(id=>({id}))}); } catch(e) {} }
       let count=0;
-      notifications.forEach(n=>{const delay=n.schedule.at.getTime()-Date.now();if(delay>0&&delay<48*60*60*1000){setTimeout(()=>{if(SE.notify&&SE.notify.show)SE.notify.show(n.title,n.body,n.extra.type,true);},delay);count++;}});
+      notifications.forEach(n=>{const delay=n.schedule.at.getTime()-Date.now();if(delay>0&&delay<48*60*60*1000){setTimeout(()=>{if(SE.notify&&SE.notify.show)SE.notify.show(n.title,n.body,n.extra.type,true);if(SE.sounds&&SE.sounds.onAlarmFire)SE.sounds.onAlarmFire(n.extra.type,n.title,n.body,{soundMode:n.extra.soundMode});},delay);count++;}});
       if(prefs) prefs.set("homeNightNotificationIds",notifications.map(n=>n.id));
       return {ok:true,count,method:"web"};
     } catch(e) { return {ok:false,error:String(e.message||e)}; }

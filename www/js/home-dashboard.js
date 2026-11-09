@@ -165,8 +165,10 @@ function init(){
  const saved=SE.store&&SE.store.prefs?SE.store.prefs.get("homeCity",null):null;
  const isOldDefault=saved&&(saved.source==="default"||saved.city==="مریوان"||saved.cityEn==="Marivan");
  setCity(saved&&saved.lat!=null&&!isOldDefault?saved:DEFAULT_CITY);
- 
- $("home-today").addEventListener("click",()=>{const t=todayAt(activeCity.tz||"Asia/Tehran");input.value=dateValue(t.year,t.month,t.day);render()});
+ const picker=$("home-date-native");
+ input.addEventListener("click",()=>{try{if(picker.showPicker)picker.showPicker();else picker.click()}catch(e){picker.click()}});
+ picker.addEventListener("change",()=>{syncJalaliDate();render()});
+ $("home-today").addEventListener("click",()=>{const t=todayAt(activeCity.tz||"Asia/Tehran");picker.value=dateValue(t.year,t.month,t.day);syncJalaliDate();render()});
  const settingsButton=$("home-reminder-settings");
  if(settingsButton) settingsButton.addEventListener("click",()=>{
   location.hash="#/settings";

@@ -63,10 +63,15 @@
       const when = timeToDate(String(timeStr), targetDate || now, !targetDate);
       if (!when) return;
 
+      // Prayer alarms are scheduled five minutes before the actual event.
+      const leadMinutes = 5;
+      const alarmAt = new Date(when.getTime() - leadMinutes * 60000);
+      if (alarmAt.getTime() <= Date.now()) return;
+
       const title = isFa ? t.labelFa : t.labelEn;
       const body = isFa
-        ? (placeName || "موقعیت شما") + (dayLabel ? " · " + dayLabel : "") + " · " + timeStr
-        : (placeName || "Your location") + (dayLabel ? " · " + dayLabel : "") + " · " + timeStr;
+        ? (placeName || "موقعیت شما") + (dayLabel ? " · " + dayLabel : "") + " · " + timeStr + " · " + leadMinutes + " دقیقه قبل"
+        : (placeName || "Your location") + (dayLabel ? " · " + dayLabel : "") + " · " + timeStr + " · " + leadMinutes + " min before";
 
       const dayKey = when.toISOString().slice(0, 10).replace(/-/g, "");
       const id = Math.abs((t.key + dayKey).split("").reduce((a, c) => ((a << 5) - a) + c.charCodeAt(0), 0)) % 2000000000;
@@ -81,8 +86,8 @@
 
       list.push({
         id, title, body,
-        schedule: { at: when, allowWhileIdle: true },
-        extra: { type: t.key, time: timeStr, place: placeName, dayNumber: dayNum },
+        schedule: { at: alarmAt, allowWhileIdle: true },
+        extra: { type: t.key, time: timeStr, place: placeName, dayNumber: dayNum, leadMinutes },
         sound: sound,
         channelId: channelId,
         smallIcon: "ic_stat_icon",
@@ -118,12 +123,18 @@
       notifications.push(...buildNotifications(row, placeName, lang, dayNumber, targetDate));
     });
 
-    if (!notifications.length) return { ok: true, count: 0 };
+    const prefs = SE.store && SE.store.prefs;
+    const previous = prefs ? prefs.get("prayerNotificationIds", []) : [];
+    if (!notifications.length) {
+      if (isNative && p && p.cancel && previous.length) {
+        try { await p.cancel({ notifications: previous.map((id) => ({ id })) }); } catch (e) {}
+      }
+      if (prefs) prefs.set("prayerNotificationIds", []);
+      return { ok: true, count: 0 };
+    }
 
     try {
       if (isNative && p && p.schedule) {
-        const prefs = SE.store && SE.store.prefs;
-        const previous = prefs ? prefs.get("prayerNotificationIds", []) : [];
         if (previous.length && p.cancel) {
           try { await p.cancel({ notifications: previous.map((id) => ({ id })) }); } catch (e) {}
         }
@@ -154,16 +165,21 @@
     return scheduleForMonth([row], placeName, lang, opts);
   }
 
+  function getLeadMinutes(value) {
+    const minutes = Number(value);
+    return Number.isFinite(minutes) ? Math.max(0, minutes) : 5;
+  }
+
   async function scheduleHomeEvents(events, placeName) {
     const p = SE.notify && SE.notify.plugin ? SE.notify.plugin() : null;
     const native = SE.platform && SE.platform.isNative && SE.platform.isNative();
     const prefs = SE.store && SE.store.prefs;
     const previous = prefs ? prefs.get("homeNightNotificationIds", []) : [];
-    const notifications = (events || []).filter(e => e.at && e.at.getTime() - (Number(e.minutes)||0)*60000 > Date.now()).map(e => {
-      const when = new Date(e.at.getTime() - (Number(e.minutes)||0)*60000);
+    const notifications = (events || []).filter(e => e.at && e.at.getTime() - getLeadMinutes(e.minutes) * 60000 > Date.now()).map(e => {
+      const lead = getLeadMinutes(e.minutes);
+      const when = new Date(e.at.getTime() - lead * 60000);
       const dayKey = when.toISOString().slice(0,10).replace(/-/g,"");
       const id = Math.abs((e.key + dayKey + "home").split("").reduce((a,c)=>((a<<5)-a)+c.charCodeAt(0),0)) % 2000000000;
-      const lead = Number(e.minutes)||0;
       const soundMode=e.sound==="adhan"?"adhan":"system";
       return {id,title:e.label,body:(placeName||"موقعیت شما")+" · "+e.label+" · "+(lead?lead+" دقیقه قبل":"اکنون"),schedule:{at:when,allowWhileIdle:true},extra:{type:e.key,homeEventAlarm:true,soundMode},channelId:soundMode==="adhan"?"home-event-adhan":"home-event-ringtone",sound:soundMode==="adhan"?"adhan.mp3":"default",smallIcon:"ic_stat_icon",actionTypeId:"OPEN_APP"};
     });

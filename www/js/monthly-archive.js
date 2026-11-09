@@ -117,6 +117,7 @@
     const wrap = $("monthly-archive-table");
     if (!wrap) return;
     wrap.replaceChildren();
+    wrap.dataset.recordId = record.id;
     const caption = make("p", "hint", record.city + " · " + monthNames[record.month - 1] + " " + fa(record.year) + " · روش محاسبه: " + record.method);
     const table = make("table", "monthly-archive-table");
     const thead = document.createElement("thead");
@@ -192,12 +193,14 @@
     const archiveTab = document.querySelector('.tabbar a[data-tab="archive"]');
     if (archiveTab) archiveTab.addEventListener("click", () => {
       setTimeout(() => {
-        if (!$("monthly-archive-table") || !$("monthly-archive-table").querySelector("table")) {
-          const today = SE.dates.today().jalali;
+        const today = SE.dates.today().jalali;
+        const city = getHomeCity();
+        const currentId = recordId(today.year, today.month, city);
+        if (!$("monthly-archive-table").querySelector("table") || $("monthly-archive-table").dataset.recordId !== currentId) {
           $("monthly-archive-month").value = String(today.month);
           $("monthly-archive-year").value = String(today.year);
-          const city = getHomeCity();
-          if (!readArchive().some(item => item.id === recordId(today.year, today.month, city))) generateMonth(true);
+          if (!readArchive().some(item => item.id === currentId)) generateMonth(true);
+          else renderTable(readArchive().find(item => item.id === currentId));
         }
       }, 0);
     });

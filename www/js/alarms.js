@@ -81,8 +81,8 @@
         : "default";
       const soundPref = SE.sounds && SE.sounds.getSoundPref ? SE.sounds.getSoundPref() : "default";
       const channelId = soundPref === "adhan"
-        ? (t.key === "fajr" ? "prayer-adhan-fajr" : "prayer-adhan")
-        : soundPref === "silent" ? "prayer-silent" : "prayer-ringtone";
+        ? (t.key === "fajr" ? "prayer-adhan-fajr-v2" : "prayer-adhan-v2")
+        : soundPref === "silent" ? "prayer-silent" : "prayer-ringtone-v2";
 
       list.push({
         id, title, body,
@@ -181,7 +181,7 @@
       const dayKey = when.toISOString().slice(0,10).replace(/-/g,"");
       const id = Math.abs((e.key + dayKey + "home").split("").reduce((a,c)=>((a<<5)-a)+c.charCodeAt(0),0)) % 2000000000;
       const soundMode=e.sound==="adhan"?"adhan":"system";
-      return {id,title:e.label,body:(placeName||"موقعیت شما")+" · "+e.label+" · "+(lead?lead+" دقیقه قبل":"اکنون"),schedule:{at:when,allowWhileIdle:true},extra:{type:e.key,homeEventAlarm:true,soundMode},channelId:soundMode==="adhan"?"home-event-adhan":"home-event-ringtone",sound:soundMode==="adhan"?"adhan.mp3":"default",smallIcon:"ic_stat_icon",actionTypeId:"OPEN_APP"};
+      return {id,title:e.label,body:(placeName||"موقعیت شما")+" · "+e.label+" · "+(lead?lead+" دقیقه قبل":"اکنون"),schedule:{at:when,allowWhileIdle:true},extra:{type:e.key,homeEventAlarm:true,soundMode},channelId:soundMode==="adhan"?"home-event-adhan-v2":"home-event-ringtone-v2",sound:soundMode==="adhan"?"adhan.mp3":"default",smallIcon:"ic_stat_icon",actionTypeId:"OPEN_APP"};
     });
     if (notifications.length && SE.notify && SE.notify.ensurePermission) { const status = await SE.notify.ensurePermission(); if (status === "denied" || status === "unsupported") return {ok:false,reason:status}; }
     try {
@@ -224,7 +224,7 @@
         if (when.getTime() <= Date.now()+15000) continue;
         const dayKey = when.getFullYear()*10000+(when.getMonth()+1)*100+when.getDate();
         const id = 300000000 + (dayKey % 1000000);
-        notifications.push({id,title:"یادآوری دلخواه",body:title,schedule:{at:when,allowWhileIdle:true},extra:{type:"custom-reminder",soundMode},channelId:soundMode==="adhan"?"custom-reminder-adhan":"custom-reminder-ringtone",sound:soundMode==="adhan"?"adhan.mp3":"default",smallIcon:"ic_stat_icon",actionTypeId:"OPEN_APP"});
+        notifications.push({id,title:"یادآوری دلخواه",body:title,schedule:{at:when,allowWhileIdle:true},extra:{type:"custom-reminder",soundMode},channelId:soundMode==="adhan"?"custom-reminder-adhan-v2":"custom-reminder-ringtone-v2",sound:soundMode==="adhan"?"adhan.mp3":"default",smallIcon:"ic_stat_icon",actionTypeId:"OPEN_APP"});
       }
       if (notifications.length && SE.notify && SE.notify.ensurePermission) {
         const status = await SE.notify.ensurePermission();

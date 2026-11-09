@@ -183,6 +183,47 @@
     } catch(e) { return {ok:false,error:String(e.message||e)}; }
   }
 
+  async function scheduleCustomReminder(settings) {
+    settings = settings || {};
+    const prefs = SE.store && SE.store.prefs;
+    const p = SE.notify && SE.notify.plugin ? SE.notify.plugin() : null;
+    const native = SE.platform && SE.platform.isNative && SE.platform.isNative();
+    const previous = prefs ? prefs.get("customReminderNotificationIds", []) : [];
+    try {
+      if (native && p && p.cancel && previous.length) {
+        try { await p.cancel({ notifications: previous.map(id => ({ id })) }); } catch (e) {}
+      }
+      if (!settings.enabled) {
+        if (prefs) prefs.set("customReminderNotificationIds", []);
+        return { ok: true, count: 0, disabled: true };
+      }
+      const time = String(settings.time || "09:00").split(":").map(Number);
+      if (time.length !== 2 || !Number.isInteger(time[0]) || !Number.isInteger(time[1]) || time[0] < 0 || time[0] > 23 || time[1] < 0 || time[1] > 59) return { ok:false, reason:"invalid_time" };
+      const title = String(settings.text || "یادآوری دلخواه").trim().slice(0,120) || "یادآوری دلخواه";
+      const soundMode = settings.sound === "adhan" ? "adhan" : "system";
+      const notifications = [];
+      const base = new Date();
+      for (let i=0;i<30;i++) {
+        const when = new Date(base.getFullYear(),base.getMonth(),base.getDate()+i,time[0],time[1],0,0);
+        if (when.getTime() <= Date.now()+15000) continue;
+        const dayKey = when.getFullYear()*10000+(when.getMonth()+1)*100+when.getDate();
+        const id = 300000000 + (dayKey % 1000000);
+        notifications.push({id,title:"یادآوری دلخواه",body:title,schedule:{at:when},extra:{type:"custom-reminder",soundMode},channelId:soundMode==="adhan"?"custom-reminder-adhan":"custom-reminder-ringtone",sound:soundMode==="adhan"?"adhan.mp3":"default",smallIcon:"ic_stat_icon",actionTypeId:"OPEN_APP"});
+      }
+      if (notifications.length && SE.notify && SE.notify.ensurePermission) {
+        const status = await SE.notify.ensurePermission();
+        if (status !== "granted") return {ok:false,reason:status};
+      }
+      if (native && p && p.schedule) {
+        if (notifications.length) await p.schedule({notifications});
+        if (prefs) prefs.set("customReminderNotificationIds",notifications.map(n=>n.id));
+        return {ok:true,count:notifications.length,method:"native"};
+      }
+      if (prefs) prefs.set("customReminderNotificationIds",[]);
+      return {ok:false,reason:"native_required"};
+    } catch(e) { return {ok:false,error:String(e.message||e)}; }
+  }
+
   async function cancelAll() {
     try {
       const p = SE.notify && SE.notify.plugin ? SE.notify.plugin() : null;
@@ -199,7 +240,7 @@
   SE.alarms = {
     ALARM_TYPES, DEFAULT_ENABLED,
     getEnabled, setEnabled, toggle,
-    buildNotifications, scheduleForDay, scheduleForMonth, scheduleHomeEvents, cancelAll
+    buildNotifications, scheduleForDay, scheduleForMonth, scheduleHomeEvents, scheduleCustomReminder, cancelAll
   };
 
   if (typeof module !== "undefined" && module.exports) module.exports = SE.alarms;

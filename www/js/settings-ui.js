@@ -70,6 +70,34 @@
   }
 
 
+  function renderCustomReminder() {
+    const prefs = SE.store && SE.store.prefs;
+    const cfg = prefs ? prefs.get("customDailyReminder", {enabled:false,time:"09:00",text:"زمان انجام کار دلخواه شماست",sound:"system"}) : {enabled:false,time:"09:00",text:"زمان انجام کار دلخواه شماست",sound:"system"};
+    const enabled=document.getElementById("custom-reminder-enabled"),time=document.getElementById("custom-reminder-time"),text=document.getElementById("custom-reminder-text"),sound=document.getElementById("custom-reminder-sound");
+    if(enabled)enabled.checked=!!cfg.enabled;if(time)time.value=cfg.time||"09:00";if(text)text.value=cfg.text||"";if(sound)sound.value=cfg.sound||"system";
+  }
+
+  function bindCustomReminder() {
+    const save=document.getElementById("custom-reminder-save"),test=document.getElementById("custom-reminder-test");
+    const read=()=>({enabled:!!document.getElementById("custom-reminder-enabled").checked,time:document.getElementById("custom-reminder-time").value,text:document.getElementById("custom-reminder-text").value.trim(),sound:document.getElementById("custom-reminder-sound").value});
+    const status=document.getElementById("custom-reminder-status");
+    if(save&&!save.dataset.bound){save.dataset.bound="1";save.addEventListener("click",async()=>{
+      const cfg=read();if(!cfg.time||!cfg.text){if(status)status.textContent="ساعت و متن یادآوری را وارد کنید.";return;}
+      if(SE.store&&SE.store.prefs)SE.store.prefs.set("customDailyReminder",cfg);
+      const r=await SE.alarms.scheduleCustomReminder(cfg);
+      if(status)status.textContent=r.ok?(cfg.enabled?"یادآوری روزانه ذخیره شد و برای ۳۰ روز آینده زمان‌بندی شد.":"یادآوری خاموش شد."):(r.reason==="native_required"?"برای زمان‌بندی پایدار، از نسخه نصب‌شده اندروید استفاده کنید.":r.reason==="denied"?"اجازه اعلان را در تنظیمات گوشی فعال کنید.":"زمان‌بندی یادآوری انجام نشد.");
+      toast(r.ok?"تنظیم یادآوری ذخیره شد":"تنظیم ذخیره شد؛ زمان‌بندی اعلان نیاز به بررسی دارد");
+    });}
+    if(test&&!test.dataset.bound){test.dataset.bound="1";test.addEventListener("click",async()=>{
+      const cfg=read();if(!cfg.text){if(status)status.textContent="متن یادآوری را وارد کنید.";return;}
+      const permission=SE.notify&&SE.notify.ensurePermission?await SE.notify.ensurePermission():"denied";
+      if(permission!=="granted"){if(status)status.textContent="برای آزمایش، اجازه اعلان را فعال کنید.";return;}
+      if(SE.notify&&SE.notify.show)await SE.notify.show("یادآوری دلخواه",cfg.text,"custom-reminder",true);
+      if(SE.sounds&&SE.sounds.onAlarmFire)await SE.sounds.onAlarmFire("custom-reminder","یادآوری دلخواه",cfg.text,{soundMode:cfg.sound==="adhan"?"adhan":"system"});
+      if(status)status.textContent="اعلان آزمایشی ارسال شد.";
+    });}
+  }
+
   function renderReminderControls() {
     const q = SE.quranReminder && SE.quranReminder.getSettings ? SE.quranReminder.getSettings() : null;
     const z = SE.zakatReminder && SE.zakatReminder.getSettings ? SE.zakatReminder.getSettings() : null;
@@ -205,6 +233,8 @@
       renderAlarmToggles();
       renderReminderControls();
       bindReminderControls();
+      renderCustomReminder();
+      bindCustomReminder();
     }
   }
 

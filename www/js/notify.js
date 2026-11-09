@@ -26,7 +26,9 @@
       { id: "prayer-adhan-fajr", name: "اذان صبح", description: "صدای اذان صبح", importance: 5, sound: "adhan_fajr.mp3", vibration: true },
       { id: "prayer-silent", name: "آلارم بی‌صدا", description: "اعلان بدون صدا برای اوقات نماز", importance: 3, vibration: false },
       { id: "night-adhan", name: "اذان رویدادهای شب", description: "پخش اذان برای پایان شب و یک‌سوم و دوسوم شب", importance: 5, sound: "adhan.mp3", vibration: true },
-      { id: "night-ringtone", name: "زنگ رویدادهای شب", description: "صدای زنگ پیش‌فرض گوشی برای رویدادهای شب", importance: 5, vibration: true }
+      { id: "night-ringtone", name: "زنگ رویدادهای شب", description: "صدای زنگ پیش‌فرض گوشی برای رویدادهای شب", importance: 5, vibration: true },
+      { id: "custom-reminder-adhan", name: "اذان یادآوری دلخواه", description: "پخش اذان برای یادآوری روزانه دلخواه", importance: 5, sound: "adhan.mp3", vibration: true },
+      { id: "custom-reminder-ringtone", name: "زنگ یادآوری دلخواه", description: "صدای پیش‌فرض گوشی برای یادآوری روزانه دلخواه", importance: 5, vibration: true }
     ];
     try {
       for (const channel of channels) await p.createChannel(channel);

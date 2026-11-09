@@ -24,6 +24,7 @@
     const channels = [
       { id: "prayer-adhan", name: "اذان", description: "صدای اذان برای اوقات نماز", importance: 5, sound: "adhan.mp3", vibration: true },
       { id: "prayer-adhan-fajr", name: "اذان صبح", description: "صدای اذان صبح", importance: 5, sound: "adhan_fajr.mp3", vibration: true },
+      { id: "prayer-ringtone", name: "زنگ گوشی برای آلارم نماز", description: "استفاده از صدای پیش‌فرض زنگ اعلان گوشی", importance: 5, vibration: true },
       { id: "prayer-silent", name: "آلارم بی‌صدا", description: "اعلان بدون صدا برای اوقات نماز", importance: 3, vibration: false },
       { id: "night-adhan", name: "اذان رویدادهای شب", description: "پخش اذان برای پایان شب و یک‌سوم و دوسوم شب", importance: 5, sound: "adhan.mp3", vibration: true },
       { id: "night-ringtone", name: "زنگ رویدادهای شب", description: "صدای زنگ پیش‌فرض گوشی برای رویدادهای شب", importance: 5, vibration: true },
@@ -47,8 +48,20 @@
         if (!p) return perm = "unsupported";
         let r = await p.checkPermissions();
         if (r.display !== "granted") r = await p.requestPermissions();
-        if (r.display === "granted") await ensureChannels();
-        return perm = r.display === "granted" ? "granted" : "denied";
+        if (r.display !== "granted") return perm = "denied";
+        await ensureChannels();
+        // Android 12+ requires separate access for exact alarms.
+        if (p.checkExactNotificationSetting && p.changeExactNotificationSetting) {
+          try {
+            let exact = await p.checkExactNotificationSetting();
+            if (exact && exact.exact_alarm !== "granted") {
+              await p.changeExactNotificationSetting();
+              exact = await p.checkExactNotificationSetting();
+            }
+            if (exact && exact.exact_alarm && exact.exact_alarm !== "granted") return perm = "denied";
+          } catch (e) {}
+        }
+        return perm = "granted";
       }
       if (typeof Notification === "undefined") return perm = "unsupported";
       if (Notification.permission === "default") await Notification.requestPermission();

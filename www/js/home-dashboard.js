@@ -6,7 +6,7 @@ const DEFAULT_CITY={lat:35.6892,lng:51.3890,tz:"Asia/Tehran",city:"تهران",c
 const names=[["fajr","نماز صبح"],["sunrise","طلوع خورشید"],["dhuhr","نماز ظهر"],["asr","نماز عصر"],["maghrib","نماز مغرب"],["isha","نماز عشا"],["nightEnd","پایان شب"],["night1","یک‌سوم شب"],["night2","دوسوم شب"]];
 const nightKeys=["nightEnd","night1","night2"];
 const nightLabels={nightEnd:"پایان شب",night1:"یک‌سوم شب",night2:"دوسوم شب"};
-const DEFAULT_HOME_ALARMS=Object.fromEntries(names.map(([key])=>[key,{enabled:false,minutes:10,sound:"system"}]));
+const DEFAULT_HOME_ALARMS=Object.fromEntries(names.map(([key])=>[key,{enabled:false,minutes:5,sound:"system"}]));
 function homeAlarmPrefs(){
  const saved=SE.store&&SE.store.prefs?SE.store.prefs.get("homeEventAlarms",null):null;
  const legacy=SE.store&&SE.store.prefs?SE.store.prefs.get("nightEventAlarms",{}):{};
@@ -15,7 +15,7 @@ function homeAlarmPrefs(){
  return out;
 }
 function saveHomeAlarm(key,patch){
- const p=homeAlarmPrefs();p[key]=Object.assign({enabled:false,minutes:10,sound:"system"},p[key]||{},patch);
+ const p=homeAlarmPrefs();p[key]=Object.assign({enabled:false,minutes:5,sound:"system"},p[key]||{},patch);
  if(SE.store&&SE.store.prefs)SE.store.prefs.set("homeEventAlarms",p);
  scheduleHomeAlarms();
 }
@@ -164,7 +164,7 @@ function render(){
  const nightTimes={nightEnd:ev.nauticalBegin,night1:ev.night1,night2:ev.night2};
  const list=names.map(([key,label])=>({key,label,time:nightKeys.includes(key)?nightTimes[key]:ev[key]})).filter(x=>x.time);
  $("home-times").innerHTML=list.map(x=>{
-  const p=homeAlarmPrefs()[x.key]||{enabled:false,minutes:10,sound:"system"};
+  const p=homeAlarmPrefs()[x.key]||{enabled:false,minutes:5,sound:"system"};
   const controls='<div class="home-alarm-controls"><label class="home-alarm-toggle" title="وضعیت آلارم">وضعیت آلارم<select data-home-alarm="'+x.key+'"><option value="off" '+(!p.enabled?'selected':'')+'>خاموش</option><option value="on" '+(p.enabled?'selected':'')+'>روشن</option></select></label><div class="home-alarm-options" '+(!p.enabled?'hidden':'')+'><label>اعلان قبل از زمان<select data-home-minutes="'+x.key+'">'+[1,5,10,15,20,30,45,60,90,120,150,180,240].map(n=>'<option value="'+n+'" '+(Number(p.minutes)===n?'selected':'')+'>'+fa(n)+' دقیقه قبل</option>').join('')+'</select></label><label>صدای آلارم<select data-home-sound="'+x.key+'"><option value="system" '+((p.sound||"system")==="system"?'selected':'')+'>زنگ گوشی</option><option value="adhan" '+(p.sound==="adhan"?'selected':'')+'>اذان</option></select></label></div></div>';
   return '<div class="home-prayer-row home-prayer-row-alarm"><div class="home-prayer-name">'+x.label+'</div><time>'+fa(x.time)+'</time>'+controls+'</div>';
  }).join("");

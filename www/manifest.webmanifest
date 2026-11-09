@@ -1,6 +1,6 @@
 {
-  "name": "یوم‌تایم — اوقات شرعی",
-  "short_name": "یوم‌تایم",
+  "name": "yom ti",
+  "short_name": "yom ti",
   "description": "محاسبه دقیق اوقات شرعی برای هر نقطه از جهان",
   "start_url": "./",
   "display": "standalone",

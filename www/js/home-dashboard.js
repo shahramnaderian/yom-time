@@ -159,7 +159,7 @@ function render(){
  const d=selectedDate(),tz=activeCity.tz||"Asia/Tehran";
  $("home-date-label").textContent=fmtDate(d);
  let ev;
- try{ev=SE.place.timesFor(activeCity,d.year,d.month,d.day,SE.methods&&SE.methods.getCurrentMethod?SE.methods.getCurrentMethod():"tehran")}
+ try{ev=SE.place.timesFor(activeCity,d.year,d.month,d.day,SE.methods&&SE.methods.getCurrentMethod?SE.methods.getCurrentMethod():"legacy")}
  catch(e){$("home-times").innerHTML="<p>محاسبهٔ اوقات در دسترس نیست.</p>";return}
  const nightTimes={nightEnd:ev.nauticalBegin,night1:ev.night1,night2:ev.night2};
  const list=names.map(([key,label])=>({key,label,time:nightKeys.includes(key)?nightTimes[key]:ev[key]})).filter(x=>x.time);

@@ -196,7 +196,7 @@
         toast(lang() === "en" ? "Choose a city or location" : "شهر یا موقعیت را انتخاب کنید");
         return;
       }
-      const method = SE.methods && SE.methods.getCurrentMethod ? SE.methods.getCurrentMethod() : "tehran";
+      const method = SE.methods && SE.methods.getCurrentMethod ? SE.methods.getCurrentMethod() : "legacy";
       try {
         let rows;
         if (SE.locationBridge && SE.locationBridge.monthRows) {

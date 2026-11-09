@@ -60,6 +60,8 @@
 
   function setCity(city) {
     state.city = city;
+    SE.selectedCity = city;
+    if (SE.store && SE.store.prefs) SE.store.prefs.set("homeCity", city);
     const input = $("#city");
     const picked = $("#picked");
     if (input) input.value = city.city || city.name || (city.lat + ", " + city.lng);
@@ -70,6 +72,8 @@
       picked.innerHTML = `<b>${label}</b> <small class="muted">${coords}</small>` + (acc ? ` <em>${acc}</em>` : "");
     }
   }
+
+  SE.setSelectedCity = setCity;
 
   function bindCity() {
     const input = $("#city");
@@ -284,7 +288,12 @@
     bindLang();
     if (SE.weeklySessions) SE.weeklySessions.init({ toast });
     if (SE.worshipTracker) SE.worshipTracker.init();
-    if (!state.city) setCity({ lat: 35.6892, lng: 51.3890, tz: "Asia/Tehran", city: "تهران", cityEn: "Tehran", country: "IR", countryName: "ایران", source: "default" });
+    if (!state.city) {
+      const savedCity = SE.store && SE.store.prefs ? SE.store.prefs.get("homeCity", null) : null;
+      setCity(savedCity && Number.isFinite(Number(savedCity.lat)) && Number.isFinite(Number(savedCity.lng))
+        ? savedCity
+        : { lat: 35.6892, lng: 51.3890, tz: "Asia/Tehran", city: "تهران", cityEn: "Tehran", country: "IR", countryName: "ایران", source: "default" });
+    }
     if (location.hash === "#/create") { $("#view-home").hidden = true; $("#view-create").hidden = false; }
     if (window.SE_refreshDateBar) SE_refreshDateBar();
   }

@@ -103,9 +103,9 @@
         ? SE.sounds.soundForNotification(t.key)
         : "default";
       const soundPref = SE.sounds && SE.sounds.getSoundPref ? SE.sounds.getSoundPref() : "default";
-      const channelId = soundPref === "adhan"
-        ? (t.key === "fajr" ? "prayer-adhan-fajr-v2" : "prayer-adhan-v2")
-        : soundPref === "silent" ? "prayer-silent" : "prayer-ringtone-v2";
+      const channelId = (SE.sounds && SE.sounds.channelForNotification)
+        ? SE.sounds.channelForNotification(t.key)
+        : (soundPref === "adhan" ? (t.key === "fajr" ? "prayer-adhan-fajr-v2" : "prayer-adhan-v2") : soundPref === "silent" ? "prayer-silent" : "prayer-ringtone-v2");
 
       list.push({
         id, title, body,

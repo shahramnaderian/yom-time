@@ -53,6 +53,17 @@
     citySuggest.hidden = true;
     citySuggest.setAttribute("role", "listbox");
     cityLabel.append(cityInput, citySuggest);
+    const coordLabel = make("label", "weekly-field", "یا مختصات دقیق هر نقطه از جهان (عرض جغرافیایی، طول جغرافیایی)");
+    const coordRow = make("div", "monthly-archive-controls");
+    const coordInput = make("input");
+    coordInput.id = "monthly-archive-coordinates";
+    coordInput.type = "text";
+    coordInput.inputMode = "decimal";
+    coordInput.placeholder = "مثلاً 52.5200, 13.4050";
+    const coordButton = make("button", "ghost", "انتخاب این مختصات");
+    coordButton.type = "button";
+    coordRow.append(coordInput, coordButton);
+    coordLabel.appendChild(coordRow);
     const controls = make("div", "monthly-archive-controls");
     const monthLabel = make("label", "weekly-field", "ماه شمسی");
     const month = make("select");
@@ -88,7 +99,7 @@
     const savedHeading = make("h3", "", "جدول‌های ذخیره‌شده");
     const savedList = make("div", "monthly-archive-saved-list");
     savedList.id = "monthly-archive-saved-list";
-    card.append(heading, hint, cityLabel, controls, actions, status, tableWrap, savedHeading, savedList);
+    card.append(heading, hint, cityLabel, coordLabel, controls, actions, status, tableWrap, savedHeading, savedList);
     const archiveList = $("archive-list");
     view.insertBefore(card, archiveList || view.firstChild);
 
@@ -118,7 +129,30 @@
     year.value = String(today.year);
     const initialCity = getHomeCity();
     cityInput.value = cityName(initialCity);
+    coordInput.value = Number(initialCity.lat).toFixed(4) + ", " + Number(initialCity.lng).toFixed(4);
     let citySearchController = null;
+    coordButton.addEventListener("click", () => {
+      const match = coordInput.value.trim().match(/^(-?\\d+(?:\\.\\d+)?)\\s*[,، ]\\s*(-?\\d+(?:\\.\\d+)?)$/);
+      if (!match) {
+        status.textContent = "مختصات را به شکل عرض جغرافیایی، طول جغرافیایی وارد کنید؛ مانند 52.5200, 13.4050";
+        return;
+      }
+      const lat = Number(match[1]), lng = Number(match[2]);
+      if (!Number.isFinite(lat) || !Number.isFinite(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+        status.textContent = "مختصات معتبر نیست؛ عرض باید بین ۹۰- تا ۹۰ و طول بین ۱۸۰- تا ۱۸۰ باشد.";
+        return;
+      }
+      const chosen = SE.place.fromCoords(lat, lng, { source: "archive-coordinates" });
+      if (SE.setSelectedCity) SE.setSelectedCity(chosen);
+      else {
+        SE.selectedCity = chosen;
+        if (SE.store && SE.store.prefs) SE.store.prefs.set("homeCity", chosen);
+      }
+      cityInput.value = cityName(chosen);
+      coordInput.value = lat.toFixed(5) + ", " + lng.toFixed(5);
+      citySuggest.hidden = true;
+      generateMonth(false);
+    });
     cityInput.addEventListener("input", () => {
       const query = cityInput.value.trim();
       if (citySearchController) citySearchController.abort();
@@ -133,12 +167,17 @@
           option.type = "button";
           option.setAttribute("role", "option");
           option.addEventListener("click", () => {
-            const chosen = {
-              lat:Number(place.lat), lng:Number(place.lng), city:place.city || place.name || "",
-              cityEn:place.cityEn || place.city || place.name || "", country:place.country || null,
-              countryName:place.countryName || "", tz:place.tz || (SE.place.detectTimezone ? SE.place.detectTimezone(place.lat, place.lng) : "UTC"),
-              source:place.source || "archive-search", label:place.label || null
-            };
+            const chosen = SE.place.fromCoords(Number(place.lat), Number(place.lng), {
+              source: place.source || "archive-search",
+              tz: place.tz || null,
+              label: place.label || [place.city || place.name, place.countryName || place.country].filter(Boolean).join("، ")
+            });
+            if (place.city || place.name) {
+              chosen.city = place.city || place.name;
+              chosen.cityEn = place.cityEn || place.name || place.city;
+            }
+            if (place.country) chosen.country = place.country;
+            if (place.countryName) chosen.countryName = place.countryName;
             if (SE.setSelectedCity) SE.setSelectedCity(chosen);
             else {
               SE.selectedCity = chosen;

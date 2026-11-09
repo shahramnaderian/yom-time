@@ -75,36 +75,70 @@
     const input = $("#city");
     const suggest = $("#suggest");
     if (!input) return;
+    let timer = null, controller = null, latestHits = [];
+    const showHits = (hits) => {
+      latestHits = hits;
+      if (!suggest) return;
+      suggest.replaceChildren();
+      hits.forEach((h, index) => {
+        const el = document.createElement("button");
+        el.type = "button";
+        el.className = "suggest-item";
+        el.setAttribute("role", "option");
+        el.textContent = (h.city || h.name || "مکان") + (h.countryName ? " · " + h.countryName : "");
+        el.addEventListener("click", () => {
+          setCity({ lat:h.lat, lng:h.lng, city:h.city || h.name, cityEn:h.cityEn || h.city,
+            country:h.country, countryName:h.countryName, tz:h.tz, source:h.source || "search", label:h.label });
+          suggest.hidden = true;
+        });
+        suggest.appendChild(el);
+      });
+      suggest.hidden = !hits.length;
+    };
+    const search = async (q) => {
+      if (controller) controller.abort();
+      controller = new AbortController();
+      const local = SE.place && SE.place.search ? SE.place.search(q, 20) : [];
+      showHits(local);
+      try {
+        const response = await fetch("https://photon.komoot.io/api/?q=" + encodeURIComponent(q) + "&limit=15&lang=fa",
+          { signal:controller.signal, headers:{Accept:"application/json"} });
+        if (!response.ok) return;
+        const data = await response.json();
+        if (input.value.trim() !== q) return;
+        const seen = new Set(local.map(c => Number(c.lat).toFixed(3) + "," + Number(c.lng).toFixed(3)));
+        const remote = (data.features || []).map(feature => {
+          const p = feature.properties || {}, xy = feature.geometry && feature.geometry.coordinates || [];
+          const lng = Number(xy[0]), lat = Number(xy[1]);
+          if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+          const city = p.city || p.name || p.locality || p.district || p.county || p.state || "مکان انتخاب‌شده";
+          const key = lat.toFixed(3) + "," + lng.toFixed(3);
+          if (seen.has(key)) return null;
+          seen.add(key);
+          return { lat,lng,city,cityEn:p.name || p.city || city,country:p.countrycode || p.country || null,
+            countryName:p.country || "",tz:SE.place.detectTimezone(lat,lng),source:"geocoder",
+            label:[city,p.state,p.country].filter(Boolean).join("، ") };
+        }).filter(Boolean);
+        showHits(local.concat(remote));
+      } catch (e) {
+        if (e.name !== "AbortError" && input.value.trim() === q && !local.length) suggest.hidden = true;
+      }
+    };
     input.addEventListener("input", () => {
       const q = input.value.trim();
       state.city = null;
-      if (!suggest) return;
-      if (SE.place && SE.place.parseInput) {
-        const coord = SE.place.parseInput(q);
-        if (coord && coord.source === "manual") { setCity(coord); suggest.hidden = true; return; }
-      }
-      if (SE.place && SE.place.search && q.length >= 1) {
-        const hits = SE.place.search(q, 12);
-        if (!hits.length) { suggest.hidden = true; return; }
-        suggest.hidden = false;
-        suggest.innerHTML = hits.map((h, i) =>
-          `<div class="suggest-item" role="option" data-i="${i}">${h.city}${h.countryName ? " · " + h.countryName : ""}</div>`
-        ).join("");
-        suggest.querySelectorAll("[data-i]").forEach((el) => {
-          el.onclick = () => {
-            const h = hits[+el.getAttribute("data-i")];
-            setCity({ lat: h.lat, lng: h.lng, city: h.city, cityEn: h.cityEn, country: h.country, countryName: h.countryName, tz: h.tz, name: h.city });
-            suggest.hidden = true;
-          };
-        });
-      }
+      if (q.length < 2) { if (controller) controller.abort(); if (suggest) suggest.hidden = true; return; }
+      clearTimeout(timer);
+      timer = setTimeout(() => search(q), 450);
     });
     input.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && suggest) { suggest.hidden = true; if (controller) controller.abort(); }
       if (e.key === "Enter") {
         e.preventDefault();
+        if (latestHits.length) { const h = latestHits[0]; setCity({lat:h.lat,lng:h.lng,city:h.city,cityEn:h.cityEn,country:h.country,countryName:h.countryName,tz:h.tz,source:h.source || "search",label:h.label}); if(suggest)suggest.hidden=true; return; }
         if (SE.place && SE.place.parseInput) {
           const p = SE.place.parseInput(input.value);
-          if (p) setCity(Object.assign({ name: p.city }, p));
+          if (p) setCity(Object.assign({ name:p.city }, p));
         }
       }
     });

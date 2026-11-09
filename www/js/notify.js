@@ -24,7 +24,9 @@
     const channels = [
       { id: "prayer-adhan", name: "اذان", description: "صدای اذان برای اوقات نماز", importance: 5, sound: "adhan.mp3", vibration: true },
       { id: "prayer-adhan-fajr", name: "اذان صبح", description: "صدای اذان صبح", importance: 5, sound: "adhan_fajr.mp3", vibration: true },
-      { id: "prayer-silent", name: "آلارم بی‌صدا", description: "اعلان بدون صدا برای اوقات نماز", importance: 3, vibration: false }
+      { id: "prayer-silent", name: "آلارم بی‌صدا", description: "اعلان بدون صدا برای اوقات نماز", importance: 3, vibration: false },
+      { id: "night-adhan", name: "اذان رویدادهای شب", description: "پخش اذان برای پایان شب و یک‌سوم و دوسوم شب", importance: 5, sound: "adhan.mp3", vibration: true },
+      { id: "night-ringtone", name: "زنگ رویدادهای شب", description: "صدای زنگ پیش‌فرض گوشی برای رویدادهای شب", importance: 5, vibration: true }
     ];
     try {
       for (const channel of channels) await p.createChannel(channel);

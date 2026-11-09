@@ -49,7 +49,8 @@
         let r = await p.checkPermissions();
         if (r.display !== "granted") r = await p.requestPermissions();
         if (r.display !== "granted") return perm = "denied";
-        await ensureChannels();
+        const channelsReady = await ensureChannels();
+        if (!channelsReady) return perm = "channel_error";
         // Android 12+ requires separate access for exact alarms.
         if (p.checkExactNotificationSetting && p.changeExactNotificationSetting) {
           try {
@@ -58,7 +59,7 @@
               await p.changeExactNotificationSetting();
               exact = await p.checkExactNotificationSetting();
             }
-            if (exact && exact.exact_alarm && exact.exact_alarm !== "granted") return perm = "denied";
+            if (exact && exact.exact_alarm !== "granted") return perm = "exact_alarm_denied";
           } catch (e) {}
         }
         return perm = "granted";
@@ -78,7 +79,7 @@
     try {
       if (native()) {
         const p = plugin();
-        if (!p || perm === "denied") return false;
+        if (!p || (perm !== "granted" && perm !== "unknown")) return false;
         await p.schedule({
           notifications: [{
             id: Math.floor(Math.random() * 2e9),

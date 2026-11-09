@@ -17,6 +17,8 @@
     catch (_) { return false; }
   }
   function getHomeCity() {
+    const selected = SE.selectedCity;
+    if (selected && Number.isFinite(Number(selected.lat)) && Number.isFinite(Number(selected.lng))) return selected;
     const saved = SE.store && SE.store.prefs ? SE.store.prefs.get("homeCity", null) : null;
     if (saved && Number.isFinite(Number(saved.lat)) && Number.isFinite(Number(saved.lng))) return saved;
     return SE.place && SE.place.defaultPlace ? SE.place.defaultPlace() : {
@@ -39,7 +41,18 @@
     const card = make("section", "card monthly-archive-card");
     card.id = "monthly-archive-card";
     const heading = make("div", "card-title", "📅 جدول ماهانه اوقات شرعی شهر من");
-    const hint = make("p", "hint", "جدول بر اساس شهر انتخاب‌شده در صفحهٔ اصلی و روش محاسبهٔ فعلی برنامه ساخته و فقط روی همین دستگاه ذخیره می‌شود.");
+    const hint = make("p", "hint", "شهر را همین‌جا جستجو و انتخاب کنید؛ جدول با روش محاسبهٔ فعلی برنامه ساخته و فقط روی همین دستگاه ذخیره می‌شود.");
+    const cityLabel = make("label", "weekly-field", "شهر محل محاسبه");
+    const cityInput = make("input");
+    cityInput.id = "monthly-archive-city";
+    cityInput.type = "search";
+    cityInput.autocomplete = "off";
+    cityInput.placeholder = "نام شهر را جستجو کنید؛ مثلاً مشهد یا Berlin";
+    const citySuggest = make("div", "monthly-archive-city-suggest");
+    citySuggest.id = "monthly-archive-city-suggest";
+    citySuggest.hidden = true;
+    citySuggest.setAttribute("role", "listbox");
+    cityLabel.append(cityInput, citySuggest);
     const controls = make("div", "monthly-archive-controls");
     const monthLabel = make("label", "weekly-field", "ماه شمسی");
     const month = make("select");
@@ -75,12 +88,14 @@
     const savedHeading = make("h3", "", "جدول‌های ذخیره‌شده");
     const savedList = make("div", "monthly-archive-saved-list");
     savedList.id = "monthly-archive-saved-list";
-    card.append(heading, hint, controls, actions, status, tableWrap, savedHeading, savedList);
+    card.append(heading, hint, cityLabel, controls, actions, status, tableWrap, savedHeading, savedList);
     const archiveList = $("archive-list");
     view.insertBefore(card, archiveList || view.firstChild);
 
     const style = document.createElement("style");
     style.textContent = [
+      ".monthly-archive-city-suggest{display:grid;gap:4px;max-height:220px;overflow:auto;margin-top:5px;border:1px solid var(--line,#dce2e8);border-radius:10px;background:var(--surface,#fff)}",
+      ".monthly-archive-city-suggest button{padding:10px;border:0;border-bottom:1px solid var(--line,#e6e9ed);background:transparent;text-align:start;color:inherit;font:inherit}",
       ".monthly-archive-controls{display:flex;gap:12px;align-items:end;flex-wrap:wrap}",
       ".monthly-archive-controls label{flex:1;min-width:130px}",
       ".monthly-archive-controls select,.monthly-archive-controls input{width:100%;min-height:42px;border:1px solid var(--line,#dce2e8);border-radius:10px;padding:8px;background:var(--surface,#fff);font:inherit}",
@@ -101,6 +116,66 @@
     const today = SE.dates && SE.dates.today ? SE.dates.today().jalali : { year: new Date().getFullYear(), month: new Date().getMonth()+1 };
     month.value = String(today.month);
     year.value = String(today.year);
+    const initialCity = getHomeCity();
+    cityInput.value = cityName(initialCity);
+    let citySearchController = null;
+    cityInput.addEventListener("input", () => {
+      const query = cityInput.value.trim();
+      if (citySearchController) citySearchController.abort();
+      citySuggest.replaceChildren();
+      if (query.length < 2) { citySuggest.hidden = true; return; }
+      const localHits = SE.place && SE.place.search ? SE.place.search(query, 30) : [];
+      const hits = localHits.slice();
+      const renderHits = () => {
+        citySuggest.replaceChildren();
+        hits.slice(0, 30).forEach(place => {
+          const option = make("button", "", cityName(place));
+          option.type = "button";
+          option.setAttribute("role", "option");
+          option.addEventListener("click", () => {
+            const chosen = {
+              lat:Number(place.lat), lng:Number(place.lng), city:place.city || place.name || "",
+              cityEn:place.cityEn || place.city || place.name || "", country:place.country || null,
+              countryName:place.countryName || "", tz:place.tz || (SE.place.detectTimezone ? SE.place.detectTimezone(place.lat, place.lng) : "UTC"),
+              source:place.source || "archive-search", label:place.label || null
+            };
+            SE.selectedCity = chosen;
+            if (SE.store && SE.store.prefs) SE.store.prefs.set("homeCity", chosen);
+            cityInput.value = cityName(chosen);
+            citySuggest.hidden = true;
+            generateMonth(false);
+          });
+          citySuggest.appendChild(option);
+        });
+        citySuggest.hidden = hits.length === 0;
+      };
+      renderHits();
+      citySearchController = new AbortController();
+      fetch("https://photon.komoot.io/api/?q=" + encodeURIComponent(query) + "&limit=30&lang=fa", {
+        signal:citySearchController.signal, headers:{Accept:"application/json"}
+      }).then(response => response.ok ? response.json() : null).then(data => {
+        if (!data || cityInput.value.trim() !== query) return;
+        const seen = new Set(hits.map(p => Number(p.lat).toFixed(3) + "," + Number(p.lng).toFixed(3)));
+        (data.features || []).forEach(feature => {
+          const props = feature.properties || {}, coords = feature.geometry && feature.geometry.coordinates || [];
+          const lng = Number(coords[0]), lat = Number(coords[1]);
+          if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+          const key = lat.toFixed(3) + "," + lng.toFixed(3);
+          if (seen.has(key)) return;
+          seen.add(key);
+          const city = props.city || props.name || props.locality || props.district || props.state || "مکان انتخاب‌شده";
+          hits.push({lat,lng,city,cityEn:props.name || city,country:props.countrycode || null,countryName:props.country || "",tz:SE.place.detectTimezone(lat,lng),label:[city,props.state,props.country].filter(Boolean).join("، "),source:"archive-geocoder"});
+        });
+        renderHits();
+      }).catch(error => { if (error.name !== "AbortError") console.warn("Archive city search failed", error); });
+    });
+    cityInput.addEventListener("keydown", event => {
+      if (event.key === "Escape") citySuggest.hidden = true;
+      if (event.key === "Enter") {
+        const first = citySuggest.querySelector("button");
+        if (first) { event.preventDefault(); first.click(); }
+      }
+    });
     generate.addEventListener("click", () => generateMonth(false));
     print.addEventListener("click", () => {
       if (!tableWrap.querySelector("table")) {

@@ -6,8 +6,19 @@ const DEFAULT_CITY={lat:35.6892,lng:51.3890,tz:"Asia/Tehran",city:"تهران",c
 const names=[["fajr","نماز صبح"],["sunrise","طلوع خورشید"],["dhuhr","نماز ظهر"],["asr","نماز عصر"],["maghrib","نماز مغرب"],["isha","نماز عشا"],["nightEnd","پایان شب"],["night1","یک‌سوم شب"],["night2","دوسوم شب"]];
 const nightKeys=["nightEnd","night1","night2"];
 const nightLabels={nightEnd:"پایان شب",night1:"یک‌سوم شب",night2:"دوسوم شب"};
-function nightPrefs(){return SE.store&&SE.store.prefs?SE.store.prefs.get("nightEventAlarms",{nightEnd:{enabled:false,minutes:10,sound:"system"},night1:{enabled:false,minutes:10,sound:"system"},night2:{enabled:false,minutes:10,sound:"system"}}):{};}
-function saveNightPref(key,patch){const p=nightPrefs();p[key]=Object.assign({enabled:false,minutes:10,sound:"system"},p[key]||{},patch);if(SE.store&&SE.store.prefs)SE.store.prefs.set("nightEventAlarms",p);scheduleNightAlarms();}
+const DEFAULT_HOME_ALARMS=Object.fromEntries(names.map(([key])=>[key,{enabled:false,minutes:10,sound:"system"}]));
+function homeAlarmPrefs(){
+ const saved=SE.store&&SE.store.prefs?SE.store.prefs.get("homeEventAlarms",null):null;
+ const legacy=SE.store&&SE.store.prefs?SE.store.prefs.get("nightEventAlarms",{}):{};
+ const out=Object.assign({},DEFAULT_HOME_ALARMS,saved||{});
+ nightKeys.forEach(k=>{if(!saved&&legacy[k])out[k]=Object.assign({},out[k],legacy[k]);});
+ return out;
+}
+function saveHomeAlarm(key,patch){
+ const p=homeAlarmPrefs();p[key]=Object.assign({enabled:false,minutes:10,sound:"system"},p[key]||{},patch);
+ if(SE.store&&SE.store.prefs)SE.store.prefs.set("homeEventAlarms",p);
+ scheduleHomeAlarms();
+}
 const fa=s=>String(s).replace(/\d/g,d=>"۰۱۲۳۴۵۶۷۸۹"[d]);
 let activeCity=null;
 function partsAt(date,tz){
@@ -32,6 +43,7 @@ function setCity(city){
  const input=$("home-city-search");if(input)input.value=cityLabel(activeCity);
  const t=todayAt(activeCity.tz||"Asia/Tehran");$("home-date").value=dateValue(t.year,t.month,t.day);
  render();
+ scheduleHomeAlarms();
 }
 let leafletPromise=null;
 function loadLeaflet(){
@@ -108,14 +120,14 @@ function render(){
  const nightTimes={nightEnd:ev.nauticalBegin,night1:ev.night1,night2:ev.night2};
  const list=names.map(([key,label])=>({key,label,time:nightKeys.includes(key)?nightTimes[key]:ev[key]})).filter(x=>x.time);
  $("home-times").innerHTML=list.map(x=>{
-  if(!nightKeys.includes(x.key))return '<div class="home-prayer-row"><div class="home-prayer-name">'+x.label+'</div><time>'+fa(x.time)+'</time></div>';
-  const p=nightPrefs()[x.key]||{enabled:false,minutes:10};
-  return '<div class="home-prayer-row"><div class="night-event-controls"><label class="night-alarm-toggle" title="فعال‌سازی آلارم"><input type="checkbox" data-night-alarm="'+x.key+'" '+(p.enabled?'checked':'')+'><span>🔔</span></label><select data-night-minutes="'+x.key+'" aria-label="دقایق قبل از رویداد" '+(!p.enabled?'disabled':'')+'>'+[1,5,10,15,30,60].map(n=>'<option value="'+n+'" '+(Number(p.minutes)===n?'selected':'')+'>'+fa(n)+' دقیقه قبل</option>').join('')+'</select><select data-night-sound="'+x.key+'" aria-label="نوع صدای آلارم" '+(!p.enabled?'disabled':'')+'><option value="system" '+((p.sound||"system")==="system"?"selected":"")+'>زنگ گوشی</option><option value="adhan" '+(p.sound==="adhan"?"selected":"")+'>اذان</option></select></div><div class="home-prayer-name">'+x.label+'</div><time>'+fa(x.time)+'</time></div>';
+  const p=homeAlarmPrefs()[x.key]||{enabled:false,minutes:10,sound:"system"};
+  const controls='<div class="home-alarm-controls"><label class="home-alarm-toggle" title="فعال‌سازی آلارم"><input type="checkbox" data-home-alarm="'+x.key+'" '+(p.enabled?'checked':'')+'><span>🔔</span></label>'+(p.enabled?'<div class="home-alarm-options"><label>اعلان قبل از زمان<select data-home-minutes="'+x.key+'">'+[1,5,10,15,20,30,45,60,90,120].map(n=>'<option value="'+n+'" '+(Number(p.minutes)===n?'selected':'')+'>'+fa(n)+' دقیقه قبل</option>').join('')+'</select></label><label>صدای آلارم<select data-home-sound="'+x.key+'"><option value="system" '+((p.sound||"system")==="system"?'selected':'')+'>زنگ گوشی</option><option value="adhan" '+(p.sound==="adhan"?'selected':'')+'>اذان</option></select></label></div>':'')+'</div>';
+  return '<div class="home-prayer-row home-prayer-row-alarm"><div class="home-prayer-name">'+x.label+'</div><time>'+fa(x.time)+'</time>'+controls+'</div>';
  }).join("");
- $("home-times").querySelectorAll("[data-night-alarm]").forEach(el=>el.addEventListener("change",()=>{saveNightPref(el.dataset.nightAlarm,{enabled:el.checked});render()}));
- $("home-times").querySelectorAll("[data-night-minutes]").forEach(el=>el.addEventListener("change",()=>saveNightPref(el.dataset.nightMinutes,{minutes:Number(el.value)})));
- $("home-times").querySelectorAll("[data-night-sound]").forEach(el=>el.addEventListener("change",()=>saveNightPref(el.dataset.nightSound,{sound:el.value})));
- if(!render._nightStyle){const st=document.createElement("style");st.textContent=".night-event-controls{display:flex;align-items:center;gap:5px;margin-inline-end:auto}.night-alarm-toggle{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:9px;background:#edf5fa;cursor:pointer}.night-alarm-toggle input{position:absolute;opacity:0}.night-alarm-toggle:has(input:checked){background:#dcefe2}.night-event-controls select{max-width:112px;border:1px solid #dce2e8;border-radius:8px;padding:5px;background:#fff;color:#526575;font:inherit;font-size:.72rem}.night-event-controls select[data-night-sound]{max-width:94px}.night-event-controls select:disabled{opacity:.45}";document.head.appendChild(st);render._nightStyle=true;}
+ $("home-times").querySelectorAll("[data-home-alarm]").forEach(el=>el.addEventListener("change",()=>{saveHomeAlarm(el.dataset.homeAlarm,{enabled:el.checked});render()}));
+ $("home-times").querySelectorAll("[data-home-minutes]").forEach(el=>el.addEventListener("change",()=>saveHomeAlarm(el.dataset.homeMinutes,{minutes:Number(el.value)})));
+ $("home-times").querySelectorAll("[data-home-sound]").forEach(el=>el.addEventListener("change",()=>saveHomeAlarm(el.dataset.homeSound,{sound:el.value})));
+ if(!render._homeAlarmStyle){const st=document.createElement("style");st.textContent=".home-prayer-row-alarm{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:8px}.home-prayer-row-alarm .home-alarm-controls{grid-column:1/-1;display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap;border-top:1px solid #edf0f2;padding-top:10px}.home-alarm-toggle{display:inline-flex;align-items:center;justify-content:center;min-width:46px;height:42px;border-radius:11px;background:#edf5fa;cursor:pointer}.home-alarm-toggle input{position:absolute;opacity:0}.home-alarm-toggle:has(input:checked){background:#dcefe2}.home-alarm-options{display:flex;flex:1;gap:10px;flex-wrap:wrap}.home-alarm-options label{display:flex;flex:1;min-width:135px;flex-direction:column;gap:5px;color:#657384;font-size:.8rem}.home-alarm-options select{width:100%;min-height:42px;border:1px solid #dce2e8;border-radius:10px;padding:8px;background:#fff;color:#35495a;font:inherit;font-size:.88rem}.home-alarm-toggle input:focus-visible+span{outline:2px solid #246f9e}";document.head.appendChild(st);render._homeAlarmStyle=true;}
  const now=new Date(),local=todayAt(tz);
  let next=list.find(x=>{const [h,m]=x.time.split(":").map(Number);return h*60+m>local.hour*60+local.minute});
  let target={year:local.year,month:local.month,day:local.day};
@@ -127,14 +139,20 @@ function render(){
   $("home-countdown").textContent=fa(String(Math.floor(sec/3600)).padStart(2,"0")+":"+String(Math.floor(sec%3600/60)).padStart(2,"0")+":"+String(sec%60).padStart(2,"0"));
  }
 }
-async function scheduleNightAlarms(){
+async function scheduleHomeAlarms(){
  if(!activeCity||!SE.alarms||!SE.alarms.scheduleHomeEvents)return;
  try{
-  const tz=activeCity.tz||"Asia/Tehran",now=todayAt(tz),events=[];
-  for(let offset=0;offset<2;offset++){
+  const tz=activeCity.tz||"Asia/Tehran",now=todayAt(tz),events=[],prefs=homeAlarmPrefs();
+  for(let offset=0;offset<3;offset++){
    const dt=new Date(Date.UTC(now.year,now.month-1,now.day+offset)),y=dt.getUTCFullYear(),m=dt.getUTCMonth()+1,d=dt.getUTCDate();
-   const ev=SE.place.timesFor(activeCity,y,m,d,SE.methods&&SE.methods.getCurrentMethod?SE.methods.getCurrentMethod():"tehran"),prefs=nightPrefs();
-   for(const key of nightKeys){const p=prefs[key]||{};if(!p.enabled)continue;const tm=key==="nightEnd"?ev.nauticalBegin:ev[key];if(!tm)continue;const hm=tm.split(":").map(Number);events.push({key,label:nightLabels[key],at:instantAt(y,m,d,hm[0],hm[1],tz),minutes:Number(p.minutes)||0,sound:p.sound||"system"});}
+   const ev=SE.place.timesFor(activeCity,y,m,d,SE.methods&&SE.methods.getCurrentMethod?SE.methods.getCurrentMethod():"tehran");
+   const nightTimes={nightEnd:ev.nauticalBegin,night1:ev.night1,night2:ev.night2};
+   for(const [key,label] of names){
+    const p=prefs[key]||{};if(!p.enabled)continue;
+    const tm=nightKeys.includes(key)?nightTimes[key]:ev[key];if(!tm)continue;
+    const hm=tm.split(":").map(Number);
+    events.push({key,label,at:instantAt(y,m,d,hm[0],hm[1],tz),minutes:Number(p.minutes)||0,sound:p.sound||"system"});
+   }
   }
   await SE.alarms.scheduleHomeEvents(events,cityLabel(activeCity));
  }catch(e){}

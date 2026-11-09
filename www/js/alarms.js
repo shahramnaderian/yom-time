@@ -165,7 +165,7 @@
       const id = Math.abs((e.key + dayKey + "home").split("").reduce((a,c)=>((a<<5)-a)+c.charCodeAt(0),0)) % 2000000000;
       const lead = Number(e.minutes)||0;
       const soundMode=e.sound==="adhan"?"adhan":"system";
-      return {id,title:e.label,body:(placeName||"موقعیت شما")+" · "+e.label+" · "+(lead?lead+" دقیقه قبل":"اکنون"),schedule:{at:when},extra:{type:e.key,homeNight:true,soundMode},channelId:soundMode==="adhan"?"night-adhan":"night-ringtone",sound:soundMode==="adhan"?"adhan.mp3":"default",smallIcon:"ic_stat_icon",actionTypeId:"OPEN_APP"};
+      return {id,title:e.label,body:(placeName||"موقعیت شما")+" · "+e.label+" · "+(lead?lead+" دقیقه قبل":"اکنون"),schedule:{at:when,allowWhileIdle:true},extra:{type:e.key,homeEventAlarm:true,soundMode},channelId:soundMode==="adhan"?"home-event-adhan":"home-event-ringtone",sound:soundMode==="adhan"?"adhan.mp3":"default",smallIcon:"ic_stat_icon",actionTypeId:"OPEN_APP"};
     });
     if (notifications.length && SE.notify && SE.notify.ensurePermission) { const status = await SE.notify.ensurePermission(); if (status === "denied" || status === "unsupported") return {ok:false,reason:status}; }
     try {

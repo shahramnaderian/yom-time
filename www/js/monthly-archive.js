@@ -132,7 +132,7 @@
     coordInput.value = Number(initialCity.lat).toFixed(4) + ", " + Number(initialCity.lng).toFixed(4);
     let citySearchController = null;
     coordButton.addEventListener("click", () => {
-      const match = coordInput.value.trim().match(/^(-?\\d+(?:\\.\\d+)?)\\s*[,، ]\\s*(-?\\d+(?:\\.\\d+)?)$/);
+      const match = coordInput.value.trim().match(/^(-?\d+(?:\.\d+)?)\\s*[,، ]\\s*(-?\d+(?:\.\d+)?)$/);
       if (!match) {
         status.textContent = "مختصات را به شکل عرض جغرافیایی، طول جغرافیایی وارد کنید؛ مانند 52.5200, 13.4050";
         return;

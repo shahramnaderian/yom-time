@@ -155,6 +155,7 @@
   }
 
   async function scheduleHomeEvents(events, placeName) {
+    if (SE.notify && SE.notify.ensurePermission) { const status = await SE.notify.ensurePermission(); if (status === "denied" || status === "unsupported") return {ok:false,reason:status}; }
     const p = SE.notify && SE.notify.plugin ? SE.notify.plugin() : null;
     const native = SE.platform && SE.platform.isNative && SE.platform.isNative();
     const prefs = SE.store && SE.store.prefs;

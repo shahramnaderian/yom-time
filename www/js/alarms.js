@@ -154,6 +154,33 @@
     return scheduleForMonth([row], placeName, lang, opts);
   }
 
+  async function scheduleHomeEvents(events, placeName) {
+    const p = SE.notify && SE.notify.plugin ? SE.notify.plugin() : null;
+    const native = SE.platform && SE.platform.isNative && SE.platform.isNative();
+    const prefs = SE.store && SE.store.prefs;
+    const previous = prefs ? prefs.get("homeNightNotificationIds", []) : [];
+    const notifications = (events || []).filter(e => e.at && e.at.getTime() - (Number(e.minutes)||0)*60000 > Date.now()).map(e => {
+      const when = new Date(e.at.getTime() - (Number(e.minutes)||0)*60000);
+      const dayKey = when.toISOString().slice(0,10).replace(/-/g,"");
+      const id = Math.abs((e.key + dayKey + "home").split("").reduce((a,c)=>((a<<5)-a)+c.charCodeAt(0),0)) % 2000000000;
+      const lead = Number(e.minutes)||0;
+      return {id,title:e.label,body:(placeName||"موقعیت شما")+" · "+e.label+" · "+(lead?lead+" دقیقه قبل":"اکنون"),schedule:{at:when},extra:{type:e.key,homeNight:true},smallIcon:"ic_stat_icon",actionTypeId:"OPEN_APP"};
+    });
+    try {
+      if (native && p && p.schedule) {
+        if(previous.length && p.cancel) { try { await p.cancel({notifications:previous.map(id=>({id}))}); } catch(e) {} }
+        if(notifications.length) await p.schedule({notifications});
+        if(prefs) prefs.set("homeNightNotificationIds",notifications.map(n=>n.id));
+        return {ok:true,count:notifications.length,method:"native"};
+      }
+      if(previous.length && native && p && p.cancel) { try { await p.cancel({notifications:previous.map(id=>({id}))}); } catch(e) {} }
+      let count=0;
+      notifications.forEach(n=>{const delay=n.schedule.at.getTime()-Date.now();if(delay>0&&delay<48*60*60*1000){setTimeout(()=>{if(SE.notify&&SE.notify.show)SE.notify.show(n.title,n.body,n.extra.type,true);},delay);count++;}});
+      if(prefs) prefs.set("homeNightNotificationIds",notifications.map(n=>n.id));
+      return {ok:true,count,method:"web"};
+    } catch(e) { return {ok:false,error:String(e.message||e)}; }
+  }
+
   async function cancelAll() {
     try {
       const p = SE.notify && SE.notify.plugin ? SE.notify.plugin() : null;
@@ -170,7 +197,7 @@
   SE.alarms = {
     ALARM_TYPES, DEFAULT_ENABLED,
     getEnabled, setEnabled, toggle,
-    buildNotifications, scheduleForDay, scheduleForMonth, cancelAll
+    buildNotifications, scheduleForDay, scheduleForMonth, scheduleHomeEvents, cancelAll
   };
 
   if (typeof module !== "undefined" && module.exports) module.exports = SE.alarms;

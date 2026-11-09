@@ -41,7 +41,7 @@ function setCity(city){
  if(SE.store&&SE.store.prefs)SE.store.prefs.set("homeCity",activeCity);
  const label=$("home-city-label");if(label)label.textContent=cityLabel(activeCity);
  const input=$("home-city-search");if(input)input.value=cityLabel(activeCity);
- const t=todayAt(activeCity.tz||"Asia/Tehran");$("home-date").value=dateValue(t.year,t.month,t.day);
+ const t=todayAt(activeCity.tz||"Asia/Tehran");$("home-date-native").value=dateValue(t.year,t.month,t.day);syncJalaliDate();
  render();
  scheduleHomeAlarms();
 }
@@ -127,6 +127,7 @@ function render(){
  $("home-times").querySelectorAll("[data-home-alarm]").forEach(el=>el.addEventListener("change",()=>{saveHomeAlarm(el.dataset.homeAlarm,{enabled:el.checked});render()}));
  $("home-times").querySelectorAll("[data-home-minutes]").forEach(el=>el.addEventListener("change",()=>saveHomeAlarm(el.dataset.homeMinutes,{minutes:Number(el.value)})));
  $("home-times").querySelectorAll("[data-home-sound]").forEach(el=>el.addEventListener("change",()=>saveHomeAlarm(el.dataset.homeSound,{sound:el.value})));
+ if(!render._homeAlarmInteractions){const root=$("home-times");["pointerdown","touchstart","click"].forEach(type=>root.addEventListener(type,e=>{if(e.target.closest(".home-alarm-options"))e.stopPropagation()},true));render._homeAlarmInteractions=true;}
  if(!render._homeAlarmStyle){const st=document.createElement("style");st.textContent=".home-prayer-row-alarm{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:8px}.home-prayer-row-alarm .home-alarm-controls{grid-column:1/-1;display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap;border-top:1px solid #edf0f2;padding-top:10px}.home-alarm-toggle{display:inline-flex;align-items:center;justify-content:center;min-width:46px;height:42px;border-radius:11px;background:#edf5fa;cursor:pointer}.home-alarm-toggle input{position:absolute;opacity:0}.home-alarm-toggle:has(input:checked){background:#dcefe2}.home-alarm-options{display:flex;flex:1;gap:10px;flex-wrap:wrap}.home-alarm-options label{display:flex;flex:1;min-width:135px;flex-direction:column;gap:5px;color:#657384;font-size:.8rem}.home-alarm-options select{width:100%;min-height:42px;border:1px solid #dce2e8;border-radius:10px;padding:8px;background:#fff;color:#35495a;font:inherit;font-size:.88rem}.home-alarm-toggle input:focus-visible+span{outline:2px solid #246f9e}";document.head.appendChild(st);render._homeAlarmStyle=true;}
  const now=new Date(),local=todayAt(tz);
  let next=list.find(x=>{const [h,m]=x.time.split(":").map(Number);return h*60+m>local.hour*60+local.minute});
@@ -163,7 +164,7 @@ function init(){
  const saved=SE.store&&SE.store.prefs?SE.store.prefs.get("homeCity",null):null;
  const isOldDefault=saved&&(saved.source==="default"||saved.city==="مریوان"||saved.cityEn==="Marivan");
  setCity(saved&&saved.lat!=null&&!isOldDefault?saved:DEFAULT_CITY);
- input.addEventListener("change",render);
+ 
  $("home-today").addEventListener("click",()=>{const t=todayAt(activeCity.tz||"Asia/Tehran");input.value=dateValue(t.year,t.month,t.day);render()});
  const settingsButton=$("home-reminder-settings");
  if(settingsButton) settingsButton.addEventListener("click",()=>{

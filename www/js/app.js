@@ -144,33 +144,6 @@
     });
   }
 
-  function bindLocate() {
-    const btn = $("#locate");
-    if (!btn) return;
-    btn.addEventListener("click", async () => {
-      btn.disabled = true;
-      const span = btn.querySelector("span") || btn;
-      const prev = span.textContent;
-      span.textContent = lang() === "en" ? "Locating…" : "در حال یافتن…";
-      try {
-        let fix;
-        if (SE.locate && SE.locate.preciseFix) fix = await SE.locate.preciseFix({ ask: true, samples: 2 });
-        else if (SE.locate && SE.locate.locate) fix = await SE.locate.locate({ ask: true });
-        else throw new Error("no locate");
-        const place = SE.place && SE.place.fromCoords
-          ? SE.place.fromCoords(fix.lat, fix.lng, { source: fix.source || "gps", accuracy: fix.accuracy, altitude: fix.altitude })
-          : { lat: fix.lat, lng: fix.lng, source: fix.source, accuracy: fix.accuracy };
-        setCity(place);
-        toast(lang() === "en" ? "Location found" : "موقعیت پیدا شد");
-      } catch (e) {
-        toast(lang() === "en" ? "Location failed" : "موقعیت‌یابی ناموفق");
-      } finally {
-        btn.disabled = false;
-        span.textContent = prev;
-      }
-    });
-  }
-
   function bindFormats() {
     const box = $("#formats");
     if (!box) return;
@@ -276,7 +249,6 @@
   function init() {
     initYearMonth();
     bindCity();
-    bindLocate();
     bindFormats();
     bindGo();
     bindTabs();

@@ -31,7 +31,15 @@
       { id: "custom-reminder-adhan", name: "اذان یادآوری دلخواه", description: "پخش اذان برای یادآوری روزانه دلخواه", importance: 5, sound: "adhan.mp3", vibration: true },
       { id: "custom-reminder-ringtone", name: "زنگ یادآوری دلخواه", description: "صدای پیش‌فرض گوشی برای یادآوری روزانه دلخواه", importance: 5, vibration: true },
       { id: "home-event-adhan", name: "اذان اوقات شرعی", description: "اذان برای هشدارهای انتخابی نماز و رویدادهای شب", importance: 5, sound: "adhan.mp3", vibration: true },
-      { id: "home-event-ringtone", name: "زنگ اوقات شرعی", description: "زنگ پیش‌فرض گوشی برای هشدارهای انتخابی نماز و رویدادهای شب", importance: 5, vibration: true }
+      { id: "home-event-ringtone", name: "زنگ اوقات شرعی", description: "زنگ پیش‌فرض گوشی برای هشدارهای انتخابی نماز و رویدادهای شب", importance: 5, vibration: true },
+      // Versioned IDs force Android to create fresh channels with the intended sound.
+      { id: "prayer-adhan-v2", name: "اذان نمازها", description: "پخش فایل اذان برای اعلان نمازها", importance: 5, sound: "adhan.mp3", vibration: true },
+      { id: "prayer-adhan-fajr-v2", name: "اذان نماز صبح", description: "پخش فایل اذان صبح", importance: 5, sound: "adhan_fajr.mp3", vibration: true },
+      { id: "prayer-ringtone-v2", name: "صدای گوشی برای نمازها", description: "پخش صدای پیش‌فرض اعلان گوشی", importance: 5, vibration: true },
+      { id: "home-event-adhan-v2", name: "اذان آلارم‌های صفحه اصلی", description: "پخش اذان برای آلارم‌های انتخابی", importance: 5, sound: "adhan.mp3", vibration: true },
+      { id: "home-event-ringtone-v2", name: "زنگ آلارم‌های صفحه اصلی", description: "پخش صدای اعلان گوشی برای آلارم‌ها", importance: 5, vibration: true },
+      { id: "custom-reminder-adhan-v2", name: "اذان یادآوری دلخواه", description: "پخش اذان برای یادآوری دلخواه", importance: 5, sound: "adhan.mp3", vibration: true },
+      { id: "custom-reminder-ringtone-v2", name: "زنگ یادآوری دلخواه", description: "صدای پیش‌فرض برای یادآوری دلخواه", importance: 5, vibration: true }
     ];
     try {
       for (const channel of channels) await p.createChannel(channel);

@@ -283,6 +283,7 @@
     bindTabs();
     bindLang();
     if (SE.weeklySessions) SE.weeklySessions.init({ toast });
+    if (SE.worshipTracker) SE.worshipTracker.init();
     if (!state.city) setCity({ lat: 35.6892, lng: 51.3890, tz: "Asia/Tehran", city: "تهران", cityEn: "Tehran", country: "IR", countryName: "ایران", source: "default" });
     if (location.hash === "#/create") { $("#view-home").hidden = true; $("#view-create").hidden = false; }
     if (window.SE_refreshDateBar) SE_refreshDateBar();

@@ -98,7 +98,7 @@
     const search = async (q) => {
       if (controller) controller.abort();
       controller = new AbortController();
-      const local = SE.place && SE.place.search ? SE.place.search(q, 20) : [];
+      const local = SE.place && SE.place.search ? SE.place.search(q, 50) : [];
       showHits(local);
       try {
         const response = await fetch("https://photon.komoot.io/api/?q=" + encodeURIComponent(q) + "&limit=15&lang=fa",

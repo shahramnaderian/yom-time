@@ -139,6 +139,9 @@ jobs:
               path.write_text(manifest)
           PY
 
+      - name: Generate built-in cheerful alarm tones
+        run: node scripts/generate-alarm-tones.js
+
       - name: Sync Capacitor
         run: npx cap sync android
 

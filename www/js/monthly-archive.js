@@ -235,7 +235,12 @@
     if (!wrap) return;
     wrap.replaceChildren();
     wrap.dataset.recordId = record.id;
-    const caption = make("p", "hint", record.city + " · " + monthNames[record.month - 1] + " " + fa(record.year) + " · روش محاسبه: " + record.method);
+    const approximateCount = Number(record.approximateCount) || record.rows.filter(row => Array.isArray(row[11]) && row[11].length).length;
+    const captionText = record.city + " · " + monthNames[record.month - 1] + " " + fa(record.year) + " · روش محاسبه: " + record.method;
+    const caption = make("p", "hint", captionText);
+    if (approximateCount) {
+      caption.textContent += " · * زمان تقریبی (برآورد از روز معتبر قبل و بعد)";
+    }
     const table = make("table", "monthly-archive-table");
     const thead = document.createElement("thead");
     const header = document.createElement("tr");
@@ -246,7 +251,11 @@
       const gDate = SE.jalali.jToG(record.year, record.month, Number(row[0]));
       const weekday = SE.dates.formatWeekday(new Date(gDate.year, gDate.month - 1, gDate.day).getDay(), "fa");
       const tr = document.createElement("tr");
-      [row[0], weekday, row[2], row[3], row[4], row[5], row[6], row[8]].forEach(value => tr.appendChild(make("td","",fa(value))));
+      const approximate = new Set(Array.isArray(row[11]) ? row[11] : []);
+      [[row[0], 0], [weekday, -1], [row[2], 2], [row[3], 3], [row[4], 4], [row[5], 5], [row[6], 6], [row[8], 8]].forEach(([value, column]) => {
+        const label = fa(value) + (approximate.has(column) ? "*" : "");
+        tr.appendChild(make("td", "", label));
+      });
       tbody.appendChild(tr);
     });
     table.append(thead, tbody);
@@ -293,7 +302,9 @@
       const record = {
         id: recordId(year, month, city),
         year, month, city: cityName(city), place: { lat: Number(city.lat), lng: Number(city.lng), tz: city.tz || "Asia/Tehran", city: city.city || city.name || "" },
-        method, rows, createdAt: Date.now()
+        method, rows,
+        approximateCount: rows.filter(row => Array.isArray(row[11]) && row[11].length).length,
+        createdAt: Date.now()
       };
       const records = readArchive().filter(item => item.id !== record.id);
       records.unshift(record);

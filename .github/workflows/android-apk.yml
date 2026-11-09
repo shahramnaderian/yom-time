@@ -102,11 +102,26 @@ jobs:
               '<resources><color name="ic_launcher_background">#063B50</color></resources>\n')
           adaptive = root / "mipmap-anydpi-v26"
           adaptive.mkdir(parents=True, exist_ok=True)
-          (adaptive / "ic_launcher.xml").write_text(
+          icon_xml = (
               '<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">'
               '<background android:drawable="@color/ic_launcher_background"/>'
               '<foreground android:drawable="@drawable/ic_launcher_foreground"/>'
               '</adaptive-icon>\n')
+          (adaptive / "ic_launcher.xml").write_text(icon_xml)
+          (adaptive / "ic_launcher_round.xml").write_text(icon_xml)
+          # Explicitly point both launcher variants at the artwork rendered from
+          # www/icons/icon.svg, so the installed Android app uses the app logo.
+          import re
+          manifest = Path("android/app/src/main/AndroidManifest.xml")
+          xml = manifest.read_text()
+          xml, count = re.subn(r'<application\\b([^>]*)>', lambda m:
+              '<application' + re.sub(r'\\s+android:(?:roundIcon|icon)="[^"]*"',
+                  '', m.group(1)) +
+              ' android:icon="@mipmap/ic_launcher" android:roundIcon="@mipmap/ic_launcher_round">',
+              xml, count=1)
+          if count != 1:
+              raise SystemExit("Could not set Android launcher icon in manifest")
+          manifest.write_text(xml)
           PY
           cat > android/app/src/main/res/drawable/ic_stat_icon.xml <<'EOF'
           <vector xmlns:android="http://schemas.android.com/apk/res/android"

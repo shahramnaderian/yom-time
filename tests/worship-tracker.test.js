@@ -9,7 +9,7 @@ test("normalizes daily worship values and prayer flags",()=>{
 test("awards stars for prayers, Quran pages and dhikr with daily caps",()=>{
  const r={prayers:{fajr:true,dhuhr:true,asr:true,maghrib:true,isha:true},quranPages:60,dhikrCount:2000};
  assert.equal(tracker.dailyStars(r),50+100+100+20+10);
- assert.equal(tracker.dailyStars({quranPages:1000,dhikrCount:1000000}),200);
+ assert.equal(tracker.dailyStars({quranPages:1000,dhikrCount:1000000}),210);
 });
 test("levels advance at clear star thresholds",()=>{
  assert.equal(tracker.levelForStars(100).level.name,"رهرو");

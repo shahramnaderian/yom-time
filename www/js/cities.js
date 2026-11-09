@@ -1,16 +1,16 @@
 (function(g) {
   "use strict";
   const SE = g.SE = g.SE || {};
+  // Read the canonical sample list directly. Calling allCities() here caused
+  // allCities() -> SE.cities.list() -> allCities() infinite recursion on search.
   function list() {
-    if (SE.place && SE.place.allCities) {
-      return SE.place.allCities().map((c) => ({
-        name: c.city || c[0], en: c.cityEn || c[1],
-        lat: c.lat != null ? c.lat : c[2], lng: c.lng != null ? c.lng : c[3],
-        country: c.country || "", countryName: c.countryName || "",
-        tz: c.tz || "Asia/Tehran"
-      }));
-    }
-    return [];
+    const source = SE.place && Array.isArray(SE.place.SAMPLE_CITIES) ? SE.place.SAMPLE_CITIES : [];
+    return source.map((c) => ({
+      name: c.city || c[0], en: c.cityEn || c[1],
+      lat: c.lat != null ? c.lat : c[2], lng: c.lng != null ? c.lng : c[3],
+      country: c.country || "", countryName: c.countryName || "",
+      tz: c.tz || "Asia/Tehran"
+    }));
   }
   function search(text, limit) {
     if (SE.place && SE.place.search) {

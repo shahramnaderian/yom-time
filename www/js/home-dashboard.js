@@ -27,7 +27,8 @@ function partsAt(date,tz){
 }
 function todayAt(tz){const p=partsAt(new Date(),tz);return {year:p.year,month:p.month,day:p.day,hour:p.hour,minute:p.minute,second:p.second};}
 function dateValue(y,m,d){return [y,String(m).padStart(2,"0"),String(d).padStart(2,"0")].join("-");}
-function selectedDate(){const v=$("home-date").value;if(!v){const t=todayAt(activeCity.tz);return {year:t.year,month:t.month,day:t.day}}const a=v.split("-").map(Number);return {year:a[0],month:a[1],day:a[2]};}
+function selectedDate(){const picker=$("home-date-native"),v=picker&&picker.value;if(!v){const t=todayAt(activeCity.tz);return {year:t.year,month:t.month,day:t.day}}const a=v.split("-").map(Number);return {year:a[0],month:a[1],day:a[2]};}
+function syncJalaliDate(){const input=$("home-date"),picker=$("home-date-native");if(!input||!picker||!picker.value)return;const a=picker.value.split("-").map(Number),j=SE.jalali&&SE.jalali.gToJ?SE.jalali.gToJ(a[0],a[1],a[2]):null;input.value=j?fa(j.year)+"/"+fa(String(j.month).padStart(2,"0"))+"/"+fa(String(j.day).padStart(2,"0")):picker.value;}
 function instantAt(y,m,d,h,mi,tz){
  const guess=Date.UTC(y,m-1,d,h,mi);
  const p=partsAt(new Date(guess),tz);

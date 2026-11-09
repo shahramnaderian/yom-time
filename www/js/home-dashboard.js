@@ -212,7 +212,9 @@ async function scheduleHomeAlarms(){
  if(!activeCity||!SE.alarms||!SE.alarms.scheduleHomeEvents)return;
  try{
   const tz=activeCity.tz||"Asia/Tehran",now=todayAt(tz),events=[],prefs=homeAlarmPrefs();
-  for(let offset=0;offset<3;offset++){
+  // Keep a rolling week of native notifications scheduled. Android delivers
+  // these after the WebView and app process have been closed.
+  for(let offset=0;offset<7;offset++){
    const dt=new Date(Date.UTC(now.year,now.month-1,now.day+offset)),y=dt.getUTCFullYear(),m=dt.getUTCMonth()+1,d=dt.getUTCDate();
    const ev=SE.place.timesFor(activeCity,y,m,d,SE.methods&&SE.methods.getCurrentMethod?SE.methods.getCurrentMethod():"legacy");
    const nightTimes={nightEnd:ev.nauticalBegin,night1:ev.night1,night2:ev.night2};
@@ -228,6 +230,17 @@ async function scheduleHomeAlarms(){
 }
 function init(){
  const input=$("home-date");if(!input)return;
+ // Rebuild alarms when Android brings the app back after exact-alarm access
+ // changes or a long period without opening the app.
+ if(!init._alarmResumeBound && SE.native && SE.native.plugin){
+  const app=SE.native.plugin("App");
+  if(app && app.addListener){
+   init._alarmResumeBound=true;
+   app.addListener("appStateChange",state=>{
+    if(state && state.isActive) scheduleHomeAlarms();
+   });
+  }
+ }
  injectPicker();
  const saved=SE.store&&SE.store.prefs?SE.store.prefs.get("homeCity",null):null;
  const isOldDefault=saved&&(saved.source==="default"||saved.city==="مریوان"||saved.cityEn==="Marivan");

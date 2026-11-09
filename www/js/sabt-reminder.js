@@ -103,7 +103,7 @@
     const msg = message(lang);
     if (SE.notify && SE.notify.ensurePermission) {
       const permission = await SE.notify.ensurePermission();
-      if (permission === "denied" || permission === "unsupported") return { ok: false, reason: permission };
+      if (permission !== "granted") return { ok: false, reason: permission || "permission_required" };
     }
     const native = SE.platform && SE.platform.isNative && SE.platform.isNative();
     const plugin = SE.notify && SE.notify.plugin ? SE.notify.plugin() : null;

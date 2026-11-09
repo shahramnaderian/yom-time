@@ -77,7 +77,7 @@
       const soundPref = SE.sounds && SE.sounds.getSoundPref ? SE.sounds.getSoundPref() : "default";
       const channelId = soundPref === "adhan"
         ? (t.key === "fajr" ? "prayer-adhan-fajr" : "prayer-adhan")
-        : soundPref === "silent" ? "prayer-silent" : undefined;
+        : soundPref === "silent" ? "prayer-silent" : "prayer-ringtone";
 
       list.push({
         id, title, body,

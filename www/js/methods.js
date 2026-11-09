@@ -121,7 +121,7 @@
   const METHOD_ORDER = ["tehran", "mwl", "isna", "egypt", "uqu", "karachi", "jafari", "gulf", "legacy"];
 
   function getMethod(id) {
-    return METHODS[id] || METHODS.tehran;
+    return METHODS[id] || METHODS.legacy;
   }
 
   function listMethods(lang) {
@@ -192,7 +192,7 @@
 
   function computeDay(lat, lng, y, m, d, tz, methodId, opts) {
     opts = opts || {};
-    const method = getMethod(methodId || (SE.store && SE.store.prefs ? SE.store.prefs.get("method", "tehran") : "tehran"));
+    const method = getMethod(methodId || (SE.store && SE.store.prefs ? SE.store.prefs.get("method", "legacy") : "legacy"));
     const asrFactor = opts.asrFactor != null ? opts.asrFactor : method.asrFactor;
 
     let off = 0;
@@ -298,7 +298,7 @@
   }
 
   function getCurrentMethod() {
-    return SE.store && SE.store.prefs ? SE.store.prefs.get("method", "tehran") : "tehran";
+    return SE.store && SE.store.prefs ? SE.store.prefs.get("method", "legacy") : "legacy";
   }
 
   function setCurrentMethod(id) {

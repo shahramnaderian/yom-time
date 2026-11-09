@@ -23,6 +23,7 @@
       lat: 35.6892, lng: 51.389, tz: "Asia/Tehran", city: "تهران", cityEn: "Tehran"
     };
   }
+  function recordId(year, month, city) { return "j-" + year + "-" + month + "-" + Number(city.lat).toFixed(3) + "-" + Number(city.lng).toFixed(3); }
   function cityName(city) {
     return SE.place && SE.place.label ? SE.place.label(city, "fa") : (city.city || city.label || "شهر انتخاب‌شده");
   }
@@ -109,7 +110,8 @@
       window.print();
     });
     renderSaved();
-    if (!readArchive().some(item => item.year === today.year && item.month === today.month)) generateMonth(true);
+    const city = getHomeCity();
+    if (!readArchive().some(item => item.id === recordId(today.year, today.month, city))) generateMonth(true);
   }
   function renderTable(record) {
     const wrap = $("monthly-archive-table");
@@ -137,6 +139,10 @@
     if (!list) return;
     list.replaceChildren();
     const records = readArchive();
+    const empty = $("archive-empty");
+    if (empty) empty.hidden = records.length > 0;
+    const count = $("archive-count");
+    if (count) count.textContent = records.length ? fa(records.length) + " جدول ذخیره‌شده" : "";
     if (!records.length) {
       list.appendChild(make("p", "hint", "هنوز جدولی در بایگانی ذخیره نشده است."));
       return;
@@ -167,7 +173,7 @@
       if (!SE.locationBridge || !SE.locationBridge.monthRows) throw new Error("موتور ساخت جدول در دسترس نیست.");
       const rows = SE.locationBridge.monthRows(city, year, month, "j", method);
       const record = {
-        id: "j-" + year + "-" + month + "-" + Number(city.lat).toFixed(3) + "-" + Number(city.lng).toFixed(3),
+        id: recordId(year, month, city),
         year, month, city: cityName(city), place: { lat: Number(city.lat), lng: Number(city.lng), tz: city.tz || "Asia/Tehran", city: city.city || city.name || "" },
         method, rows, createdAt: Date.now()
       };
@@ -190,7 +196,8 @@
           const today = SE.dates.today().jalali;
           $("monthly-archive-month").value = String(today.month);
           $("monthly-archive-year").value = String(today.year);
-          if (!readArchive().some(item => item.year === today.year && item.month === today.month)) generateMonth(true);
+          const city = getHomeCity();
+          if (!readArchive().some(item => item.id === recordId(today.year, today.month, city))) generateMonth(true);
         }
       }, 0);
     });

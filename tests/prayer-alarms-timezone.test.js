@@ -42,7 +42,7 @@ function wallParts(instant, timeZone) {
     hour: "2-digit", minute: "2-digit", hourCycle: "h23"
   }).formatToParts(instant);
   const value = type => parts.find(part => part.type === type).value;
-  return ["year", "month", "day", "hour", "minute"].map(value);
+  return ["year", "month", "day", "hour", "minute"].map(type => value(type));
 }
 
 test("prayer wall time uses selected city timezone, not device timezone", () => {

@@ -3,7 +3,11 @@
 const SE=window.SE=window.SE||{};
 const $=id=>document.getElementById(id);
 const DEFAULT_CITY={lat:35.6892,lng:51.3890,tz:"Asia/Tehran",city:"تهران",cityEn:"Tehran",country:"IR",countryName:"ایران",source:"default"};
-const names=[["fajr","نماز صبح"],["sunrise","طلوع خورشید"],["dhuhr","نماز ظهر"],["asr","نماز عصر"],["maghrib","نماز مغرب"],["isha","نماز عشا"]];
+const names=[["fajr","نماز صبح"],["sunrise","طلوع خورشید"],["dhuhr","نماز ظهر"],["asr","نماز عصر"],["maghrib","نماز مغرب"],["isha","نماز عشا"],["nightEnd","پایان شب"],["night1","یک‌سوم شب"],["night2","دوسوم شب"]];
+const nightKeys=["nightEnd","night1","night2"];
+const nightLabels={nightEnd:"پایان شب",night1:"یک‌سوم شب",night2:"دوسوم شب"};
+function nightPrefs(){return SE.store&&SE.store.prefs?SE.store.prefs.get("nightEventAlarms",{nightEnd:{enabled:false,minutes:10},night1:{enabled:false,minutes:10},night2:{enabled:false,minutes:10}}):{};}
+function saveNightPref(key,patch){const p=nightPrefs();p[key]=Object.assign({enabled:false,minutes:10},p[key]||{},patch);if(SE.store&&SE.store.prefs)SE.store.prefs.set("nightEventAlarms",p);scheduleNightAlarms();}
 const fa=s=>String(s).replace(/\d/g,d=>"۰۱۲۳۴۵۶۷۸۹"[d]);
 let activeCity=null;
 function partsAt(date,tz){
@@ -101,8 +105,16 @@ function render(){
  let ev;
  try{ev=SE.place.timesFor(activeCity,d.year,d.month,d.day,SE.methods&&SE.methods.getCurrentMethod?SE.methods.getCurrentMethod():"tehran")}
  catch(e){$("home-times").innerHTML="<p>محاسبهٔ اوقات در دسترس نیست.</p>";return}
- const list=names.map(([key,label])=>({key,label,time:ev[key]})).filter(x=>x.time);
- $("home-times").innerHTML=list.map(x=>'<div class="home-prayer-row"><div class="home-prayer-name">'+x.label+'</div><time>'+fa(x.time)+'</time></div>').join("");
+ const nightTimes={nightEnd:ev.nauticalBegin,night1:ev.night1,night2:ev.night2};
+ const list=names.map(([key,label])=>({key,label,time:nightKeys.includes(key)?nightTimes[key]:ev[key]})).filter(x=>x.time);
+ $("home-times").innerHTML=list.map(x=>{
+  if(!nightKeys.includes(x.key))return '<div class="home-prayer-row"><div class="home-prayer-name">'+x.label+'</div><time>'+fa(x.time)+'</time></div>';
+  const p=nightPrefs()[x.key]||{enabled:false,minutes:10};
+  return '<div class="home-prayer-row"><div class="night-event-controls"><label class="night-alarm-toggle" title="فعال‌سازی آلارم"><input type="checkbox" data-night-alarm="'+x.key+'" '+(p.enabled?'checked':'')+'><span>🔔</span></label><select data-night-minutes="'+x.key+'" aria-label="دقایق قبل از رویداد" '+(!p.enabled?'disabled':'')+'>'+[1,5,10,15,30,60].map(n=>'<option value="'+n+'" '+(Number(p.minutes)===n?'selected':'')+'>'+fa(n)+' دقیقه قبل</option>').join('')+'</select></div><div class="home-prayer-name">'+x.label+'</div><time>'+fa(x.time)+'</time></div>';
+ }).join("");
+ $("home-times").querySelectorAll("[data-night-alarm]").forEach(el=>el.addEventListener("change",()=>{saveNightPref(el.dataset.nightAlarm,{enabled:el.checked});render()}));
+ $("home-times").querySelectorAll("[data-night-minutes]").forEach(el=>el.addEventListener("change",()=>saveNightPref(el.dataset.nightMinutes,{minutes:Number(el.value)})));
+ if(!render._nightStyle){const st=document.createElement("style");st.textContent=".night-event-controls{display:flex;align-items:center;gap:5px;margin-inline-end:auto}.night-alarm-toggle{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:9px;background:#edf5fa;cursor:pointer}.night-alarm-toggle input{position:absolute;opacity:0}.night-alarm-toggle:has(input:checked){background:#dcefe2}.night-event-controls select{max-width:112px;border:1px solid #dce2e8;border-radius:8px;padding:5px;background:#fff;color:#526575;font:inherit;font-size:.72rem}.night-event-controls select:disabled{opacity:.45}";document.head.appendChild(st);render._nightStyle=true;}
  const now=new Date(),local=todayAt(tz);
  let next=list.find(x=>{const [h,m]=x.time.split(":").map(Number);return h*60+m>local.hour*60+local.minute});
  let target={year:local.year,month:local.month,day:local.day};
@@ -114,12 +126,25 @@ function render(){
   $("home-countdown").textContent=fa(String(Math.floor(sec/3600)).padStart(2,"0")+":"+String(Math.floor(sec%3600/60)).padStart(2,"0")+":"+String(sec%60).padStart(2,"0"));
  }
 }
+async function scheduleNightAlarms(){
+ if(!activeCity||!SE.alarms||!SE.alarms.scheduleHomeEvents)return;
+ try{
+  const tz=activeCity.tz||"Asia/Tehran",now=todayAt(tz),events=[];
+  for(let offset=0;offset<2;offset++){
+   const dt=new Date(Date.UTC(now.year,now.month-1,now.day+offset)),y=dt.getUTCFullYear(),m=dt.getUTCMonth()+1,d=dt.getUTCDate();
+   const ev=SE.place.timesFor(activeCity,y,m,d,SE.methods&&SE.methods.getCurrentMethod?SE.methods.getCurrentMethod():"tehran"),prefs=nightPrefs();
+   for(const key of nightKeys){const p=prefs[key]||{};if(!p.enabled)continue;const tm=key==="nightEnd"?ev.nauticalBegin:ev[key];if(!tm)continue;const hm=tm.split(":").map(Number);events.push({key,label:nightLabels[key],at:instantAt(y,m,d,hm[0],hm[1],tz),minutes:Number(p.minutes)||0});}
+  }
+  await SE.alarms.scheduleHomeEvents(events,cityLabel(activeCity));
+ }catch(e){}
+}
 function init(){
  const input=$("home-date");if(!input)return;
  injectPicker();
  const saved=SE.store&&SE.store.prefs?SE.store.prefs.get("homeCity",null):null;
  const isOldDefault=saved&&(saved.source==="default"||saved.city==="مریوان"||saved.cityEn==="Marivan");
  setCity(saved&&saved.lat!=null&&!isOldDefault?saved:DEFAULT_CITY);
+ scheduleNightAlarms();
  input.addEventListener("change",render);
  $("home-today").addEventListener("click",()=>{const t=todayAt(activeCity.tz||"Asia/Tehran");input.value=dateValue(t.year,t.month,t.day);render()});
  const settingsButton=$("home-reminder-settings");

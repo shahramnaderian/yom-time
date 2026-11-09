@@ -9,6 +9,7 @@
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="css/app.css">
 <link rel="stylesheet" href="css/settings.css">
+<style>.date-sub [hidden]{display:none!important}</style>
 </head>
 <body>
 <div id="app">
@@ -149,6 +150,12 @@
         <h2>تنظیمات</h2>
       </div>
       <div class="card">
+        <div class="card-title"><span class="settings-icon">📅</span> نمایش تاریخ‌ها در بالای صفحه</div>
+        <label class="alarm-row"><span class="alarm-name">نمایش تاریخ میلادی</span><input id="show-gregorian-date" type="checkbox" checked><span class="switch"></span></label>
+        <label class="alarm-row"><span class="alarm-name">نمایش تاریخ قمری</span><input id="show-hijri-date" type="checkbox"><span class="switch"></span></label>
+        <p class="hint">تاریخ شمسی همیشه نمایش داده می‌شود. انتخاب‌های شما ذخیره خواهند شد.</p>
+      </div>
+      <div class="card">
         <div class="card-title"><span class="settings-icon">🔔</span> صدای اعلان اوقات</div>
         <p class="hint">برای آلارم نمازها و یک‌سوم / دو‌سوم شب</p>
         <div id="sound-options" class="sound-options" role="radiogroup" aria-label="صدای اعلان"></div>
@@ -250,6 +257,22 @@
     if (el("date-jalali")) el("date-jalali").textContent = d.jalali;
     if (el("date-gregorian")) el("date-gregorian").textContent = d.gregorian;
     if (el("date-hijri")) el("date-hijri").textContent = d.hijri;
+    var prefs = window.SE && SE.store && SE.store.prefs;
+    var showGregorian = prefs ? prefs.get("showGregorianDate", true) !== false : true;
+    var showHijri = prefs ? prefs.get("showHijriDate", false) === true : false;
+    if (el("date-gregorian")) el("date-gregorian").hidden = !showGregorian;
+    if (el("date-hijri")) el("date-hijri").hidden = !showHijri;
+    var sep = document.querySelector("#date-bar .date-sep");
+    if (sep) sep.hidden = !(showGregorian && showHijri);
+    var g = el("show-gregorian-date"), h = el("show-hijri-date");
+    if (g && !g.dataset.bound) {
+      g.checked = showGregorian; g.dataset.bound = "1";
+      g.addEventListener("change", function() { if (prefs) prefs.set("showGregorianDate", g.checked); refreshDateBar(); });
+    }
+    if (h && !h.dataset.bound) {
+      h.checked = showHijri; h.dataset.bound = "1";
+      h.addEventListener("change", function() { if (prefs) prefs.set("showHijriDate", h.checked); refreshDateBar(); });
+    }
   }
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", function() { setTimeout(refreshDateBar, 50); });

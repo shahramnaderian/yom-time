@@ -114,8 +114,8 @@ jobs:
           import re
           manifest = Path("android/app/src/main/AndroidManifest.xml")
           xml = manifest.read_text()
-          xml, count = re.subn(r'<application\\b([^>]*)>', lambda m:
-              '<application' + re.sub(r'\\s+android:(?:roundIcon|icon)="[^"]*"',
+          xml, count = re.subn(r'<application\b([^>]*)>', lambda m:
+              '<application' + re.sub(r'\s+android:(?:roundIcon|icon)="[^"]*"',
                   '', m.group(1)) +
               ' android:icon="@mipmap/ic_launcher" android:roundIcon="@mipmap/ic_launcher_round">',
               xml, count=1)

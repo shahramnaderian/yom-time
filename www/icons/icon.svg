@@ -5,5 +5,5 @@
       <rect width="1024" height="1024" rx="180" ry="180"/>
     </clipPath>
   </defs>
-  <image width="1024" height="1024" clip-path="url(#rounded)" xlink:href="data:image/png;base64,PLACEHOLDER"/>
+  <image width="1024" height="1024" preserveAspectRatio="xMidYMid slice" clip-path="url(#rounded)" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAYAAAAGACAIAAABUQkHrAAAAIGNIUk0AAHomAACAhAAA+gAAAIDoAAB1MAAA6mAAADqYAAAXcJy6UTwAAAAGYktHRAD/AP8A/6C9p5MAAAAJcEhZcwAAFiUAABYlAUlSJPAAAAAASUVORK5CYII="/>
 </svg>

@@ -4,8 +4,8 @@
   "description": "محاسبه دقیق اوقات شرعی برای هر نقطه از جهان",
   "start_url": "./",
   "display": "standalone",
-  "background_color": "#FFF7F4",
-  "theme_color": "#C22928",
+  "background_color": "#0A1628",
+  "theme_color": "#C9A227",
   "lang": "fa",
   "dir": "rtl",
   "icons": [

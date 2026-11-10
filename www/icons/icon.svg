@@ -1,9 +1,53 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1024 1024" width="1024" height="1024">
-  <defs>
-    <clipPath id="rounded">
-      <rect width="1024" height="1024" rx="180" ry="180"/>
-    </clipPath>
-  </defs>
-  <image width="1024" height="1024" preserveAspectRatio="xMidYMid slice" clip-path="url(#rounded)" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAIAAAB7Tk8BAAAIGNIUk0AAHomAACAhAAA+gAAAIDoAAB1MAAA6mAAADqYAAAXcJy6UTwAAAAGYktHRAD/AP8A/6C9p5MAAAAJcEhZcwAAFiUAABYlAUlSJPAAAAAASUVORK5CYII="/>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+<defs>
+ <linearGradient id="night" x2="0" y2="1"><stop stop-color="#062746"/><stop offset=".58" stop-color="#08758a"/><stop offset="1" stop-color="#e7a94c"/></linearGradient>
+ <linearGradient id="gold" x2=".8" y2="1"><stop stop-color="#fff0ae"/><stop offset=".48" stop-color="#e5ad45"/><stop offset="1" stop-color="#946023"/></linearGradient>
+ <linearGradient id="dome" x2=".2" y2="1"><stop stop-color="#fff3b5"/><stop offset=".5" stop-color="#e8ac35"/><stop offset="1" stop-color="#a65c16"/></linearGradient>
+ <linearGradient id="black" x2="1" y2="1"><stop stop-color="#34404a"/><stop offset=".45" stop-color="#101923"/><stop offset="1" stop-color="#03080e"/></linearGradient>
+ <linearGradient id="page" x2="0" y2="1"><stop stop-color="#fffbe8"/><stop offset="1" stop-color="#d9bd85"/></linearGradient>
+ <pattern id="stars" width="96" height="96" patternUnits="userSpaceOnUse"><circle cx="14" cy="18" r="2.5" fill="#fff4d0"/><circle cx="67" cy="55" r="1.8" fill="#fff"/><path d="M42 8v14M35 15h14" stroke="#fff0bd" stroke-width="2"/></pattern>
+ <pattern id="ornament" width="42" height="42" patternUnits="userSpaceOnUse"><path d="M21 2 40 21 21 40 2 21Z" fill="none" stroke="#e8c36c" stroke-width="2.5"/><circle cx="21" cy="21" r="4" fill="#e8c36c"/></pattern>
+ <clipPath id="clip"><rect width="1024" height="1024" rx="190"/></clipPath>
+ <filter id="soft"><feGaussianBlur stdDeviation="22"/></filter>
+</defs>
+<g clip-path="url(#clip)">
+ <rect width="1024" height="1024" fill="url(#night)"/>
+ <rect width="1024" height="650" fill="url(#stars)" opacity=".65"/>
+ <circle cx="510" cy="470" r="330" fill="#ffd889" opacity=".15" filter="url(#soft)"/>
+ <!-- Crescent only: no clock tower or skyline -->
+ <path d="M526 112c-116 46-147 190-63 276 62 63 163 62 227 2-32 106-149 163-255 123-119-45-171-180-113-292 43-83 130-130 204-109Z" fill="url(#gold)" stroke="#fff0bd" stroke-width="9"/>
+ <path d="M511 175c-55 42-74 117-44 178" fill="none" stroke="#fff7d8" stroke-width="5" opacity=".65"/>
+ <!-- Kaaba -->
+ <path d="M94 580 390 510 507 570 507 825 94 825Z" fill="url(#black)" stroke="#070d14" stroke-width="10"/>
+ <path d="M94 580 390 510 507 570 210 646Z" fill="#263340"/>
+ <path d="M94 646 507 570v48L94 704Z" fill="url(#gold)"/>
+ <path d="M94 660 507 584v18L94 678Z" fill="#f4d17c"/>
+ <path d="M146 690v124m52-135v145m52-155v165m52-175v185m52-195v205" stroke="#bd8a37" stroke-width="4" opacity=".65"/>
+ <path d="M269 682 345 667v116l-76 16Z" fill="#9b642c" stroke="#f0d18a" stroke-width="6"/>
+ <path d="M288 678v-18q19-31 38-5v18" fill="none" stroke="#f5df9d" stroke-width="5"/>
+ <path d="M80 830h450" stroke="#f6e6c4" stroke-width="12" opacity=".85"/>
+ <!-- Dome of the Rock, isolated without surrounding buildings -->
+ <path d="M590 790V640q0-164 166-218 166 54 166 218v150Z" fill="#e4d1a8" stroke="#8b6638" stroke-width="8"/>
+ <path d="M625 644q0-133 131-181 131 48 131 181Z" fill="url(#dome)" stroke="#ffedaa" stroke-width="9"/>
+ <path d="M756 465v-42m-15 14h30" stroke="#f6d77d" stroke-width="9" stroke-linecap="round"/>
+ <path d="M590 642h332v40H590Z" fill="#075a72" stroke="#e3bc68" stroke-width="7"/>
+ <path d="M590 682h332v30H590Z" fill="url(#gold)"/>
+ <path d="M612 712h288v78H612Z" fill="#07506a"/>
+ <path d="M612 712h288v78H612Z" fill="url(#ornament)" opacity=".85"/>
+ <g fill="#e9d9b6" stroke="#a17a43" stroke-width="5">
+  <path d="M626 790v-66q22-36 44 0v66Z"/><path d="M686 790v-66q22-36 44 0v66Z"/><path d="M746 790v-66q22-36 44 0v66Z"/><path d="M806 790v-66q22-36 44 0v66Z"/><path d="M866 790v-66q18-36 36 0v66Z"/>
+ </g>
+ <!-- Quran on rehal in foreground -->
+ <path d="m230 865 282 125 282-125-55 140-227-90-227 90Z" fill="#70431f" stroke="#e9bd65" stroke-width="12"/>
+ <path d="m300 864 212 103 212-103-38 112-174-78-174 78Z" fill="#8d5628" stroke="#f1d18b" stroke-width="8"/>
+ <path d="M142 820q170-83 370 12 200-95 370-12l-38 142q-170-67-332 27-162-94-332-27Z" fill="#075b4e" stroke="#e4bd68" stroke-width="12"/>
+ <path d="M142 820q170-83 370 12 200-95 370-12l-38 142q-170-67-332 27-162-94-332-27Z" fill="url(#ornament)" opacity=".7"/>
+ <path d="M165 822q158-65 347 18v116q-180-78-319-25Z" fill="url(#page)" stroke="#8e6939" stroke-width="7"/>
+ <path d="M859 822q-158-65-347 18v116q180-78 319-25Z" fill="url(#page)" stroke="#8e6939" stroke-width="7"/>
+ <path d="M512 840v116" stroke="#a77d43" stroke-width="8"/>
+ <g fill="none" stroke="#26755e" stroke-width="5" opacity=".95"><path d="M208 842q140-39 280 19M220 866q125-32 268 20M235 890q112-25 253 19M816 842q-140-39-280 19M804 866q-125-32-268 20M789 890q-112-25-253 19"/></g>
+ <!-- prayer beads -->
+ <path d="M370 968q133 62 285 6" fill="none" stroke="#d9a34d" stroke-width="12" stroke-linecap="round" stroke-dasharray="2 24"/>
+ <path d="M655 975q24 18 43 35m-31-47 35 27m-47-12 35 28" stroke="#f0ce82" stroke-width="7" stroke-linecap="round"/>
+ <rect x="14" y="14" width="996" height="996" rx="178" fill="none" stroke="url(#gold)" stroke-width="18"/>
+</g></svg>

@@ -66,7 +66,7 @@ jobs:
           rsvg-convert -w 432 -h 432 www/icons/icon.svg > android/app/src/main/res/drawable/ic_launcher_foreground.png
           mkdir -p android/app/src/main/res/mipmap-anydpi-v26
           cat > android/app/src/main/res/values/ic_launcher_background.xml <<'EOF'
-          <resources><color name="ic_launcher_background">#062B50</color></resources>
+          <resources><color name="ic_launcher_background">#0A1628</color></resources>
           EOF
           cat > android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml <<'EOF'
           <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
@@ -99,7 +99,7 @@ jobs:
           values = root / "values"
           values.mkdir(parents=True, exist_ok=True)
           (values / "ic_launcher_background.xml").write_text(
-              '<resources><color name="ic_launcher_background">#063B50</color></resources>\n')
+              '<resources><color name="ic_launcher_background">#0A1628</color></resources>\n')
           adaptive = root / "mipmap-anydpi-v26"
           adaptive.mkdir(parents=True, exist_ok=True)
           icon_xml = (

@@ -11,12 +11,12 @@ function homeAlarmPrefs(){
  const saved=SE.store&&SE.store.prefs?SE.store.prefs.get("homeEventAlarms",null):null;
  const legacy=SE.store&&SE.store.prefs?SE.store.prefs.get("nightEventAlarms",{}):{};
  const out=Object.assign({},DEFAULT_HOME_ALARMS);
- names.forEach(([key])=>{out[key]=Object.assign({},DEFAULT_HOME_ALARMS[key],saved&&saved[key]||{});});
+ names.forEach(([key])=>{out[key]=Object.assign({},DEFAULT_HOME_ALARMS[key],saved&&saved[key]||{});out[key].minutes=Math.min(100,Math.max(1,Number(out[key].minutes)||5));});
  nightKeys.forEach(k=>{if(!saved&&legacy[k])out[k]=Object.assign({},out[k],legacy[k]);});
  return out;
 }
 function saveHomeAlarm(key,patch){
- const p=homeAlarmPrefs();p[key]=Object.assign({enabled:false,minutes:5,sound:"system"},p[key]||{},patch);
+ const p=homeAlarmPrefs();p[key]=Object.assign({enabled:false,minutes:5,sound:"system"},p[key]||{},patch);p[key].minutes=Math.min(100,Math.max(1,Number(p[key].minutes)||5));
  if(SE.store&&SE.store.prefs)SE.store.prefs.set("homeEventAlarms",p);
  scheduleHomeAlarms();
 }
@@ -186,7 +186,7 @@ function render(){
  const list=names.map(([key,label])=>({key,label,time:nightKeys.includes(key)?nightTimes[key]:ev[key]})).filter(x=>x.time);
  $("home-times").innerHTML=list.map(x=>{
   const p=homeAlarmPrefs()[x.key]||{enabled:false,minutes:5,sound:"system"};
-  const controls='<div class="home-alarm-controls"><label class="home-alarm-toggle alarm-row" title="وضعیت آلارم"><span class="alarm-name">وضعیت آلارم</span><input type="checkbox" data-home-alarm="'+x.key+'" '+(p.enabled?'checked':'')+'><span class="switch"></span></label><div class="home-alarm-options" '+(!p.enabled?'hidden':'')+'><label>اعلان قبل از زمان<select data-home-minutes="'+x.key+'">'+[1,5,10,15,20,30,45,60,90,120,150,180,240].map(n=>'<option value="'+n+'" '+(Number(p.minutes)===n?'selected':'')+'>'+fa(n)+' دقیقه قبل</option>').join('')+'</select></label><label>صدای آلارم<select data-home-sound="'+x.key+'"><option value="system" '+((p.sound||"system")==="system"?'selected':'')+'>زنگ گوشی</option><option value="adhan" '+(p.sound==="adhan"?'selected':'')+'>اذان</option></select></label></div></div>';
+  const controls='<div class="home-alarm-controls"><label class="home-alarm-toggle alarm-row" title="وضعیت آلارم"><span class="alarm-name">وضعیت آلارم</span><input type="checkbox" data-home-alarm="'+x.key+'" '+(p.enabled?'checked':'')+'><span class="switch"></span></label><div class="home-alarm-options" '+(!p.enabled?'hidden':'')+'><label>زمان آلارم قبل از اذان<select data-home-minutes="'+x.key+'">'+Array.from({length:100},(_,i)=>i+1).map(n=>'<option value="'+n+'" '+(Number(p.minutes)===n?'selected':'')+'>'+fa(n)+' دقیقه قبل</option>').join('')+'</select></label><label>صدای آلارم<select data-home-sound="'+x.key+'"><option value="system" '+((p.sound||"system")==="system"?'selected':'')+'>زنگ گوشی</option><option value="adhan" '+(p.sound==="adhan"?'selected':'')+'>اذان</option></select></label></div></div>';
   return '<div class="home-prayer-row home-prayer-row-alarm"><div class="home-prayer-name">'+x.label+'</div><time>'+fa(x.time)+'</time>'+controls+'</div>';
  }).join("");
  $("home-times").querySelectorAll("[data-home-alarm]").forEach(el=>el.addEventListener("change",()=>{

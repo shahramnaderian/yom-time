@@ -293,6 +293,7 @@
       if (active) a.setAttribute("aria-current", "page");
       else a.removeAttribute("aria-current");
     });
+    if (name === "home") bindQibla();
     if (name === "settings") {
       renderSoundOptions();
       renderAlarmToggles();
@@ -300,7 +301,6 @@
       bindReminderControls();
       renderCustomReminder();
       bindCustomReminder();
-      bindQibla();
     }
   }
 

@@ -219,7 +219,7 @@
   }
 
   function bindQibla() {
-    const view = document.getElementById("view-settings");
+    const view = document.getElementById("view-home");
     if (!view) return;
     let card = document.getElementById("qibla-card");
     if (!card) {

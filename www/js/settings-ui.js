@@ -320,6 +320,30 @@
       });
     }
 
+    const ringtoneButton=document.getElementById("pick-phone-ringtone");
+    if(ringtoneButton&&!ringtoneButton.dataset.bound){
+      ringtoneButton.dataset.bound="1";
+      ringtoneButton.addEventListener("click",async()=>{
+        const nativePlugin=SE.native&&SE.native.plugin?SE.native.plugin("RingtonePicker"):null;
+        if(!nativePlugin||!nativePlugin.pickNotificationRingtone){
+          toast(lang()==="en"?"Phone sound selection is available in the Android app.":"انتخاب زنگ دلخواه فقط در نسخه اندروید در دسترس است.");
+          return;
+        }
+        ringtoneButton.disabled=true;
+        try{
+          const result=await nativePlugin.pickNotificationRingtone();
+          if(!result||result.cancelled)return;
+          if(SE.store&&SE.store.prefs)SE.store.prefs.set("customRingtoneChannelId",result.channelId);
+          SE.sounds.setSoundPref("custom-ringtone");
+          renderSoundOptions();
+          const message=(lang()==="en"?"Selected: ":"صدای انتخاب‌شده: ")+(result.title||"");
+          toast(message);
+        }catch(error){
+          toast(lang()==="en"?"Could not open phone sound picker.":"باز کردن فهرست زنگ‌های گوشی ممکن نشد.");
+        }finally{ringtoneButton.disabled=false;}
+      });
+    }
+
     const langButton=document.getElementById("lang");
     if(langButton&&!langButton.dataset.settingsLangBound){
       langButton.dataset.settingsLangBound="1";

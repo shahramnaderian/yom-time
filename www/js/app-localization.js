@@ -141,7 +141,18 @@
     "مکان":"Location",
     "مکان انتخاب‌شده":"Selected location",
     "دقت":"Accuracy",
-    "متر":"m"
+    "متر":"m",
+    "اعلان قبل از زمان":"Alert before event",
+    "صدای آلارم":"Alarm sound",
+    "زنگ ملایم":"Gentle chime",
+    "یک فایل صوتی از گوشی انتخاب کنید":"Choose an audio file from your phone",
+    "فایل: ":"File: ",
+    "در حال دریافت موقعیت…":"Getting location…",
+    "موقعیت GPS":"GPS location",
+    "موقعیت زنده GPS":"Live GPS location",
+    "برای تأیید دکمه پایین را بزنید":"Tap the button below to confirm",
+    "موقعیت زنده GPS · ":"Live GPS location · ",
+    "دقت ±":"Accuracy ±"
   };
   const attributes = ["placeholder", "aria-label", "title"];
   const originalText = new WeakMap();
@@ -164,10 +175,15 @@
       ["نمازهای ثبت‌شده", "Prayers logged"],
       ["صفحه قرآن", "Quran pages"],
       ["ذکر", "Dhikr"],
+      [" دقیقه ", " minutes "],
+      [" متر", " m"],
+      ["در حال یافتن موقعیت", "Finding location"],
+      ["موقعیت تأییدشده", "Confirmed location"],
       ["موجودی ستاره‌های تو", "Your star balance"],
       ["به بالاترین سطح فعلی رسیدی؛ آفرین!", "You've reached the highest available level. Well done!"]
     ];
     partial.forEach(([fa, en]) => { out = out.split(fa).join(en); });
+    out = out.replace(/[۰-۹]/g, digit => "۰۱۲۳۴۵۶۷۸۹".indexOf(digit));
     return out;
   }
   function apply() {

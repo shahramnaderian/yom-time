@@ -66,6 +66,7 @@
     "برنامهٔ هفتگی من":"My weekly schedule",
     "جلسه‌ها هر هفته در روز و ساعت ثبت‌شده تکرار می‌شوند.":"Sessions repeat every week on the selected day and time.",
     "تنظیمات":"Settings",
+    "خانه":"Home",
     "جدول ماهانه":"Monthly table",
     "ساخت جدول اوقات شرعی ماهانه و دریافت خروجی PDF و اکسل":"Create a monthly prayer-times table and export it as PDF or Excel.",
     "ساخت جدول ماهانه و دریافت خروجی PDF و اکسل ←":"Create monthly table and export PDF / Excel ←",

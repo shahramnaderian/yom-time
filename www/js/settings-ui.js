@@ -35,6 +35,11 @@
 
     box.querySelectorAll("[data-sound]").forEach((btn) => {
       btn.addEventListener("click", () => {
+        if(btn.getAttribute("data-sound")==="custom-ringtone"){
+          const picker=document.getElementById("pick-phone-ringtone");
+          if(picker)picker.click();
+          return;
+        }
         SE.sounds.setSoundPref(btn.getAttribute("data-sound"));
         renderSoundOptions();
         toast(t("sound_saved", lang() === "en" ? "Sound saved" : "صدا ذخیره شد"));

@@ -130,7 +130,7 @@
       '  $("home-next-time").textContent=fa(next.time);',
       '  $("home-countdown").textContent=fa(String(Math.floor(sec/3600)).padStart(2,"0")+":"+String(Math.floor(sec%3600/60)).padStart(2,"0")+":"+String(sec%60).padStart(2,"0"));',
       ' }'
-    ].join("\\n");
+    ].join("\n");
     var countdownReplacement = [
       ' const now=new Date();',
       ' const candidates=[];',
@@ -162,7 +162,7 @@
       '  $("home-next-time").textContent="—";',
       '  $("home-countdown").textContent="۰۰:۰۰:۰۰";',
       ' }'
-    ].join("\\n");
+    ].join("\n");
     if (text.indexOf(countdownPatch) !== -1) text = text.split(countdownPatch).join(countdownReplacement);
     else console.warn("Next-event countdown patch target not found; keeping original countdown.");
 

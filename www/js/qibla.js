@@ -4,6 +4,24 @@
   const KAABA = { lat: 21.422487, lng: 39.826206 };
   const $ = function (id) { return document.getElementById(id); };
 
+  function isEnglish() { return (SE.i18n && SE.i18n.lang) === "en" || document.documentElement.lang === "en"; }
+  function applyLanguage() {
+    const en=isEnglish(), set=(id,fa,enText)=>{const el=$(id);if(el)el.textContent=en?enText:fa;};
+    set("qibla-title","قبله‌نما","Qibla compass");
+    set("qibla-distance","—","—");
+    set("qibla-heading", "قطب‌نما غیرفعال — دکمه زیر را بزنید", "Compass inactive — tap the button below");
+    set("qibla-status","زاویه قبله نسبت به شمال جغرافیایی محاسبه می‌شود.","Qibla bearing is measured from true north.");
+    const gps=$("qibla-gps"),compass=$("qibla-compass"),city=$("qibla-use-city");
+    if(gps)gps.textContent=en?"Use my location (GPS)":"موقعیت من (GPS)";
+    if(compass)compass.textContent=en?"Enable compass":"فعال‌سازی قطب‌نما";
+    if(city)city.textContent=en?"Use selected city":"استفاده از شهر انتخاب‌شده";
+    const caption=document.querySelector(".qibla-kaaba-art figcaption");
+    if(caption)caption.textContent=en?"The Holy Kaaba":"خانهٔ خدا · کعبهٔ شریف";
+    const title=document.querySelector("#view-qibla .archive-head h2");
+    if(title)title.textContent=en?"Qibla compass":"قبله‌نما";
+    const note=document.querySelector("#qibla-card > .hint:last-child");
+    if(note)note.textContent=en?"For accurate compass readings, keep the phone flat and away from metal or magnets.":"نکته: برای قطب‌نمای دقیق، گوشی را صاف و افقی نگه دارید و از تداخل فلز و آهن‌ربا دوری کنید.";
+  }
   function toRad(d) { return d * Math.PI / 180; }
   function toDeg(r) { return r * 180 / Math.PI; }
 
@@ -117,7 +135,7 @@
     const deviceNeedle = $("qibla-device-marker");
 
     if (angleEl) angleEl.textContent = formatBearing(qibla);
-    if (distEl) distEl.textContent = faDigits(dist.toFixed(0)) + " کیلومتر تا کعبه";
+    if (distEl) distEl.textContent = faDigits(dist.toFixed(0)) + (isEnglish()?" km to the Kaaba":" کیلومتر تا کعبه");
     if (placeEl) placeEl.textContent = loc.label + " · " + loc.lat.toFixed(4) + ", " + loc.lng.toFixed(4);
 
     if (needle) {
@@ -177,7 +195,7 @@
 
   function buildUI() {
     const view = $("view-qibla");
-    if (!view || $("qibla-card")) return;
+    if (!view || $("qibla-card")) { applyLanguage(); return; }
 
     view.innerHTML =
       '<div class="archive-head"><h2>قبله‌نما</h2></div>' +

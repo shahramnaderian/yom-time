@@ -8,7 +8,8 @@
     { id:"cheerful-piano", labelFa:"پیانوی شاد", labelEn:"Cheerful piano", icon:"🎹" },
     { id:"soft-marimba", labelFa:"ماریمبای ملایم", labelEn:"Soft marimba", icon:"🎵" },
     { id:"default", labelFa:"صدای اعلان", labelEn:"Notification", icon:"🔔" },
-    { id:"system", labelFa:"زنگ گوشی", labelEn:"Phone ringtone", icon:"📱" },
+    { id:"system", labelFa:"صدای پیش‌فرض اعلان", labelEn:"Default notification", icon:"🔔" },
+    { id:"custom-ringtone", labelFa:"زنگ دلخواه گوشی", labelEn:"Choose phone sound", icon:"📲" },
     { id:"silent", labelFa:"بی‌صدا", labelEn:"Silent", icon:"🔇" }
   ];
   const DEFAULT_SOUND = "adhan";
@@ -38,12 +39,14 @@
   function soundForNotification(alarmType) {
     const pref=getSoundPref();
     if(pref==="silent") return null;
+    if(pref==="custom-ringtone") return undefined;
     if(pref==="adhan") return alarmType==="fajr"?"adhan_fajr.mp3":"adhan.mp3";
     return TONES[pref] ? TONES[pref].file : "default";
   }
   function channelForNotification(alarmType) {
     const pref=getSoundPref();
     if(pref==="silent") return "prayer-silent";
+    if(pref==="custom-ringtone") return SE.store.prefs.get("customRingtoneChannelId", "prayer-ringtone-v2");
     if(pref==="adhan") return alarmType==="fajr"?"prayer-adhan-fajr-v2":"prayer-adhan-v2";
     return TONES[pref] ? TONES[pref].channel : "prayer-ringtone-v2";
   }
@@ -92,6 +95,7 @@
     opts=opts||{};
     const pref=opts.soundMode==="adhan"||opts.soundMode==="system"||TONES[opts.soundMode]?opts.soundMode:getSoundPref();
     if(pref==="silent") return {ok:true,silent:true};
+    if(pref==="custom-ringtone") return {ok:true,nativeChannel:true};
     if(pref==="adhan") { const r=await playAdhan(alarmType); if(r.ok)return r; }
     if(TONES[pref]) return playTone(pref);
     try {
@@ -104,6 +108,7 @@
   async function preview(id) {
     const pref=id||getSoundPref();
     if(pref==="silent") return {ok:true,silent:true};
+    if(pref==="custom-ringtone") return {ok:true,nativeChannel:true};
     if(pref==="adhan") {const r=await playAdhan("default");setTimeout(stopAdhan,4000);return r;}
     if(TONES[pref]) return playTone(pref);
     await onAlarmFire("dhuhr"); return {ok:true,beep:true};

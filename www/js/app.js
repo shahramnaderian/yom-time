@@ -48,6 +48,7 @@
     try { await loadScript("js/qibla-precise.js"); } catch (qe4) { console.warn(qe4); }
     try { await loadScript("js/qibla-shell.js"); } catch (qe2) { console.warn(qe2); }
     try { await loadScript("js/home-qibla-card.js"); } catch (qe3) { console.warn(qe3); }
+    try { await loadScript("js/weekly-tasks.js"); } catch (qe5) { console.warn(qe5); }
   } catch (e) {
     console.error("Yom Time app bootstrap failed", e);
   }

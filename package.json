@@ -1,5 +1,5 @@
 {
-  "name": "yom-time",
+  "name": "yomeah",
   "version": "2.8.0",
   "description": "اوقات شرعی دقیق — محاسبه اوقات نماز با تقویم جلالی و پشتیبانی جهانی",
   "main": "index.js",
@@ -10,15 +10,7 @@
     "cap:android": "npx cap open android",
     "cap:ios": "npx cap open ios"
   },
-  "keywords": [
-    "prayer-times",
-    "owghat",
-    "jalali",
-    "solar",
-    "islamic",
-    "capacitor",
-    "iran"
-  ],
+  "keywords": ["prayer-times", "owghat", "jalali", "solar", "islamic", "capacitor", "iran"],
   "author": "shahramnaderian",
   "license": "MIT",
   "dependencies": {

@@ -320,6 +320,14 @@
       });
     }
 
+    const langButton=document.getElementById("lang");
+    if(langButton&&!langButton.dataset.settingsLangBound){
+      langButton.dataset.settingsLangBound="1";
+      langButton.addEventListener("click",()=>setTimeout(()=>{
+        renderSoundOptions();renderAlarmToggles();renderReminderControls();
+      },0));
+    }
+
     document.querySelectorAll(".tabbar a[data-tab]").forEach((a) => {
       a.addEventListener("click", (e) => {
         const tab = a.getAttribute("data-tab");

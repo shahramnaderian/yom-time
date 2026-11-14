@@ -1,11 +1,11 @@
 {
-  "name": "yom ti",
-  "short_name": "yom ti",
-  "description": "محاسبه دقیق اوقات شرعی برای هر نقطه از جهان",
+  "name": "اوقات جهانی · Yom Time",
+  "short_name": "اوقات جهانی",
+  "description": "محاسبه دقیق اوقات شرعی، قبله‌نما و یادآوری برای هر نقطه از جهان",
   "start_url": "./",
   "display": "standalone",
-  "background_color": "#0A1628",
-  "theme_color": "#C9A227",
+  "background_color": "#071A2E",
+  "theme_color": "#E8B84A",
   "lang": "fa",
   "dir": "rtl",
   "icons": [
@@ -13,7 +13,13 @@
       "src": "icons/icon.svg",
       "sizes": "any",
       "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
     }
   ]
 }

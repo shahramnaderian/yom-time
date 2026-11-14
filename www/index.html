@@ -74,6 +74,17 @@
         <button type="button" id="custom-reminder-test" class="sound-preview-btn">آزمایش یادآوری</button>
         <p id="custom-reminder-status" class="hint" role="status" aria-live="polite"></p>
       </div>
+      <div class="card">
+        <div class="card-title"><span class="settings-icon">🔔</span> صدای اعلان اوقات</div>
+        <p class="hint">برای آلارم نمازها و یک‌سوم / دو‌سوم شب؛ زنگ‌های شاد به‌صورت آفلاین داخل برنامه هستند.</p>
+        <div id="sound-options" class="sound-options" role="radiogroup" aria-label="صدای اعلان"></div>
+        <button type="button" id="pick-phone-ringtone" class="sound-preview-btn">انتخاب زنگ از گوشی</button>
+        <button type="button" id="sound-preview" class="sound-preview-btn">پخش نمونه</button>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="settings-icon">🕌</span> آلارم‌های فعال</div>
+        <div id="alarm-toggles" class="alarm-toggles"></div>
+      </div>
       <button id="home-reminder-settings" class="home-reminder-settings" type="button">⚙ تنظیمات کامل برنامه</button>
     </section>
     <section id="view-create" class="view" hidden>
@@ -201,17 +212,7 @@
         <label class="alarm-row"><span class="alarm-name">نمایش تاریخ قمری</span><input id="show-hijri-date" type="checkbox"><span class="switch"></span></label>
         <p class="hint">تاریخ شمسی همیشه نمایش داده می‌شود. انتخاب‌های شما ذخیره خواهند شد.</p>
       </div>
-      <div class="card">
-        <div class="card-title"><span class="settings-icon">🔔</span> صدای اعلان اوقات</div>
-        <p class="hint">برای آلارم نمازها و یک‌سوم / دو‌سوم شب؛ زنگ‌های شاد به‌صورت آفلاین داخل برنامه هستند.</p>
-        <div id="sound-options" class="sound-options" role="radiogroup" aria-label="صدای اعلان"></div>
-        <button type="button" id="pick-phone-ringtone" class="sound-preview-btn">انتخاب زنگ از گوشی</button>
-        <button type="button" id="sound-preview" class="sound-preview-btn">پخش نمونه</button>
-      </div>
-      <div class="card">
-        <div class="card-title"><span class="settings-icon">🕌</span> آلارم‌های فعال</div>
-        <div id="alarm-toggles" class="alarm-toggles"></div>
-      </div>
+
 
       <div class="card" id="reminder-settings-start">
         <div class="card-title"><span class="settings-icon">📖</span> یادآوری مطالعه قرآن (۲ صفحه)</div>
@@ -244,7 +245,7 @@
   </main>
 
   <nav class="tabbar">
-    <a href="#/home" data-tab="home" class="active" aria-current="page"><span>اوقات شرعی</span></a><a href="#/create" data-tab="create"><span>جدول ماهانه</span></a>
+    <a href="#/home" data-tab="home" class="active" aria-current="page"><span><span aria-hidden="true">🏠</span> خانه</span></a><a href="#/create" data-tab="create"><span>جدول ماهانه</span></a>
     <a href="#/archive" data-tab="archive"><span>بایگانی</span><b id="badge" hidden></b></a>
     <a href="#/worship" data-tab="worship"><span>عبادت</span></a><a href="#/weekly" data-tab="weekly"><span>جلسات</span></a>
     <a href="#/settings" data-tab="settings"><span>تنظیمات</span></a>

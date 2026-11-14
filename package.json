@@ -6,7 +6,7 @@
   "scripts": {
     "start": "npx serve www",
     "build": "echo 'Static web app - no build needed'",
-    "cap:sync": "npx cap sync",
+    "cap:sync": "node scripts/generate-alarm-tones.js && npx cap sync",
     "cap:android": "npx cap open android",
     "cap:ios": "npx cap open ios"
   },

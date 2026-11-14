@@ -50,7 +50,7 @@
       "صدای آلارم<div class=\"home-sound-picks\" role=\"radiogroup\" aria-label=\"صدای آلارم\">" +
       "<label class=\"home-sound-pick\"><input type=\"radio\" name=\"home-sound-'+x.key+'\" data-home-sound=\"'+x.key+'\" value=\"adhan\" '+(p.sound===\"adhan\"?'checked':'')+'><span class=\"home-sound-circle\">🕌</span><span class=\"home-sound-txt\">اذان</span></label>" +
       "<label class=\"home-sound-pick\"><input type=\"radio\" name=\"home-sound-'+x.key+'\" data-home-sound=\"'+x.key+'\" value=\"system\" '+((!p.sound||p.sound===\"system\")?'checked':'')+'><span class=\"home-sound-circle\">📱</span><span class=\"home-sound-txt\">زنگ گوشی</span></label>" +
-      "<label class=\"home-sound-pick\"><input type=\"radio\" name=\"home-sound-'+x.key+'\" data-home-sound=\"'+x.key+'\" value=\"custom\" '+(p.sound===\"custom\"?'checked':'')+'><span class=\"home-sound-circle\">🎵</span><span class=\"home-sound-txt\">از دستگاه</span></label></div>" +
+      "<label class=\"home-sound-pick\"><input type=\"radio\" name=\"home-sound-'+x.key+'\" data-home-sound=\"'+x.key+'\" value=\"custom\" '+(p.sound===\"custom\"?'checked':'')+'><span class=\"home-sound-circle\">🎵</span><span class=\"home-sound-txt\">زنگ ملایم</span></label></div>" +
       "<div class=\"home-sound-upload-wrap\" data-home-upload-wrap=\"'+x.key+'\" '+(p.sound===\"custom\"?'':'hidden')+'>'+" +
       "'<input type=\"file\" accept=\"audio/*,.mp3,.m4a,.ogg,.wav,.aac\" data-home-upload=\"'+x.key+'\" class=\"home-sound-file\">'+" +
       "'<span class=\"home-sound-upload-hint\" data-home-upload-hint=\"'+x.key+'\">'+(" +
@@ -117,7 +117,7 @@
       styleNeedle;
     if (text.indexOf(styleNeedle) !== -1) text = text.split(styleNeedle).join(styleExtra);
 
-    (0, eval)(text);
+    var nightHelper = 'function nightPartsFor(place,y,m,d,ev){const next=new Date(Date.UTC(y,m-1,d+1)),ny=next.getUTCFullYear(),nm=next.getUTCMonth()+1,nd=next.getUTCDate(),nextEv=SE.place.timesFor(place,ny,nm,nd,"legacy");const mins=s=>{if(!s)return null;const a=String(s).split(":").map(Number);return a.length===2&&a.every(Number.isFinite)?a[0]*60+a[1]:null;};const sunset=mins(ev.sunset),fajr=mins(nextEv.fajr);let one=null,two=null;if(sunset!=null&&fajr!=null){const end=fajr<=sunset?fajr+1440:fajr,span=end-sunset;one=(sunset+span/3)%1440;two=(sunset+span*2/3)%1440;}const fmt=n=>n==null?null:String(Math.floor(n/60)).padStart(2,"0")+":"+String(Math.floor(n%60)).padStart(2,"0");return {nightEnd:ev.fajr,night1:fmt(one),night2:fmt(two)};}';\n    text = text.replace('let activeCity=null;', nightHelper + '\\nlet activeCity=null;');\n    text = text.replaceAll('const nightTimes={nightEnd:ev.nauticalBegin,night1:ev.night1,night2:ev.night2};','const nightTimes=nightPartsFor(activeCity,y,m,d,ev);');\n    (0, eval)(text);
   } catch (e) {
     console.error("Yom Time home-dashboard bootstrap failed", e);
   }

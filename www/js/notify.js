@@ -47,6 +47,13 @@
     ];
     try {
       for (const channel of channels) await p.createChannel(channel);
+      const ringtonePicker = SE.native && SE.native.plugin ? SE.native.plugin("RingtonePicker") : null;
+      if (ringtonePicker && ringtonePicker.getSelectedRingtone && SE.store && SE.store.prefs) {
+        try {
+          const selected = await ringtonePicker.getSelectedRingtone();
+          if (selected && selected.channelId) SE.store.prefs.set("customRingtoneChannelId", selected.channelId);
+        } catch (e) {}
+      }
       return true;
     } catch (e) {
       return false;

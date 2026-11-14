@@ -142,8 +142,6 @@
     "مکان انتخاب‌شده":"Selected location",
     "دقت":"Accuracy",
     "متر":"m"
-
-    "فعال‌سازی یادآوری هفتگی شنبه":"Enable weekly Saturday reminder"
   };
   const attributes = ["placeholder", "aria-label", "title"];
   const originalText = new WeakMap();

@@ -50,7 +50,8 @@ public class RingtonePickerPlugin extends Plugin {
         }
         Uri uri = result.getData().getParcelableExtra(RingtoneManager.EXTRA_RINGTONE_PICKED_URI);
         if (uri == null) uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-        String title = uri == null ? "Default notification" : RingtoneManager.getRingtone(getContext(), uri).getTitle(getContext());
+        android.media.Ringtone ringtone = uri == null ? null : RingtoneManager.getRingtone(getContext(), uri);
+        String title = ringtone == null ? "Default notification" : ringtone.getTitle(getContext());
         String uriText = uri == null ? "" : uri.toString();
         String channelId = createSoundChannel(uri, title);
         getContext().getSharedPreferences(PREFS, 0).edit()

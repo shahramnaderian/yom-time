@@ -9,7 +9,7 @@
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="css/app.css">
 <link rel="stylesheet" href="css/settings.css">
-<style>#home-city-picker{margin:0 0 18px}#home-city-picker>label{display:block;color:#657384;font-size:.9rem;margin-bottom:8px}.home-city-control{display:flex;gap:8px}.home-city-control input{flex:1;min-width:0;padding:11px;border:1px solid #dce2e8;border-radius:12px;font:inherit}.home-city-control button{border:0;border-radius:12px;background:#eaf3fa;color:#236b9a;padding:8px 12px;font:inherit;white-space:nowrap}.home-city-current{font-size:.82rem;color:#718092;margin-top:6px}.home-city-results{position:relative;z-index:5;background:#fff;border:1px solid #e1e6ea;border-radius:12px;overflow:hidden;box-shadow:0 5px 16px #20304012}.home-city-results button{display:block;width:100%;padding:11px 13px;text-align:right;border:0;border-bottom:1px solid #edf0f2;background:#fff;font:inherit;color:#263746}.home-city-results[hidden]{display:none!important}</style>
+<style>#home-city-picker{margin:0 0 18px}#home-city-picker>label{display:block;color:#657384;font-size:.9rem;margin-bottom:8px}.home-city-control{display:flex;gap:8px}.home-city-control input{flex:1;min-width:0;padding:11px;border:1px solid #dce2e8;border-radius:12px;font:inherit}.home-city-control button{border:0;border-radius:12px;background:#eaf3fa;color:#236b9a;padding:8px 12px;font:inherit;white-space:nowrap}.home-city-current{font-size:.82rem;color:#718092;margin-top:6px}.home-city-results{position:relative;z-index:5;background:#fff;border:1px solid #e1e6ea;border-radius:12px;overflow:hidden;box-shadow:0 5px 16px #20304012}.home-city-results button{display:block;width:100%;padding:11px 13px;text-align:right;border:0;border-bottom:1px solid #edf0f2;background:#fff;font:inherit;color:#263746}.home-city-results[hidden]{display:none!important}#home-map-picker{margin-top:12px}.home-map-help{font-size:.8rem;color:#718092;margin:6px 0 10px}#home-map-toggle{width:100%;border:1px solid #cfe0ec;border-radius:12px;background:#f1f7fb;color:#236b9a;padding:11px 14px;font:inherit;cursor:pointer}#home-map-panel{margin-top:10px}#home-map-panel[hidden]{display:none!important}#home-location-map{height:300px;min-height:240px;border-radius:14px;overflow:hidden;border:1px solid #dce2e8;z-index:1}.home-map-coords{font-size:.8rem;color:#657384;padding:8px 2px;direction:ltr;text-align:center}.home-map-actions{display:flex;gap:8px}.home-map-actions button{flex:1;border:0;border-radius:11px;padding:11px;font:inherit;cursor:pointer}.home-map-actions #home-map-confirm{background:#176348;color:#fff}.home-map-actions #home-map-confirm:disabled{opacity:.45}.home-map-actions #home-map-cancel{background:#edf0f2;color:#344454}.leaflet-container{font-family:inherit}</style>
 <style>.date-sub [hidden]{display:none!important}#home-date-native{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;inset-inline-start:-10000px}.home-date-controls{display:flex;align-items:center;gap:10px;margin-top:12px}.home-date-controls #home-date{flex:1;min-width:0;cursor:pointer;background:#fff;border:1px solid #dce2e8;border-radius:12px;padding:12px;font:inherit;color:#263746}.home-date-controls #home-today{border:0;border-radius:12px;background:#e7f0e9;color:#176348;padding:12px 18px;font:inherit;cursor:pointer}</style>
 </head>
 <body>
@@ -43,6 +43,18 @@
           <div id="home-city-label" class="home-city-current" aria-live="polite"></div>
           <div id="home-city-results" class="home-city-results" role="listbox" hidden></div>
         </div>
+        <div id="home-map-picker" class="home-map-picker">
+          <button id="home-map-toggle" type="button" aria-expanded="false">📍 انتخاب نقطه روی نقشه</button>
+          <p class="home-map-help">اگر در روستا، طبیعت یا خارج از محدودهٔ شهر هستید، محل دقیق خود را روی نقشه مشخص کنید.</p>
+          <div id="home-map-panel" hidden>
+            <div id="home-location-map" role="application" aria-label="نقشه انتخاب موقعیت دقیق"></div>
+            <div class="home-map-coords" id="home-map-coords" aria-live="polite">برای تعیین موقعیت، روی نقشه بزنید یا نشانگر را جابه‌جا کنید.</div>
+            <div class="home-map-actions">
+              <button id="home-map-confirm" type="button" disabled>ثبت این موقعیت</button>
+              <button id="home-map-cancel" type="button">انصراف</button>
+            </div>
+          </div>
+        </div>
         <h2 hidden>اوقات شرعی مریوان</h2>
         <p id="home-date-label" class="home-date-label" aria-live="polite"></p>
         <label for="home-date" hidden>انتخاب تاریخ</label>
@@ -56,17 +68,6 @@
       <div class="home-times-card">
         <h2>اوقات شرعی امروز</h2>
         <div id="home-times" class="home-times-list"></div>
-      </div>
-      <div class="card">
-        <div class="card-title"><span class="settings-icon">🔔</span> صدای اعلان اوقات</div>
-        <p class="hint">برای آلارم نمازها و یک‌سوم / دو‌سوم شب؛ زنگ‌های شاد به‌صورت آفلاین داخل برنامه هستند.</p>
-        <div id="sound-options" class="sound-options" role="radiogroup" aria-label="صدای اعلان"></div>
-        <button type="button" id="pick-phone-ringtone" class="sound-preview-btn">انتخاب زنگ از گوشی</button>
-        <button type="button" id="sound-preview" class="sound-preview-btn">پخش نمونه</button>
-      </div>
-      <div class="card">
-        <div class="card-title"><span class="settings-icon">🕌</span> آلارم‌های فعال</div>
-        <div id="alarm-toggles" class="alarm-toggles"></div>
       </div>
       <button id="home-reminder-settings" class="home-reminder-settings" type="button">⚙ تنظیمات کامل برنامه</button>
     </section>
@@ -184,6 +185,17 @@
       <div class="settings-head">
         <h2>تنظیمات</h2>
       </div>
+      <div class="card">
+        <div class="card-title"><span class="settings-icon">🔔</span> صدای اعلان اوقات</div>
+        <p class="hint">برای آلارم نمازها و یک‌سوم / دو‌سوم شب؛ زنگ‌های شاد به‌صورت آفلاین داخل برنامه هستند.</p>
+        <div id="sound-options" class="sound-options" role="radiogroup" aria-label="صدای اعلان"></div>
+        <button type="button" id="pick-phone-ringtone" class="sound-preview-btn">انتخاب زنگ از گوشی</button>
+        <button type="button" id="sound-preview" class="sound-preview-btn">پخش نمونه</button>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="settings-icon">🕌</span> آلارم‌های فعال</div>
+        <div id="alarm-toggles" class="alarm-toggles"></div>
+      </div>
       <div class="card" id="custom-reminder-card">
         <div class="card-title"><span class="settings-icon">⏰</span> یادآوری دلخواه روزانه</div>
         <p class="hint">یک ساعت و متن دلخواه تعیین کنید تا هر روز در همان زمان به شما یادآوری شود.</p>
@@ -295,6 +307,7 @@
 <script src="js/home-dashboard.js"></script>
 <script src="js/jalali-date-picker.js"></script>
 <script src="js/home-city-picker.js"></script>
+<script src="js/home-map-picker.js"></script>
 <script src="js/monthly-archive.js"></script>
 <script src="js/app-localization.js"></script>
 <script>

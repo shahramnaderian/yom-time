@@ -1,0 +1,3 @@
+See commit note. Apply with: git apply RESTORE_AUTOSAVE.patch
+
+This patch restores www/js/app.js and www/js/monthly-archive.js that were emptied, adds archive-autosave.js loader in index.html, and auto-saves monthly tables from the create tab into the archive.

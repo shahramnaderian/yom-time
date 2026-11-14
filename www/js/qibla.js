@@ -48,7 +48,7 @@
 
   function formatBearing(deg) {
     const d = Math.round((deg % 360 + 360) % 360);
-    return faDigits(d) + "°";
+    return (isEnglish()?String(d):faDigits(d)) + "°";
   }
 
   function getUserLocation() {
@@ -56,7 +56,7 @@
       return {
         lat: Number(SE.selectedCity.lat),
         lng: Number(SE.selectedCity.lng),
-        label: SE.place && SE.place.label ? SE.place.label(SE.selectedCity, "fa") : (SE.selectedCity.city || "موقعیت انتخاب‌شده"),
+        label: SE.place && SE.place.label ? SE.place.label(SE.selectedCity, isEnglish()?"en":"fa") : (isEnglish()?(SE.selectedCity.cityEn || SE.selectedCity.city || "Selected location"):(SE.selectedCity.city || "موقعیت انتخاب‌شده")),
         source: "selected"
       };
     }
@@ -66,12 +66,12 @@
         return {
           lat: Number(saved.lat),
           lng: Number(saved.lng),
-          label: SE.place && SE.place.label ? SE.place.label(saved, "fa") : (saved.city || "شهر ذخیره‌شده"),
+          label: SE.place && SE.place.label ? SE.place.label(saved, isEnglish()?"en":"fa") : (isEnglish()?(saved.cityEn || saved.city || "Saved city"):(saved.city || "شهر ذخیره‌شده")),
           source: "saved"
         };
       }
     } catch (_) {}
-    return { lat: 35.6892, lng: 51.3890, label: "تهران (پیش‌فرض)", source: "default" };
+    return { lat: 35.6892, lng: 51.3890, label: isEnglish()?"Tehran (default)":"تهران (پیش‌فرض)", source: "default" };
   }
 
   let compassHeading = null;
@@ -104,17 +104,17 @@
       DeviceOrientationEvent.requestPermission().then(function (state) {
         if (state === "granted") {
           window.addEventListener("deviceorientation", orientationHandler, true);
-          setStatus("قطب‌نما فعال شد. گوشی را افقی نگه دارید.");
+          setStatus(isEnglish()?"Compass enabled. Keep your phone flat.":"قطب‌نما فعال شد. گوشی را افقی نگه دارید.");
         } else {
-          setStatus("اجازه دسترسی به قطب‌نما داده نشد. فقط زاویه قبله نمایش داده می‌شود.");
+          setStatus(isEnglish()?"Compass permission denied. Showing the Qibla bearing only.":"اجازه دسترسی به قطب‌نما داده نشد. فقط زاویه قبله نمایش داده می‌شود.");
         }
       }).catch(function () {
-        setStatus("قطب‌نما در این مرورگر در دسترس نیست. فقط زاویه قبله نمایش داده می‌شود.");
+        setStatus(isEnglish()?"Compass is unavailable in this browser. Showing the Qibla bearing only.":"قطب‌نما در این مرورگر در دسترس نیست. فقط زاویه قبله نمایش داده می‌شود.");
       });
     } else {
       window.addEventListener("deviceorientation", orientationHandler, true);
       window.addEventListener("deviceorientationabsolute", orientationHandler, true);
-      setStatus("در حال خواندن قطب‌نما… گوشی را افقی نگه دارید.");
+      setStatus(isEnglish()?"Reading compass… keep your phone flat.":"در حال خواندن قطب‌نما… گوشی را افقی نگه دارید.");
     }
   }
 
@@ -152,15 +152,15 @@
     const headingEl = $("qibla-heading");
     if (headingEl) {
       headingEl.textContent = compassHeading != null
-        ? ("جهت گوشی: " + formatBearing(compassHeading))
-        : "قطب‌نما غیرفعال — دکمه زیر را بزنید";
+        ? (isEnglish()?"Phone heading: ":"جهت گوشی: ") + formatBearing(compassHeading)
+        : (isEnglish()?"Compass inactive — tap the button below":"قطب‌نما غیرفعال — دکمه زیر را بزنید");
     }
   }
 
   function requestGps() {
-    setStatus("در حال دریافت موقعیت…");
+    setStatus(isEnglish()?"Getting your location…":"در حال دریافت موقعیت…");
     if (!navigator.geolocation) {
-      setStatus("موقعیت‌یابی در این دستگاه پشتیبانی نمی‌شود.");
+      setStatus(isEnglish()?"Location is not supported on this device.":"موقعیت‌یابی در این دستگاه پشتیبانی نمی‌شود.");
       renderCompass();
       return;
     }
@@ -173,20 +173,20 @@
         liveLoc = {
           lat: pos.coords.latitude,
           lng: pos.coords.longitude,
-          label: "موقعیت GPS",
+          label: isEnglish()?"GPS location":"موقعیت GPS",
           source: "gps"
         };
         if (SE.place && SE.place.fromCoords) {
           try {
             const p = SE.place.fromCoords(liveLoc.lat, liveLoc.lng, { source: "qibla-gps" });
-            liveLoc.label = SE.place.label ? SE.place.label(p, "fa") : liveLoc.label;
+            liveLoc.label = SE.place.label ? SE.place.label(p, isEnglish()?"en":"fa") : liveLoc.label;
           } catch (_) {}
         }
-        setStatus("موقعیت GPS به‌روز شد · دقت حدود " + faDigits(Math.round(pos.coords.accuracy || 0)) + " متر");
+        setStatus(isEnglish()?"GPS location updated · accuracy about "+Math.round(pos.coords.accuracy || 0)+" m":"موقعیت GPS به‌روز شد · دقت حدود " + faDigits(Math.round(pos.coords.accuracy || 0)) + " متر");
         renderCompass();
       },
       function (err) {
-        setStatus("دسترسی به GPS ممکن نشد: " + (err && err.message ? err.message : "خطا"));
+        setStatus((isEnglish()?"Could not access GPS: ":"دسترسی به GPS ممکن نشد: ") + (err && err.message ? err.message : (isEnglish()?"Error":"خطا")));
         renderCompass();
       },
       { enableHighAccuracy: true, maximumAge: 5000, timeout: 20000 }
@@ -239,7 +239,7 @@
         navigator.geolocation.clearWatch(watchId);
         watchId = null;
       }
-      setStatus("از شهر/موقعیت انتخاب‌شده در برنامه استفاده می‌شود.");
+      setStatus(isEnglish()?"Using the city/location selected in the app.":"از شهر/موقعیت انتخاب‌شده در برنامه استفاده می‌شود.");
       renderCompass();
     });
 

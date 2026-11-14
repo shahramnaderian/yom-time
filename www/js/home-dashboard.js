@@ -48,12 +48,12 @@
     var soundNeedle = "صدای آلارم<select data-home-sound=\"'+x.key+'\"><option value=\"system\" '+((p.sound||\"system\")===\"system\"?'selected':'')+'>زنگ گوشی</option><option value=\"adhan\" '+(p.sound===\"adhan\"?'selected':'')+'>اذان</option></select>";
     var soundRepl =
       "صدای آلارم<select class=\"home-alarm-sound-select\" data-home-sound=\"'+x.key+'\">" +
-      "<option value=\"system\" '+((p.sound||\"system\")===\"system\"?'selected':'')+'>'+((document.documentElement.lang||\"fa\").toLowerCase().indexOf(\"en\")===0?\"Phone ringtone\":\"زنگ گوشی\")+'</option>' +
-      "<option value=\"adhan\" '+(p.sound===\"adhan\"?'selected':'')+'>'+((document.documentElement.lang||\"fa\").toLowerCase().indexOf(\"en\")===0?\"Adhan\":\"اذان\")+'</option>' +
-      "<option value=\"happy-chime\" '+(p.sound===\"happy-chime\"?'selected':'')+'>'+((document.documentElement.lang||\"fa\").toLowerCase().indexOf(\"en\")===0?\"Happy chime\":\"زنگ شاد\")+'</option>' +
-      "<option value=\"morning-bells\" '+(p.sound===\"morning-bells\"?'selected':'')+'>'+((document.documentElement.lang||\"fa\").toLowerCase().indexOf(\"en\")===0?\"Morning bells\":\"ناقوس صبحگاهی\")+'</option>' +
-      "<option value=\"cheerful-piano\" '+(p.sound===\"cheerful-piano\"?'selected':'')+'>'+((document.documentElement.lang||\"fa\").toLowerCase().indexOf(\"en\")===0?\"Cheerful piano\":\"پیانوی شاد\")+'</option>' +
-      "<option value=\"soft-marimba\" '+(p.sound===\"soft-marimba\"?'selected':'')+'>'+((document.documentElement.lang||\"fa\").toLowerCase().indexOf(\"en\")===0?\"Soft marimba\":\"ماریمبای ملایم\")+'</option>' +
+      "<option value=\"system\" '+((p.sound||\"system\")===\"system\"?'selected':'')+'>'+((document.documentElement.lang||'fa').toLowerCase().indexOf('en')===0?'Phone ringtone':'زنگ گوشی')+'</option>' +
+      "<option value=\"adhan\" '+(p.sound===\"adhan\"?'selected':'')+'>'+((document.documentElement.lang||'fa').toLowerCase().indexOf('en')===0?'Adhan':'اذان')+'</option>' +
+      "<option value=\"happy-chime\" '+(p.sound===\"happy-chime\"?'selected':'')+'>'+((document.documentElement.lang||'fa').toLowerCase().indexOf('en')===0?'Happy chime':'زنگ شاد')+'</option>' +
+      "<option value=\"morning-bells\" '+(p.sound===\"morning-bells\"?'selected':'')+'>'+((document.documentElement.lang||'fa').toLowerCase().indexOf('en')===0?'Morning bells':'ناقوس صبحگاهی')+'</option>' +
+      "<option value=\"cheerful-piano\" '+(p.sound===\"cheerful-piano\"?'selected':'')+'>'+((document.documentElement.lang||'fa').toLowerCase().indexOf('en')===0?'Cheerful piano':'پیانوی شاد')+'</option>' +
+      "<option value=\"soft-marimba\" '+(p.sound===\"soft-marimba\"?'selected':'')+'>'+((document.documentElement.lang||'fa').toLowerCase().indexOf('en')===0?'Soft marimba':'ماریمبای ملایم')+'</option>' +
       "</select>";
     if (text.indexOf(soundNeedle) !== -1) text = text.split(soundNeedle).join(soundRepl);
 

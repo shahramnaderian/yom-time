@@ -53,7 +53,6 @@ jobs:
         run: |
           python3 - <<'PY'
           from pathlib import Path
-          import re
           source = Path("native/android/RingtonePickerPlugin.java")
           target = Path("android/app/src/main/java/app/yomtime/owghat/RingtonePickerPlugin.java")
           target.parent.mkdir(parents=True, exist_ok=True)
@@ -61,8 +60,8 @@ jobs:
           activity = Path("android/app/src/main/java/app/yomtime/owghat/MainActivity.java")
           code = activity.read_text()
           if "RingtonePickerPlugin.class" not in code:
-              code = code.replace("import com.getcapacitor.BridgeActivity;", "import com.getcapacitor.BridgeActivity;\\nimport app.yomtime.owghat.RingtonePickerPlugin;")
-              code = re.sub(r'(public void onCreate\\(Bundle savedInstanceState\\) \\{)', r'\\1\\n        registerPlugin(RingtonePickerPlugin.class);', code, count=1)
+              code = code.replace("import com.getcapacitor.BridgeActivity;", "import android.os.Bundle;\nimport com.getcapacitor.BridgeActivity;\nimport app.yomtime.owghat.RingtonePickerPlugin;")
+              code = code.replace("public class MainActivity extends BridgeActivity {", "public class MainActivity extends BridgeActivity {\n    @Override\n    public void onCreate(Bundle savedInstanceState) {\n        registerPlugin(RingtonePickerPlugin.class);\n        super.onCreate(savedInstanceState);\n    }")
               activity.write_text(code)
           print("Registered RingtonePickerPlugin in", activity)
           PY

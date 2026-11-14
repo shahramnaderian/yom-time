@@ -25,15 +25,15 @@
   function loc() {
     var c = SE.selectedCity;
     if (c && Number.isFinite(Number(c.lat))) {
-      return { lat: Number(c.lat), lng: Number(c.lng), label: (c.city || c.cityEn || "موقعیت انتخاب‌شده") };
+      return { lat: Number(c.lat), lng: Number(c.lng), label: (isEnglish()?(c.cityEn || c.city || "Selected location"):(c.city || c.cityEn || "موقعیت انتخاب‌شده")) };
     }
     try {
       var saved = SE.store && SE.store.prefs ? SE.store.prefs.get("homeCity", null) : null;
       if (saved && Number.isFinite(Number(saved.lat))) {
-        return { lat: Number(saved.lat), lng: Number(saved.lng), label: saved.city || "شهر ذخیره‌شده" };
+        return { lat: Number(saved.lat), lng: Number(saved.lng), label: isEnglish()?(saved.cityEn || saved.city || "Saved location"):(saved.city || "شهر ذخیره‌شده") };
       }
     } catch (_) {}
-    return { lat: 35.6892, lng: 51.3890, label: "تهران" };
+    return { lat: 35.6892, lng: 51.3890, label: isEnglish()?"Tehran":"تهران" };
   }
 
   function ensureStyles() {
@@ -97,7 +97,7 @@
     var dist = distanceKm(p.lat, p.lng, KAABA.lat, KAABA.lng);
     var angleEl = document.getElementById("home-qibla-angle");
     var metaEl = document.getElementById("home-qibla-meta");
-    if (angleEl) angleEl.textContent = fa(Math.round(ang)) + "° از شمال";
+    if (angleEl) angleEl.textContent = fa(Math.round(ang)) + (isEnglish()?"° from north":"° از شمال");
     if (metaEl) metaEl.textContent = p.label + " · حدود " + fa(Math.round(dist)) + " کیلومتر تا کعبه";
   }
 

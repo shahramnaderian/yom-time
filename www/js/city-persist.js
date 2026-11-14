@@ -47,18 +47,36 @@
 
   function loadCity() {
     var p = prefs();
-    var c = null;
+    var primary = null;
+    var backup = null;
     if (p) {
-      c = p.get(KEY, null) || p.get(KEY_BACKUP, null);
+      primary = p.get(KEY, null);
+      backup = p.get(KEY_BACKUP, null);
     }
-    if (!isValidCity(c)) {
-      try {
-        var raw = localStorage.getItem("se_pref_" + KEY) || localStorage.getItem("se_pref_" + KEY_BACKUP);
-        if (raw) c = JSON.parse(raw);
-      } catch (_) {}
-    }
-    if (!isValidCity(c)) return null;
-    return normalize(c);
+    try {
+      if (!isValidCity(primary)) {
+        var rawPrimary = localStorage.getItem("se_pref_" + KEY);
+        if (rawPrimary) primary = JSON.parse(rawPrimary);
+      }
+      if (!isValidCity(backup)) {
+        var rawBackup = localStorage.getItem("se_pref_" + KEY_BACKUP);
+        if (rawBackup) backup = JSON.parse(rawBackup);
+      }
+    } catch (_) {}
+
+    // The dashboard's legacy startup can briefly write its built-in default
+    // city over homeCity. In that case, recover the last explicit selection
+    // from homeCityBackup instead of treating Tehran/Marivan as the user's
+    // saved location.
+    var primaryIsDefault = isValidCity(primary) &&
+      (primary.source === "default" || primary.city === "مریوان" || primary.cityEn === "Marivan");
+    var chosen = primaryIsDefault && isValidCity(backup) &&
+      backup.source !== "default" && backup.city !== "مریوان" && backup.cityEn !== "Marivan"
+      ? backup
+      : (isValidCity(primary) ? primary : backup);
+
+    if (!isValidCity(chosen)) return null;
+    return normalize(chosen);
   }
 
   function applyToUI(city) {

@@ -47,6 +47,54 @@
     });
   }
 
+  function getHomePrayerTimes() {
+    try {
+      if (!SE.place || !SE.place.timesFor) return {};
+      const prefs = SE.store && SE.store.prefs;
+      const place = (prefs && prefs.get("homeCity", null)) || SE.place.defaultPlace();
+      const tz = place.tz || SE.place.detectTimezone(place.lat, place.lng);
+      const now = new Date();
+      const parts = new Intl.DateTimeFormat("en-CA", {
+        timeZone: tz, calendar: "gregory", numberingSystem: "latn",
+        year: "numeric", month: "2-digit", day: "2-digit"
+      }).formatToParts(now);
+      const part = (name) => Number(parts.find((x) => x.type === name).value);
+      const year = part("year"), month = part("month"), day = part("day");
+      const events = SE.place.timesFor(place, year, month, day, "legacy");
+      const nextDate = new Date(Date.UTC(year, month - 1, day + 1));
+      const nextEvents = SE.place.timesFor(place, nextDate.getUTCFullYear(), nextDate.getUTCMonth() + 1, nextDate.getUTCDate(), "legacy");
+      const toMinutes = (value) => {
+        const m = /^(\\d{1,2}):(\\d{2})$/.exec(String(value || ""));
+        return m ? Number(m[1]) * 60 + Number(m[2]) : null;
+      };
+      const fmt = (value) => {
+        if (!Number.isFinite(value)) return null;
+        const n = ((Math.round(value) % 1440) + 1440) % 1440;
+        return String(Math.floor(n / 60)).padStart(2, "0") + ":" + String(n % 60).padStart(2, "0");
+      };
+      const sunset = toMinutes(events.sunset);
+      const nextFajr = toMinutes(nextEvents.fajr);
+      if (sunset != null && nextFajr != null) {
+        const end = nextFajr <= sunset ? nextFajr + 1440 : nextFajr;
+        const span = end - sunset;
+        events.night1 = fmt(sunset + span / 3);
+        events.night2 = fmt(sunset + span * 2 / 3);
+      }
+      return events;
+    } catch (error) {
+      console.warn("Could not calculate home alarm display times", error);
+      return {};
+    }
+  }
+
+  (function installAlarmTimeStyle() {
+    if (document.getElementById("alarm-time-style")) return;
+    const style = document.createElement("style");
+    style.id = "alarm-time-style";
+    style.textContent = ".alarm-name{display:flex;align-items:center;justify-content:space-between;gap:12px;flex:1;min-width:0}.alarm-time{font-variant-numeric:tabular-nums;color:var(--brand,#176348);font-size:.9em;font-weight:700;direction:ltr;white-space:nowrap}";
+    document.head.appendChild(style);
+  })();
+
   function renderAlarmToggles() {
     const box = document.getElementById("alarm-toggles");
     if (!box || !SE.alarms) return;
@@ -54,12 +102,18 @@
     const enabled = SE.alarms.getEnabled();
     const types = SE.alarms.ALARM_TYPES;
     const isFa = lang() !== "en";
+    const times = getHomePrayerTimes();
+    const numberFormat = new Intl.NumberFormat(isFa ? "fa-IR" : "en-US", {useGrouping:false});
 
     box.innerHTML = types.map((ty) => {
       const on = !!enabled[ty.key];
+      const rawTime = times[ty.key];
+      const time = rawTime && /^\\d{1,2}:\\d{2}$/.test(String(rawTime))
+        ? String(rawTime).split(":").map((v) => numberFormat.format(Number(v))).join(":")
+        : (isFa ? "—" : "—");
       return (
         '<label class="alarm-row">' +
-          '<span class="alarm-name">' + (isFa ? ty.labelFa : ty.labelEn) + '</span>' +
+          '<span class="alarm-name"><span>' + (isFa ? ty.labelFa : ty.labelEn) + '</span><span class="alarm-time">' + time + '</span></span>' +
           '<input type="checkbox" data-alarm="' + ty.key + '" ' + (on ? "checked" : "") + '>' +
           '<span class="switch"></span>' +
         '</label>'
@@ -312,6 +366,14 @@
   }
 
   function bind() {
+    const alarmList = document.getElementById("home-times");
+    if (alarmList && !alarmList.dataset.alarmTimeObserver) {
+      alarmList.dataset.alarmTimeObserver = "1";
+      const observer = new MutationObserver(() => {
+        if (!document.getElementById("view-home")?.hidden) renderAlarmToggles();
+      });
+      observer.observe(alarmList, { childList: true, subtree: true, characterData: true });
+    }
     const prev = document.getElementById("sound-preview");
     if (prev) {
       prev.addEventListener("click", async () => {

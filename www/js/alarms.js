@@ -203,8 +203,8 @@
       const when = new Date(e.at.getTime() - lead * 60000);
       const dayKey = when.toISOString().slice(0,10).replace(/-/g,"");
       const id = Math.abs((e.key + dayKey + "home").split("").reduce((a,c)=>((a<<5)-a)+c.charCodeAt(0),0)) % 2000000000;
-      const soundMode=e.sound==="adhan"?"adhan":"system";
-      return {id,title:e.label,body:(placeName||"موقعیت شما")+" · "+e.label+" · "+(lead?lead+" دقیقه قبل":"اکنون"),schedule:{at:when,allowWhileIdle:true},extra:{type:e.key,homeEventAlarm:true,soundMode},channelId:soundMode==="adhan"?"home-event-adhan-v2":"home-event-ringtone-v2",sound:soundMode==="adhan"?"adhan.mp3":"default",smallIcon:"ic_stat_icon",actionTypeId:"OPEN_APP"};
+      const soundMode=e.sound==="adhan"?"adhan":SE.sounds&&SE.sounds.TONES&&SE.sounds.TONES[e.sound]?e.sound:"system";
+      return {id,title:e.label,body:(placeName||"موقعیت شما")+" · "+e.label+" · "+(lead?lead+" دقیقه قبل":"اکنون"),schedule:{at:when,allowWhileIdle:true},extra:{type:e.key,homeEventAlarm:true,soundMode},channelId:soundMode==="adhan"?"home-event-adhan-v2":soundMode==="system"?"home-event-ringtone-v2":SE.sounds.TONES[soundMode].channel,sound:soundMode==="adhan"?"adhan.mp3":soundMode==="system"?"default":SE.sounds.TONES[soundMode].file,smallIcon:"ic_stat_icon",actionTypeId:"OPEN_APP"};
     });
     if (notifications.length && SE.notify && SE.notify.ensurePermission) { const status = await SE.notify.ensurePermission(); if (status !== "granted") return {ok:false,reason:status || "permission_required"}; }
     try {

@@ -157,6 +157,7 @@
   const attributes = ["placeholder", "aria-label", "title"];
   const originalText = new WeakMap();
   const originalAttrs = new WeakMap();
+  let lastAppliedLanguage = null;
   function isEnglish() { return (SE.i18n && SE.i18n.lang) === "en" || document.documentElement.lang === "en"; }
   function translateText(value) {
     let out = value;
@@ -188,6 +189,9 @@
   }
   function apply() {
     const en = isEnglish();
+    const languageKey = en ? "en" : "fa";
+    const languageChanged = lastAppliedLanguage !== languageKey;
+    lastAppliedLanguage = languageKey;
     document.documentElement.lang = en ? "en" : "fa";
     document.documentElement.dir = en ? "ltr" : "rtl";
     const button = document.getElementById("lang");
@@ -222,8 +226,8 @@
         if (next !== current) el.setAttribute(attr, next);
       });
     });
-    if (window.SE_refreshDateBar) window.SE_refreshDateBar();
-    if (window.SE_settingsUI) {
+    if (languageChanged && window.SE_refreshDateBar) window.SE_refreshDateBar();
+    if (languageChanged && window.SE_settingsUI) {
       window.SE_settingsUI.renderSoundOptions();
       window.SE_settingsUI.renderAlarmToggles();
       window.SE_settingsUI.renderReminderControls();

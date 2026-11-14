@@ -47,15 +47,9 @@
 
     var soundNeedle = "صدای آلارم<select data-home-sound=\"'+x.key+'\"><option value=\"system\" '+((p.sound||\"system\")===\"system\"?'selected':'')+'>زنگ گوشی</option><option value=\"adhan\" '+(p.sound===\"adhan\"?'selected':'')+'>اذان</option></select>";
     var soundRepl =
-      "صدای آلارم<div class=\"home-sound-picks\" role=\"radiogroup\" aria-label=\"صدای آلارم\">" +
-      "<label class=\"home-sound-pick\"><input type=\"radio\" name=\"home-sound-'+x.key+'\" data-home-sound=\"'+x.key+'\" value=\"adhan\" '+(p.sound===\"adhan\"?'checked':'')+'><span class=\"home-sound-circle\">🕌</span><span class=\"home-sound-txt\">اذان</span></label>" +
-      "<label class=\"home-sound-pick\"><input type=\"radio\" name=\"home-sound-'+x.key+'\" data-home-sound=\"'+x.key+'\" value=\"system\" '+((!p.sound||p.sound===\"system\")?'checked':'')+'><span class=\"home-sound-circle\">📱</span><span class=\"home-sound-txt\">زنگ گوشی</span></label>" +
-      "<label class=\"home-sound-pick\"><input type=\"radio\" name=\"home-sound-'+x.key+'\" data-home-sound=\"'+x.key+'\" value=\"happy-chime\" '+(p.sound===\"happy-chime\"?'checked':'')+'><span class=\"home-sound-circle\">🎵</span><span class=\"home-sound-txt\">زنگ ملایم</span></label></div>" +
-      "<div class=\"home-sound-upload-wrap\" data-home-upload-wrap=\"'+x.key+'\" '+(p.sound===\"happy-chime\"?'':'hidden')+'>'+" +
-      "'<input type=\"file\" accept=\"audio/*,.mp3,.m4a,.ogg,.wav,.aac\" data-home-upload=\"'+x.key+'\" class=\"home-sound-file\">'+" +
-      "'<span class=\"home-sound-upload-hint\" data-home-upload-hint=\"'+x.key+'\">'+(" +
-      "(function(){try{var c=SE.store&&SE.store.prefs&&SE.store.prefs.get('homeAlarmCustomSounds',{});var n=c&&c[x.key]&&c[x.key].name;return n?('فایل: '+n):'یک فایل صوتی از گوشی انتخاب کنید';}catch(_){return 'یک فایل صوتی از گوشی انتخاب کنید';}})()" +
-      "+')</span></div>";
+      "صدای آلارم<select class=\"home-alarm-sound-select\" data-home-sound=\"'+x.key+'\">" +
+      "[{id:'system',fa:'زنگ گوشی',en:'Phone ringtone'},{id:'adhan',fa:'اذان',en:'Adhan'},{id:'happy-chime',fa:'زنگ شاد',en:'Happy chime'},{id:'morning-bells',fa:'ناقوس صبحگاهی',en:'Morning bells'},{id:'cheerful-piano',fa:'پیانوی شاد',en:'Cheerful piano'},{id:'soft-marimba',fa:'ماریمبای ملایم',en:'Soft marimba'}].map(function(o){return '<option value=\"'+o.id+'\" '+((p.sound||'system')===o.id?'selected':'')+'>'+((document.documentElement.lang||'fa').toLowerCase().indexOf('en')===0?o.en:o.fa)+'</option>';}).join('') +
+      "</select>";
     if (text.indexOf(soundNeedle) !== -1) text = text.split(soundNeedle).join(soundRepl);
 
     text = text.split(
@@ -77,25 +71,7 @@
 
     var oldSoundHandler = '$("home-times").querySelectorAll("[data-home-sound]").forEach(el=>el.addEventListener("change",()=>saveHomeAlarm(el.dataset.homeSound,{sound:el.value})));';
     var newSoundHandler =
-      '$("home-times").querySelectorAll("input[data-home-sound]").forEach(el=>el.addEventListener("change",()=>{' +
-      'const key=el.dataset.homeSound,val=el.value;' +
-      'saveHomeAlarm(key,{sound:val});' +
-      'const wrap=document.querySelector(\'[data-home-upload-wrap="\'+key+\'"]\');' +
-      'if(wrap){if(val==="custom"){wrap.hidden=false;wrap.removeAttribute("hidden");}else wrap.hidden=true;}' +
-      '}));' +
-      '$("home-times").querySelectorAll("[data-home-upload]").forEach(el=>el.addEventListener("change",()=>{' +
-      'const key=el.dataset.homeUpload,file=el.files&&el.files[0];if(!file)return;' +
-      'if(file.size>4*1024*1024){alert("حجم فایل حداکثر ۴ مگابایت باشد");el.value="";return;}' +
-      'const reader=new FileReader();' +
-      'reader.onload=()=>{try{' +
-      'const map=(SE.store&&SE.store.prefs&&SE.store.prefs.get("homeAlarmCustomSounds",{}))||{};' +
-      'map[key]={name:file.name,dataUrl:reader.result,type:file.type||"audio/mpeg",savedAt:Date.now()};' +
-      'if(SE.store&&SE.store.prefs)SE.store.prefs.set("homeAlarmCustomSounds",map);' +
-      'const hint=document.querySelector(\'[data-home-upload-hint="\'+key+\'"]\');' +
-      'if(hint)hint.textContent="فایل: "+file.name;saveHomeAlarm(key,{sound:"custom"});' +
-      '}catch(err){console.warn(err);alert("ذخیره فایل ممکن نشد");}};' +
-      'reader.onerror=()=>alert("خواندن فایل ممکن نشد");reader.readAsDataURL(file);' +
-      '}));';
+      '$("home-times").querySelectorAll("[data-home-sound]").forEach(el=>el.addEventListener("change",()=>saveHomeAlarm(el.dataset.homeSound,{sound:el.value})));';
     if (text.indexOf(oldSoundHandler) !== -1) text = text.split(oldSoundHandler).join(newSoundHandler);
 
     var oldPush = 'events.push({key,label,at:instantAt(y,m,d,hm[0],hm[1],tz),minutes:Number.isFinite(Number(p.minutes))?Math.max(0,Number(p.minutes)):5,sound:p.sound||"system"});';

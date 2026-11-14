@@ -117,6 +117,55 @@
       styleNeedle;
     if (text.indexOf(styleNeedle) !== -1) text = text.split(styleNeedle).join(styleExtra);
 
+    // Repair the next-event countdown: compare absolute instants for all events today and tomorrow,
+    // including night thirds, rather than comparing clock strings in a fixed array order.
+    var countdownPatch = [
+      ' const now=new Date(),local=todayAt(tz);',
+      ' let next=list.find(x=>{const [h,m]=x.time.split(":").map(Number);return h*60+m>local.hour*60+local.minute});',
+      ' let target={year:local.year,month:local.month,day:local.day};',
+      ' if(!next){next=list[0];const tomorrow=new Date(Date.UTC(target.year,target.month-1,target.day+1));target={year:tomorrow.getUTCFullYear(),month:tomorrow.getUTCMonth()+1,day:tomorrow.getUTCDate()}}',
+      ' if(next){',
+      '  const [h,mi]=next.time.split(":").map(Number),targetInstant=instantAt(target.year,target.month,target.day,h,mi,tz),diff=Math.max(0,targetInstant-now),sec=Math.floor(diff/1000);',
+      '  $("home-next-name").textContent="رویداد بعدی: "+next.label;',
+      '  $("home-next-time").textContent=fa(next.time);',
+      '  $("home-countdown").textContent=fa(String(Math.floor(sec/3600)).padStart(2,"0")+":"+String(Math.floor(sec%3600/60)).padStart(2,"0")+":"+String(sec%60).padStart(2,"0"));',
+      ' }'
+    ].join("\\n");
+    var countdownReplacement = [
+      ' const now=new Date();',
+      ' const candidates=[];',
+      ' function collectUpcoming(y,m,d){',
+      '  const dayEv=SE.place.timesFor(activeCity,y,m,d,"legacy");',
+      '  const dayNight=nightPartsFor(activeCity,y,m,d,dayEv);',
+      '  names.forEach(([key,label])=>{',
+      '   const tm=nightKeys.includes(key)?dayNight[key]:dayEv[key];',
+      '   if(!tm)return;',
+      '   const hm=String(tm).split(":").map(Number);',
+      '   if(hm.length!==2||!hm.every(Number.isFinite))return;',
+      '   const at=instantAt(y,m,d,hm[0],hm[1],tz);',
+      '   if(at>now)candidates.push({key,label,time:tm,at});',
+      '  });',
+      ' }',
+      ' const today=todayAt(tz);',
+      ' collectUpcoming(today.year,today.month,today.day);',
+      ' const tomorrow=new Date(Date.UTC(today.year,today.month-1,today.day+1));',
+      ' collectUpcoming(tomorrow.getUTCFullYear(),tomorrow.getUTCMonth()+1,tomorrow.getUTCDate());',
+      ' candidates.sort((a,b)=>a.at-b.at);',
+      ' const next=candidates[0];',
+      ' if(next){',
+      '  const diff=Math.max(0,next.at-now),sec=Math.floor(diff/1000);',
+      '  $("home-next-name").textContent="رویداد بعدی: "+next.label;',
+      '  $("home-next-time").textContent=fa(next.time);',
+      '  $("home-countdown").textContent=fa(String(Math.floor(sec/3600)).padStart(2,"0")+":"+String(Math.floor(sec%3600/60)).padStart(2,"0")+":"+String(sec%60).padStart(2,"0"));',
+      ' } else {',
+      '  $("home-next-name").textContent="رویداد بعدی";',
+      '  $("home-next-time").textContent="—";',
+      '  $("home-countdown").textContent="۰۰:۰۰:۰۰";',
+      ' }'
+    ].join("\\n");
+    if (text.indexOf(countdownPatch) !== -1) text = text.split(countdownPatch).join(countdownReplacement);
+    else console.warn("Next-event countdown patch target not found; keeping original countdown.");
+
     // Keep prayer calculations on the app's Legacy method and derive night thirds from sunset to the following Fajr.
     text = text.replaceAll('SE.methods&&SE.methods.getCurrentMethod?SE.methods.getCurrentMethod():"legacy"', '"legacy"');
     var nightHelper = 'function nightPartsFor(place,y,m,d,ev){const next=new Date(Date.UTC(y,m-1,d+1)),ny=next.getUTCFullYear(),nm=next.getUTCMonth()+1,nd=next.getUTCDate(),nextEv=SE.place.timesFor(place,ny,nm,nd,"legacy");const mins=s=>{if(!s)return null;const a=String(s).split(":").map(Number);return a.length===2&&a.every(Number.isFinite)?a[0]*60+a[1]:null;};const sunset=mins(ev.sunset),fajr=mins(nextEv.fajr);if(sunset===null||fajr===null)return {nightEnd:ev.fajr,night1:null,night2:null};const end=fajr<=sunset?fajr+1440:fajr,span=end-sunset;const fmt=n=>String(Math.floor(n/60)%24).padStart(2,"0")+":"+String(Math.floor(n%60)).padStart(2,"0");return {nightEnd:ev.fajr,night1:fmt((sunset+span/3)%1440),night2:fmt((sunset+span*2/3)%1440)};}';

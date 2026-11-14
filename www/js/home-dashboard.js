@@ -57,8 +57,8 @@
       "</select>";
     if (text.indexOf(soundNeedle) !== -1) text = text.split(soundNeedle).join(soundRepl);
 
-    var rowNeedle = "return '<div class=\\"home-prayer-row home-prayer-row-alarm\\"><div class=\\"home-prayer-name\\">'+x.label+'</div><time>'+fa(x.time)+'</time>'+controls+'</div>';";
-    var rowRepl = "return '<div class=\\"home-prayer-row home-prayer-row-alarm\\"><div class=\\"home-prayer-name\\">'+x.label+'</div><time>'+fa(x.time)+'</time><span class=\\"home-prayer-sound-label\\">'+({system:'زنگ گوشی',adhan:'اذان','happy-chime':'زنگ شاد','morning-bells':'ناقوس صبحگاهی','cheerful-piano':'پیانوی شاد','soft-marimba':'ماریمبای ملایم'}[p.sound||'system']||'زنگ گوشی')+'</span>'+controls+'</div>';";
+    var rowNeedle = "return '<div class=\"home-prayer-row home-prayer-row-alarm\"><div class=\"home-prayer-name\">'+x.label+'</div><time>'+fa(x.time)+'</time>'+controls+'</div>';";
+    var rowRepl = "return '<div class=\"home-prayer-row home-prayer-row-alarm\"><div class=\"home-prayer-name\">'+x.label+'</div><time>'+fa(x.time)+'</time><span class=\"home-prayer-sound-label\">'+({system:'زنگ گوشی',adhan:'اذان','happy-chime':'زنگ شاد','morning-bells':'ناقوس صبحگاهی','cheerful-piano':'پیانوی شاد','soft-marimba':'ماریمبای ملایم'}[p.sound||'system']||'زنگ گوشی')+'</span>'+controls+'</div>';";
     if (text.indexOf(rowNeedle) !== -1) text = text.split(rowNeedle).join(rowRepl);
 
 

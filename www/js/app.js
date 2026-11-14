@@ -45,6 +45,7 @@
     (0, eval)(text);
     try { await loadScript("js/qibla.js"); } catch (qe) { console.warn(qe); }
     try { await loadScript("js/qibla-shell.js"); } catch (qe2) { console.warn(qe2); }
+    try { await loadScript("js/home-qibla-card.js"); } catch (qe3) { console.warn(qe3); }
   } catch (e) {
     console.error("Yom Time app bootstrap failed", e);
   }

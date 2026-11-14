@@ -103,20 +103,49 @@
     const types = SE.alarms.ALARM_TYPES;
     const isFa = lang() !== "en";
     const times = getHomePrayerTimes();
+    const prefs = SE.store && SE.store.prefs;
+    const eventPrefs = prefs ? (prefs.get("homeEventAlarms", {}) || {}) : {};
     const numberFormat = new Intl.NumberFormat(isFa ? "fa-IR" : "en-US", {useGrouping:false});
+    const soundOptions = [
+      ["adhan", isFa ? "اذان" : "Adhan"],
+      ["system", isFa ? "زنگ گوشی" : "Phone ringtone"],
+      ["happy-chime", isFa ? "زنگ شاد" : "Happy chime"],
+      ["morning-bells", isFa ? "ناقوس صبحگاهی" : "Morning bells"],
+      ["cheerful-piano", isFa ? "پیانوی شاد" : "Cheerful piano"],
+      ["soft-marimba", isFa ? "ماریمبای ملایم" : "Soft marimba"],
+      ["custom-ringtone", isFa ? "انتخاب از زنگ‌های گوشی…" : "Choose from phone…"]
+    ];
 
     box.innerHTML = types.map((ty) => {
       const on = !!enabled[ty.key];
       const rawTime = times[ty.key];
-      const time = rawTime && /^\\d{1,2}:\\d{2}$/.test(String(rawTime))
+      const time = rawTime && /^\d{1,2}:\d{2}$/.test(String(rawTime))
         ? String(rawTime).split(":").map((v) => numberFormat.format(Number(v))).join(":")
-        : (isFa ? "—" : "—");
+        : "—";
+      const cfg = eventPrefs[ty.key] || {};
+      const lead = Number(cfg.minutes);
+      const minutes = Number.isFinite(lead) && lead >= 1 && lead <= 60 ? Math.round(lead) : 5;
+      const selectedSound = cfg.sound || "system";
+      const options = soundOptions.map(([id,label]) =>
+        '<option value="' + id + '" ' + (selectedSound === id ? "selected" : "") + '>' + label + '</option>'
+      ).join("");
       return (
-        '<label class="alarm-row">' +
-          '<span class="alarm-name"><span>' + (isFa ? ty.labelFa : ty.labelEn) + '</span><span class="alarm-time">' + time + '</span></span>' +
-          '<input type="checkbox" data-alarm="' + ty.key + '" ' + (on ? "checked" : "") + '>' +
-          '<span class="switch"></span>' +
-        '</label>'
+        '<div class="alarm-event-row">' +
+          '<div class="alarm-row">' +
+            '<span class="alarm-name"><span>' + (isFa ? ty.labelFa : ty.labelEn) + '</span><span class="alarm-time">' + time + '</span></span>' +
+            '<input type="checkbox" data-alarm="' + ty.key + '" ' + (on ? "checked" : "") + '>' +
+            '<span class="switch"></span>' +
+          '</div>' +
+          '<div class="alarm-event-options">' +
+            '<label class="alarm-event-setting"><span class="alarm-setting-caption">' + (isFa ? "هشدار قبل از وقت" : "Alert before") + '</span>' +
+              '<span class="alarm-lead-value" data-alarm-lead-label="' + ty.key + '">' + numberFormat.format(minutes) + (isFa ? " دقیقه" : " min") + '</span>' +
+              '<input type="range" min="1" max="60" step="1" value="' + minutes + '" data-alarm-minutes="' + ty.key + '">' +
+            '</label>' +
+            '<label class="alarm-event-setting"><span class="alarm-setting-caption">' + (isFa ? "نوع زنگ" : "Alarm sound") + '</span>' +
+              '<select data-alarm-sound="' + ty.key + '">' + options + '</select>' +
+            '</label>' +
+          '</div>' +
+        '</div>'
       );
     }).join("");
 
@@ -126,8 +155,77 @@
         toast(t("alarms_saved", isFa ? "آلارم‌ها ذخیره شد" : "Alarms saved"));
       });
     });
+
+    const saveEventPref = (key, patch) => {
+      const current = prefs ? (prefs.get("homeEventAlarms", {}) || {}) : {};
+      const next = Object.assign({}, current);
+      next[key] = Object.assign({enabled:false, minutes:5, sound:"system"}, next[key] || {}, patch);
+      if (prefs) prefs.set("homeEventAlarms", next);
+    };
+
+    box.querySelectorAll("[data-alarm-minutes]").forEach((input) => {
+      const key = input.getAttribute("data-alarm-minutes");
+      const label = box.querySelector('[data-alarm-lead-label="' + key + '"]');
+      const updateLabel = () => {
+        const value = Math.max(1, Math.min(60, Number(input.value) || 1));
+        if (label) label.textContent = numberFormat.format(value) + (isFa ? " دقیقه" : " min");
+      };
+      input.addEventListener("input", updateLabel);
+      input.addEventListener("change", () => {
+        const value = Math.max(1, Math.min(60, Math.round(Number(input.value) || 1)));
+        saveEventPref(key, {minutes:value});
+        updateLabel();
+        toast(isFa ? "زمان هشدار ذخیره شد" : "Alert time saved");
+      });
+    });
+
+    box.querySelectorAll("[data-alarm-sound]").forEach((select) => {
+      select.addEventListener("change", async () => {
+        const key = select.getAttribute("data-alarm-sound");
+        const sound = select.value;
+        if (sound === "custom-ringtone") {
+          const nativePlugin = SE.native && SE.native.plugin ? SE.native.plugin("RingtonePicker") : null;
+          if (!nativePlugin || !nativePlugin.pickNotificationRingtone) {
+            toast(isFa ? "انتخاب زنگ دلخواه فقط در نسخه اندروید در دسترس است." : "Phone sound selection is available in the Android app.");
+            renderAlarmToggles();
+            return;
+          }
+          select.disabled = true;
+          try {
+            const result = await nativePlugin.pickNotificationRingtone();
+            if (!result || result.cancelled) { renderAlarmToggles(); return; }
+            if (prefs) prefs.set("customRingtoneChannelId", result.channelId);
+            saveEventPref(key, {sound:"custom-ringtone"});
+            toast((isFa ? "زنگ انتخاب شد: " : "Selected: ") + (result.title || ""));
+          } catch (_) {
+            toast(isFa ? "انتخاب زنگ گوشی انجام نشد." : "Could not select phone ringtone.");
+            renderAlarmToggles();
+          }
+          return;
+        }
+        saveEventPref(key, {sound});
+        toast(isFa ? "نوع زنگ ذخیره شد" : "Alarm sound saved");
+      });
+    });
   }
 
+  (function installPerAlarmSettingsStyle() {
+    if (document.getElementById("per-alarm-settings-style")) return;
+    const style = document.createElement("style");
+    style.id = "per-alarm-settings-style";
+    style.textContent =
+      ".alarm-event-row{padding:10px 0;border-bottom:1px solid #e5e9e5}" +
+      ".alarm-event-row:last-child{border-bottom:0}" +
+      ".alarm-event-row .alarm-row{border:0;padding:8px 0;display:flex;align-items:center;gap:14px}" +
+      ".alarm-event-row .alarm-name{display:flex;align-items:center;justify-content:space-between;gap:12px;flex:1;min-width:0}" +
+      ".alarm-event-options{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;padding:4px 4px 8px 4px}" +
+      ".alarm-event-setting{display:flex;flex-direction:column;gap:6px;min-width:0;font-size:.85rem}" +
+      ".alarm-setting-caption{color:var(--muted,#68756e);font-size:.8rem}" +
+      ".alarm-lead-value{font-weight:700;color:var(--brand,#176348)}" +
+      ".alarm-event-setting input[type=range]{width:100%;accent-color:var(--brand,#176348)}" +
+      ".alarm-event-setting select{width:100%;max-width:100%;min-width:0;padding:8px;border:1px solid #d7e1da;border-radius:9px;background:#fff;color:inherit}";
+    document.head.appendChild(style);
+  })();
 
   function renderCustomReminder() {
     const prefs = SE.store && SE.store.prefs;

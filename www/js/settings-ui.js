@@ -91,7 +91,7 @@
     if (document.getElementById("alarm-time-style")) return;
     const style = document.createElement("style");
     style.id = "alarm-time-style";
-    style.textContent = ".alarm-name{display:flex;align-items:center;justify-content:space-between;gap:12px;flex:1;min-width:0}.alarm-time{font-variant-numeric:tabular-nums;color:var(--brand,#176348);font-size:.9em;font-weight:700;direction:ltr;white-space:nowrap}";
+    style.textContent = ".alarm-name{display:flex;align-items:center;justify-content:space-between;gap:12px;flex:1;min-width:0}.alarm-time{font-variant-numeric:tabular-nums;color:var(--brand,#176348);font-size:.9em;font-weight:700;direction:ltr;white-space:nowrap}.alarm-time-caption{font-size:.78em;font-weight:500;color:var(--muted,#68756e);direction:rtl}";
     document.head.appendChild(style);
   })();
 
@@ -132,7 +132,7 @@
       return (
         '<div class="alarm-event-row">' +
           '<div class="alarm-row">' +
-            '<span class="alarm-name"><span>' + (isFa ? ty.labelFa : ty.labelEn) + '</span><span class="alarm-time">' + time + '</span></span>' +
+            '<span class="alarm-name"><span>' + (isFa ? ty.labelFa : ty.labelEn) + '</span><span class="alarm-time"><span class="alarm-time-caption">' + (isFa ? "وقت شرعی:" : "Prayer time:") + '</span> ' + time + '</span></span>' +
             '<input type="checkbox" data-alarm="' + ty.key + '" ' + (on ? "checked" : "") + '>' +
             '<span class="switch"></span>' +
           '</div>' +

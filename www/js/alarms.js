@@ -34,6 +34,38 @@
       : 5;
   }
 
+  function getEventSound(key) {
+    const prefs = SE.store && SE.store.prefs;
+    const map = prefs ? (prefs.get("homeEventAlarms", {}) || {}) : {};
+    const configured = map[key] && map[key].sound;
+    if (configured) return configured;
+    return SE.sounds && SE.sounds.getSoundPref ? SE.sounds.getSoundPref() : "system";
+  }
+
+  function notificationSoundForEvent(key) {
+    const mode = getEventSound(key);
+    const sounds = SE.sounds || {};
+    const tone = sounds.TONES && sounds.TONES[mode];
+    if (mode === "adhan") {
+      return {
+        sound: key === "fajr" ? "adhan_fajr.mp3" : "adhan.mp3",
+        channelId: key === "fajr" ? "prayer-adhan-fajr-v2" : "prayer-adhan-v2"
+      };
+    }
+    if (tone) return { sound: tone.file, channelId: tone.channel };
+    if (mode === "silent") return { sound: null, channelId: "prayer-silent" };
+    if (mode === "custom-ringtone") return {
+      sound: undefined,
+      channelId: prefsChannel("customRingtoneChannelId", "prayer-ringtone-v2")
+    };
+    return { sound: "default", channelId: "prayer-ringtone-v2" };
+  }
+
+  function prefsChannel(key, fallback) {
+    try { return SE.store && SE.store.prefs ? SE.store.prefs.get(key, fallback) : fallback; }
+    catch (_) { return fallback; }
+  }
+
   function setEnabled(map) {
     SE.store.prefs.set("alarms", map);
   }
@@ -111,13 +143,9 @@
       const dayKey = when.toISOString().slice(0, 10).replace(/-/g, "");
       const id = Math.abs((t.key + dayKey).split("").reduce((a, c) => ((a << 5) - a) + c.charCodeAt(0), 0)) % 2000000000;
 
-      const sound = (SE.sounds && SE.sounds.soundForNotification)
-        ? SE.sounds.soundForNotification(t.key)
-        : "default";
-      const soundPref = SE.sounds && SE.sounds.getSoundPref ? SE.sounds.getSoundPref() : "default";
-      const channelId = (SE.sounds && SE.sounds.channelForNotification)
-        ? SE.sounds.channelForNotification(t.key)
-        : (soundPref === "adhan" ? (t.key === "fajr" ? "prayer-adhan-fajr-v2" : "prayer-adhan-v2") : soundPref === "silent" ? "prayer-silent" : "prayer-ringtone-v2");
+      const eventSound = notificationSoundForEvent(t.key);
+      const sound = eventSound.sound;
+      const channelId = eventSound.channelId;
 
       list.push({
         id, title, body,

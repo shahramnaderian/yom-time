@@ -1,6 +1,6 @@
 {
-  "name": "اوقات جهانی · Yom Time",
-  "short_name": "اوقات جهانی",
+  "name": "yomeah",
+  "short_name": "yomeah",
   "description": "محاسبه دقیق اوقات شرعی، قبله‌نما و یادآوری برای هر نقطه از جهان",
   "start_url": "./",
   "display": "standalone",

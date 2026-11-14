@@ -62,6 +62,7 @@
     if (tab) tab.click();
   }
 
+  function isEnglish(){return (SE.i18n&&SE.i18n.lang)==="en"||document.documentElement.lang==="en";}
   function renderCard() {
     ensureStyles();
     var home = document.getElementById("view-home");
@@ -74,12 +75,12 @@
       card.innerHTML =
         '<div class="home-qibla-icon" aria-hidden="true"><img src="images/kaaba-illustration.svg" alt="" loading="lazy"></div>' +
         '<div class="home-qibla-body">' +
-        '  <p class="home-qibla-title">قبله‌نما</p>' +
+        '  <p class="home-qibla-title">'+(isEnglish()?'Qibla direction':'قبله‌نما')+'</p>' +
         '  <p class="home-qibla-angle" id="home-qibla-angle">—</p>' +
         '  <p class="home-qibla-meta" id="home-qibla-meta">—</p>' +
         '</div>' +
         '<div class="home-qibla-actions">' +
-        '  <button type="button" class="primary" id="home-qibla-open">باز کردن قبله‌نما</button>' +
+        '  <button type="button" class="primary" id="home-qibla-open">'+(isEnglish()?'Open Qibla compass':'باز کردن قبله‌نما')+'</button>' +
         '</div>';
       var times = home.querySelector(".home-times-card");
       var next = home.querySelector(".home-next-card");
@@ -92,17 +93,22 @@
         btn.addEventListener("click", openQibla);
       }
     }
+    var title=document.querySelector("#home-qibla-card .home-qibla-title"),open=document.getElementById("home-qibla-open");
+    if(title)title.textContent=isEnglish()?"Qibla direction":"قبله‌نما";
+    if(open)open.textContent=isEnglish()?"Open Qibla compass":"باز کردن قبله‌نما";
     var p = loc();
     var ang = bearingTo(p.lat, p.lng, KAABA.lat, KAABA.lng);
     var dist = distanceKm(p.lat, p.lng, KAABA.lat, KAABA.lng);
     var angleEl = document.getElementById("home-qibla-angle");
     var metaEl = document.getElementById("home-qibla-meta");
     if (angleEl) angleEl.textContent = fa(Math.round(ang)) + (isEnglish()?"° from north":"° از شمال");
-    if (metaEl) metaEl.textContent = p.label + " · حدود " + fa(Math.round(dist)) + " کیلومتر تا کعبه";
+    if (metaEl) metaEl.textContent = p.label + (isEnglish()?" · about "+Math.round(dist)+" km to the Kaaba":" · حدود " + fa(Math.round(dist)) + " کیلومتر تا کعبه");
   }
 
   function init() {
     renderCard();
+    var langButton=document.getElementById("lang");
+    if(langButton&&!langButton.dataset.homeQiblaLangBound){langButton.dataset.homeQiblaLangBound="1";langButton.addEventListener("click",function(){setTimeout(renderCard,0);});}
     window.addEventListener("hashchange", function () {
       if (location.hash === "#/home" || location.hash === "" || location.hash === "#/") renderCard();
     });

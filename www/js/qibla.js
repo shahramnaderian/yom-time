@@ -214,7 +214,7 @@
       '      <div class="qibla-center"></div>' +
       '    </div>' +
       '  </div>' +
-      '  <figure class="qibla-kaaba-art"><img src="https://upload.wikimedia.org/wikipedia/commons/4/42/Kaaba%2C_Masjid_Al_Haram%2C_Mecca.jpg" alt="عکس واقعی کعبه در مسجدالحرام" loading="lazy" referrerpolicy="no-referrer" onerror="this.onerror=null;this.src='images/kaaba-illustration.svg';this.alt='طرح جایگزین کعبه'"><figcaption>خانهٔ خدا · کعبهٔ شریف<br><small>عکس: Shahin Olakara · <a href="https://creativecommons.org/licenses/by/2.0/" target="_blank" rel="noopener">CC BY 2.0</a></small></figcaption></figure>' +
+      '  <figure class="qibla-kaaba-art"><img src="https://upload.wikimedia.org/wikipedia/commons/4/42/Kaaba%2C_Masjid_Al_Haram%2C_Mecca.jpg" alt="عکس واقعی کعبه در مسجدالحرام" loading="lazy" referrerpolicy="no-referrer" onerror="this.onerror=null;this.src=&quot;images/kaaba-illustration.svg&quot;;this.alt=&quot;طرح جایگزین کعبه&quot;"><figcaption>خانهٔ خدا · کعبهٔ شریف<br><small>عکس: Shahin Olakara · <a href="https://creativecommons.org/licenses/by/2.0/" target="_blank" rel="noopener">CC BY 2.0</a></small></figcaption></figure>' +
       '  <div class="qibla-readout">' +
       '    <div class="qibla-angle" id="qibla-angle">—</div>' +
       '    <div class="qibla-distance" id="qibla-distance">—</div>' +

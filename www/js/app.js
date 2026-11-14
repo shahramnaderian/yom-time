@@ -13,7 +13,6 @@
   try {
     try { await loadScript("js/archive-autosave.js"); } catch (e) { console.warn(e); }
     try { await loadScript("js/city-persist.js"); } catch (e) { console.warn(e); }
-    try { await loadScript("js/move-reminder.js"); } catch (e) { console.warn(e); }
     var urls = [
       "https://cdn.jsdelivr.net/gh/shahramnaderian/yom-time@3945235025abaedaad1b113562a77e8517c06f86/www/js/app.js",
       "https://raw.githubusercontent.com/shahramnaderian/yom-time/3945235025abaedaad1b113562a77e8517c06f86/www/js/app.js"

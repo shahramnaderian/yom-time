@@ -36,6 +36,12 @@
   <main>
     <section id="view-home" class="view">
       <div class="home-date-card">
+        <div id="home-city-picker" class="home-city-picker">
+          <label for="home-city-search">شهر محاسبهٔ اوقات شرعی</label>
+          <div class="home-city-control"><input id="home-city-search" type="search" autocomplete="off" placeholder="نام شهر را جست‌وجو کنید"><button id="home-city-apply" type="button">انتخاب شهر</button></div>
+          <div id="home-city-label" class="home-city-current" aria-live="polite"></div>
+          <div id="home-city-results" class="home-city-results" role="listbox" hidden></div>
+        </div>
         <h2 hidden>اوقات شرعی مریوان</h2>
         <p id="home-date-label" class="home-date-label" hidden></p>
         <label for="home-date" hidden>انتخاب تاریخ</label>
@@ -284,6 +290,7 @@
 <script src="js/settings-ui.js"></script>
 <script src="js/app.js"></script>
 <script src="js/home-dashboard.js"></script>
+<script src="js/home-city-picker.js"></script>
 <script src="js/monthly-archive.js"></script>
 <script>
 (function() {

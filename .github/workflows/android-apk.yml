@@ -133,10 +133,31 @@ jobs:
           from pathlib import Path
           path = Path("android/app/src/main/AndroidManifest.xml")
           manifest = path.read_text()
-          permission = '    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />'
-          if "android.permission.SCHEDULE_EXACT_ALARM" not in manifest:
-              manifest = manifest.replace("<application", permission + "\n    <application", 1)
-              path.write_text(manifest)
+          needed = [
+              "android.permission.SCHEDULE_EXACT_ALARM",
+              "android.permission.ACCESS_COARSE_LOCATION",
+              "android.permission.ACCESS_FINE_LOCATION",
+              "android.permission.POST_NOTIFICATIONS",
+              "android.permission.VIBRATE",
+          ]
+          insert = []
+          for perm in needed:
+              token = f'android:name="{perm}"'
+              if token not in manifest:
+                  insert.append(f'    <uses-permission android:name="{perm}" />')
+          if insert:
+              block = "\n".join(insert) + "\n    "
+              path.write_text(manifest.replace("<application", block + "<application", 1))
+              print("Added permissions:", insert)
+          else:
+              print("All required permissions already present")
+          manifest = path.read_text()
+          if "android.hardware.location" not in manifest:
+              feature = (
+                  '    <uses-feature android:name="android.hardware.location" android:required="false" />\n'
+                  '    <uses-feature android:name="android.hardware.location.gps" android:required="false" />\n    '
+              )
+              path.write_text(manifest.replace("<application", feature + "<application", 1))
           PY
 
       - name: Generate built-in cheerful alarm tones
@@ -144,6 +165,34 @@ jobs:
 
       - name: Sync Capacitor
         run: npx cap sync android
+
+      - name: Ensure location permissions after Capacitor sync
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path("android/app/src/main/AndroidManifest.xml")
+          manifest = path.read_text()
+          needed = [
+              "android.permission.ACCESS_COARSE_LOCATION",
+              "android.permission.ACCESS_FINE_LOCATION",
+              "android.permission.SCHEDULE_EXACT_ALARM",
+              "android.permission.POST_NOTIFICATIONS",
+          ]
+          insert = []
+          for perm in needed:
+              if f'android:name="{perm}"' not in manifest:
+                  insert.append(f'    <uses-permission android:name="{perm}" />')
+          if insert:
+              block = "\n".join(insert) + "\n    "
+              path.write_text(manifest.replace("<application", block + "<application", 1))
+              print("Post-sync added:", insert)
+          else:
+              print("Post-sync: location permissions OK")
+          print("--- manifest permissions ---")
+          for line in path.read_text().splitlines():
+              if "uses-permission" in line or ("uses-feature" in line and "location" in line):
+                  print(line)
+          PY
 
       - name: Build debug APK
         run: |

@@ -214,7 +214,7 @@
       '      <div class="qibla-center"></div>' +
       '    </div>' +
       '  </div>' +
-      '  <figure class="qibla-kaaba-art"><img src="images/kaaba-illustration.svg" alt="تصویر کعبه" loading="lazy"><figcaption>خانهٔ خدا · کعبهٔ شریف</figcaption></figure>' +
+      '  <figure class="qibla-kaaba-art"><img src="https://upload.wikimedia.org/wikipedia/commons/4/42/Kaaba%2C_Masjid_Al_Haram%2C_Mecca.jpg" alt="عکس واقعی کعبه در مسجدالحرام" loading="lazy" referrerpolicy="no-referrer"><figcaption>خانهٔ خدا · کعبهٔ شریف<br><small>عکس: Shahin Olakara · <a href="https://creativecommons.org/licenses/by/2.0/" target="_blank" rel="noopener">CC BY 2.0</a></small></figcaption></figure>' +
       '  <div class="qibla-readout">' +
       '    <div class="qibla-angle" id="qibla-angle">—</div>' +
       '    <div class="qibla-distance" id="qibla-distance">—</div>' +
@@ -253,8 +253,8 @@
     style.textContent = [
       ".qibla-dial-wrap{display:flex;justify-content:center;padding:12px 0 8px}",
       ".qibla-kaaba-art{margin:4px auto 14px;max-width:330px;text-align:center;border-radius:22px;overflow:hidden;background:linear-gradient(145deg,#f8f1df,#e6d4aa);box-shadow:0 8px 26px rgba(60,42,15,.12);border:1px solid #eadbb8}",
-      ".qibla-kaaba-art img{display:block;width:100%;height:auto;max-height:280px;object-fit:contain}",
-      ".qibla-kaaba-art figcaption{padding:7px 12px 10px;color:#725b2d;font-weight:700;font-size:.9rem}",
+      ".qibla-kaaba-art img{display:block;width:100%;height:280px;object-fit:cover;object-position:center 70%}",
+      ".qibla-kaaba-art figcaption{padding:7px 12px 10px;color:#725b2d;font-weight:700;font-size:.9rem}.qibla-kaaba-art figcaption small{display:block;font-weight:400;font-size:.72rem;margin-top:4px}.qibla-kaaba-art figcaption a{color:inherit;text-decoration:underline}",
       ".qibla-dial{position:relative;width:min(72vw,280px);height:min(72vw,280px);border-radius:50%;background:radial-gradient(circle at 50% 45%,#fff 0%,var(--chip,#FCEAE6) 70%,#f0e0d8 100%);border:3px solid var(--brand,#C22928);box-shadow:0 8px 28px rgba(0,0,0,.08)}",
       ".qibla-ring{position:absolute;inset:10px;border-radius:50%;border:1px dashed var(--line,#F1DDD9)}",
       ".qibla-n,.qibla-e,.qibla-s,.qibla-w{position:absolute;font-weight:700;font-size:.85rem;color:var(--muted,#6F615E)}",

@@ -295,6 +295,11 @@
   }
 
   function init() {
+    const langButton=$("lang");
+    if(langButton&&!langButton.dataset.qiblaLangBound){
+      langButton.dataset.qiblaLangBound="1";
+      langButton.addEventListener("click",function(){setTimeout(function(){applyLanguage();renderCompass();},0);});
+    }
     bindTab();
     if ($("view-qibla")) buildUI();
   }

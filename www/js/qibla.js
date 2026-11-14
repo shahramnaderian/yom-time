@@ -22,6 +22,50 @@
     const note=document.querySelector("#qibla-card > .hint:last-child");
     if(note)note.textContent=en?"For accurate compass readings, keep the phone flat and away from metal or magnets.":"نکته: برای قطب‌نمای دقیق، گوشی را صاف و افقی نگه دارید و از تداخل فلز و آهن‌ربا دوری کنید.";
   }
+  const KAABA_PHOTO_URL = "https://upload.wikimedia.org/wikipedia/commons/4/42/Kaaba%2C_Masjid_Al_Haram%2C_Mecca.jpg";
+  function cacheKaabaPhoto() {
+    const img = $("qibla-kaaba-photo");
+    if (!img || !("indexedDB" in window)) return;
+    const request = indexedDB.open("yom-time-media", 1);
+    request.onupgradeneeded = function () {
+      const db = request.result;
+      if (!db.objectStoreNames.contains("images")) db.createObjectStore("images");
+    };
+    request.onsuccess = function () {
+      const db = request.result;
+      let tx;
+      try {
+        tx = db.transaction("images", "readonly");
+        const get = tx.objectStore("images").get("kaaba-photo-v1");
+        get.onsuccess = function () {
+          if (get.result instanceof Blob) {
+            img.src = URL.createObjectURL(get.result);
+            img.dataset.offlineCached = "1";
+            db.close();
+            return;
+          }
+          fetch(KAABA_PHOTO_URL, { mode: "cors", cache: "force-cache" }).then(function (response) {
+            if (!response.ok) throw new Error("Kaaba photo download failed");
+            return response.blob();
+          }).then(function (blob) {
+            if (!blob || !blob.size) throw new Error("Empty Kaaba photo");
+            const write = db.transaction("images", "readwrite");
+            write.objectStore("images").put(blob, "kaaba-photo-v1");
+            write.oncomplete = function () {
+              if (img.isConnected) {
+                img.src = URL.createObjectURL(blob);
+                img.dataset.offlineCached = "1";
+              }
+              db.close();
+            };
+            write.onerror = function () { db.close(); };
+          }).catch(function () { db.close(); });
+        };
+        get.onerror = function () { db.close(); };
+      } catch (_) { try { db.close(); } catch (e) {} }
+    };
+  }
+
   function toRad(d) { return d * Math.PI / 180; }
   function toDeg(r) { return r * 180 / Math.PI; }
 
@@ -214,7 +258,7 @@
       '      <div class="qibla-center"></div>' +
       '    </div>' +
       '  </div>' +
-      '  <figure class="qibla-kaaba-art"><img src="https://upload.wikimedia.org/wikipedia/commons/4/42/Kaaba%2C_Masjid_Al_Haram%2C_Mecca.jpg" alt="عکس واقعی کعبه در مسجدالحرام" loading="lazy" referrerpolicy="no-referrer" onerror="this.onerror=null;this.src=&quot;images/kaaba-illustration.svg&quot;;this.alt=&quot;طرح جایگزین کعبه&quot;"><figcaption>خانهٔ خدا · کعبهٔ شریف<br><small>عکس: Shahin Olakara · <a href="https://creativecommons.org/licenses/by/2.0/" target="_blank" rel="noopener">CC BY 2.0</a></small></figcaption></figure>' +
+      '  <figure class="qibla-kaaba-art"><img id="qibla-kaaba-photo" src="https://upload.wikimedia.org/wikipedia/commons/4/42/Kaaba%2C_Masjid_Al_Haram%2C_Mecca.jpg" alt="عکس واقعی کعبه در مسجدالحرام" loading="lazy" referrerpolicy="no-referrer" onerror="this.onerror=null;this.src=&quot;images/kaaba-illustration.svg&quot;;this.alt=&quot;طرح جایگزین کعبه&quot;"><figcaption>خانهٔ خدا · کعبهٔ شریف<br><small>عکس: Shahin Olakara · <a href="https://creativecommons.org/licenses/by/2.0/" target="_blank" rel="noopener">CC BY 2.0</a></small></figcaption></figure>' +
       '  <div class="qibla-readout">' +
       '    <div class="qibla-angle" id="qibla-angle">—</div>' +
       '    <div class="qibla-distance" id="qibla-distance">—</div>' +
@@ -228,6 +272,8 @@
       '  </div>' +
       '  <p class="hint">نکته: برای قطب‌نمای دقیق، گوشی را صاف و افقی نگه دارید و از تداخل فلز و آهن‌ربا دوری کنید.</p>' +
       '</div>';
+
+    cacheKaabaPhoto();
 
     injectStyles();
 

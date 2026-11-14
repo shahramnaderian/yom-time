@@ -57,23 +57,6 @@
         <h2>اوقات شرعی امروز</h2>
         <div id="home-times" class="home-times-list"></div>
       </div>
-      <div class="card" id="custom-reminder-card">
-        <div class="card-title"><span class="settings-icon">⏰</span> یادآوری دلخواه روزانه</div>
-        <p class="hint">یک ساعت و متن دلخواه تعیین کنید تا هر روز در همان زمان به شما یادآوری شود.</p>
-        <label class="alarm-row"><span class="alarm-name">فعال‌سازی یادآوری روزانه</span><input id="custom-reminder-enabled" type="checkbox"><span class="switch"></span></label>
-        <label class="weekly-field">ساعت یادآوری
-          <input id="custom-reminder-time" type="time" value="09:00" required>
-        </label>
-        <label class="weekly-field">متن یادآوری
-          <input id="custom-reminder-text" type="text" maxlength="120" value="زمان انجام کار دلخواه شماست" placeholder="مثلاً مصرف دارو یا تماس با خانواده">
-        </label>
-        <label class="weekly-field">صدای یادآوری
-          <select id="custom-reminder-sound"><option value="system">زنگ گوشی</option><option value="adhan">اذان</option></select>
-        </label>
-        <button type="button" id="custom-reminder-save" class="primary">ذخیره یادآوری</button>
-        <button type="button" id="custom-reminder-test" class="sound-preview-btn">آزمایش یادآوری</button>
-        <p id="custom-reminder-status" class="hint" role="status" aria-live="polite"></p>
-      </div>
       <div class="card">
         <div class="card-title"><span class="settings-icon">🔔</span> صدای اعلان اوقات</div>
         <p class="hint">برای آلارم نمازها و یک‌سوم / دو‌سوم شب؛ زنگ‌های شاد به‌صورت آفلاین داخل برنامه هستند.</p>
@@ -200,6 +183,23 @@
     <section id="view-settings" class="view" hidden>
       <div class="settings-head">
         <h2>تنظیمات</h2>
+      </div>
+      <div class="card" id="custom-reminder-card">
+        <div class="card-title"><span class="settings-icon">⏰</span> یادآوری دلخواه روزانه</div>
+        <p class="hint">یک ساعت و متن دلخواه تعیین کنید تا هر روز در همان زمان به شما یادآوری شود.</p>
+        <label class="alarm-row"><span class="alarm-name">فعال‌سازی یادآوری روزانه</span><input id="custom-reminder-enabled" type="checkbox"><span class="switch"></span></label>
+        <label class="weekly-field">ساعت یادآوری
+          <input id="custom-reminder-time" type="time" value="09:00" required>
+        </label>
+        <label class="weekly-field">متن یادآوری
+          <input id="custom-reminder-text" type="text" maxlength="120" value="زمان انجام کار دلخواه شماست" placeholder="مثلاً مصرف دارو یا تماس با خانواده">
+        </label>
+        <label class="weekly-field">صدای یادآوری
+          <select id="custom-reminder-sound"><option value="system">زنگ گوشی</option><option value="adhan">اذان</option></select>
+        </label>
+        <button type="button" id="custom-reminder-save" class="primary">ذخیره یادآوری</button>
+        <button type="button" id="custom-reminder-test" class="sound-preview-btn">آزمایش یادآوری</button>
+        <p id="custom-reminder-status" class="hint" role="status" aria-live="polite"></p>
       </div>
       <div class="card" id="settings-create-shortcut">
         <div class="card-title"><span class="settings-icon">📅</span> جدول ماهانه</div>

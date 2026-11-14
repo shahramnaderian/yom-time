@@ -192,10 +192,12 @@
     const languageKey = en ? "en" : "fa";
     const languageChanged = lastAppliedLanguage !== languageKey;
     lastAppliedLanguage = languageKey;
-    document.documentElement.lang = en ? "en" : "fa";
-    document.documentElement.dir = en ? "ltr" : "rtl";
+    if (document.documentElement.lang !== languageKey) document.documentElement.lang = languageKey;
+    const direction = en ? "ltr" : "rtl";
+    if (document.documentElement.dir !== direction) document.documentElement.dir = direction;
     const button = document.getElementById("lang");
-    if (button) button.textContent = en ? "فارسی" : "English";
+    const buttonLabel = en ? "فارسی" : "English";
+    if (button && button.textContent !== buttonLabel) button.textContent = buttonLabel;
     const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
     const nodes = [];
     while (walker.nextNode()) nodes.push(walker.currentNode);

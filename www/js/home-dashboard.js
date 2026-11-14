@@ -16,6 +16,17 @@
 
     text = text.split('{enabled:false,minutes:5,sound:"system"}').join('{enabled:false,minutes:null,sound:"system"}');
 
+    text = text.split(
+      'if(SE.store&&SE.store.prefs)SE.store.prefs.set("homeCity",activeCity);'
+    ).join(
+      'if(SE.store&&SE.store.prefs)SE.store.prefs.set("homeCity",Object.assign({},activeCity,{source:activeCity.source||"user"}));if(window.SE&&SE.cityPersist)SE.cityPersist.save(activeCity);SE.selectedCity=activeCity;'
+    );
+    text = text.split(
+      'const isOldDefault=saved&&(saved.source==="default"||saved.city==="مریوان"||saved.cityEn==="Marivan");\n setCity(saved&&saved.lat!=null&&!isOldDefault?saved:DEFAULT_CITY);'
+    ).join(
+      'const preferred=(window.SE&&SE.cityPersist&&SE.cityPersist.load&&SE.cityPersist.load())||saved;\n setCity(preferred&&preferred.lat!=null?preferred:(saved&&saved.lat!=null?saved:DEFAULT_CITY));'
+    );
+
     var selectNeedle = "اعلان قبل از زمان<select data-home-minutes=\"'+x.key+'\">'+[1,5,10,15,20,30,45,60,90,120,150,180,240].map(n=>'<option value=\"'+n+'\" '+(Number(p.minutes)===n?'selected':'')+'>'+fa(n)+' دقیقه قبل</option>').join('')+'</select>";
     var selectRepl =
       "اعلان قبل از زمان<span class=\"home-alarm-lead-value\" data-home-minutes-label=\"'+x.key+'\">'+(" +
@@ -28,19 +39,16 @@
 
     var soundNeedle = "صدای آلارم<select data-home-sound=\"'+x.key+'\"><option value=\"system\" '+((p.sound||\"system\")===\"system\"?'selected':'')+'>زنگ گوشی</option><option value=\"adhan\" '+(p.sound===\"adhan\"?'selected':'')+'>اذان</option></select>";
     var soundRepl =
-      "صدای آلارم" +
-      "<div class=\"home-sound-picks\" role=\"radiogroup\" aria-label=\"صدای آلارم\">" +
-      "<label class=\"home-sound-pick\"><input type=\"radio\" name=\"home-sound-'+x.key+'\" data-home-sound=\"'+x.key+'\" value=\"adhan\" '+(p.sound===\"adhan\"?'checked':'')+'><span class=\"home-sound-circle\" aria-hidden=\"true\">🕌</span><span class=\"home-sound-txt\">اذان</span></label>" +
-      "<label class=\"home-sound-pick\"><input type=\"radio\" name=\"home-sound-'+x.key+'\" data-home-sound=\"'+x.key+'\" value=\"system\" '+((!p.sound||p.sound===\"system\")?'checked':'')+'><span class=\"home-sound-circle\" aria-hidden=\"true\">📱</span><span class=\"home-sound-txt\">زنگ گوشی</span></label>" +
-      "<label class=\"home-sound-pick\"><input type=\"radio\" name=\"home-sound-'+x.key+'\" data-home-sound=\"'+x.key+'\" value=\"custom\" '+(p.sound===\"custom\"?'checked':'')+'><span class=\"home-sound-circle\" aria-hidden=\"true\">🎵</span><span class=\"home-sound-txt\">از دستگاه</span></label>" +
-      "</div>" +
+      "صدای آلارم<div class=\"home-sound-picks\" role=\"radiogroup\" aria-label=\"صدای آلارم\">" +
+      "<label class=\"home-sound-pick\"><input type=\"radio\" name=\"home-sound-'+x.key+'\" data-home-sound=\"'+x.key+'\" value=\"adhan\" '+(p.sound===\"adhan\"?'checked':'')+'><span class=\"home-sound-circle\">🕌</span><span class=\"home-sound-txt\">اذان</span></label>" +
+      "<label class=\"home-sound-pick\"><input type=\"radio\" name=\"home-sound-'+x.key+'\" data-home-sound=\"'+x.key+'\" value=\"system\" '+((!p.sound||p.sound===\"system\")?'checked':'')+'><span class=\"home-sound-circle\">📱</span><span class=\"home-sound-txt\">زنگ گوشی</span></label>" +
+      "<label class=\"home-sound-pick\"><input type=\"radio\" name=\"home-sound-'+x.key+'\" data-home-sound=\"'+x.key+'\" value=\"custom\" '+(p.sound===\"custom\"?'checked':'')+'><span class=\"home-sound-circle\">🎵</span><span class=\"home-sound-txt\">از دستگاه</span></label></div>" +
       "<div class=\"home-sound-upload-wrap\" data-home-upload-wrap=\"'+x.key+'\" '+(p.sound===\"custom\"?'':'hidden')+'>'+" +
       "'<input type=\"file\" accept=\"audio/*,.mp3,.m4a,.ogg,.wav,.aac\" data-home-upload=\"'+x.key+'\" class=\"home-sound-file\">'+" +
       "'<span class=\"home-sound-upload-hint\" data-home-upload-hint=\"'+x.key+'\">'+(" +
       "(function(){try{var c=SE.store&&SE.store.prefs&&SE.store.prefs.get('homeAlarmCustomSounds',{});var n=c&&c[x.key]&&c[x.key].name;return n?('فایل: '+n):'یک فایل صوتی از گوشی انتخاب کنید';}catch(_){return 'یک فایل صوتی از گوشی انتخاب کنید';}})()" +
       "+')</span></div>";
     if (text.indexOf(soundNeedle) !== -1) text = text.split(soundNeedle).join(soundRepl);
-    else console.warn("Yom Time: sound select needle not found");
 
     text = text.split(
       'saveHomeAlarm(el.dataset.homeAlarm,{enabled});if(options)options.hidden=!enabled;'
@@ -68,22 +76,17 @@
       'if(wrap){if(val==="custom"){wrap.hidden=false;wrap.removeAttribute("hidden");}else wrap.hidden=true;}' +
       '}));' +
       '$("home-times").querySelectorAll("[data-home-upload]").forEach(el=>el.addEventListener("change",()=>{' +
-      'const key=el.dataset.homeUpload,file=el.files&&el.files[0];' +
-      'if(!file)return;' +
+      'const key=el.dataset.homeUpload,file=el.files&&el.files[0];if(!file)return;' +
       'if(file.size>4*1024*1024){alert("حجم فایل حداکثر ۴ مگابایت باشد");el.value="";return;}' +
       'const reader=new FileReader();' +
-      'reader.onload=()=>{' +
-      'try{' +
+      'reader.onload=()=>{try{' +
       'const map=(SE.store&&SE.store.prefs&&SE.store.prefs.get("homeAlarmCustomSounds",{}))||{};' +
       'map[key]={name:file.name,dataUrl:reader.result,type:file.type||"audio/mpeg",savedAt:Date.now()};' +
       'if(SE.store&&SE.store.prefs)SE.store.prefs.set("homeAlarmCustomSounds",map);' +
       'const hint=document.querySelector(\'[data-home-upload-hint="\'+key+\'"]\');' +
-      'if(hint)hint.textContent="فایل: "+file.name;' +
-      'saveHomeAlarm(key,{sound:"custom"});' +
-      '}catch(err){console.warn(err);alert("ذخیره فایل ممکن نشد");}' +
-      '};' +
-      'reader.onerror=()=>alert("خواندن فایل ممکن نشد");' +
-      'reader.readAsDataURL(file);' +
+      'if(hint)hint.textContent="فایل: "+file.name;saveHomeAlarm(key,{sound:"custom"});' +
+      '}catch(err){console.warn(err);alert("ذخیره فایل ممکن نشد");}};' +
+      'reader.onerror=()=>alert("خواندن فایل ممکن نشد");reader.readAsDataURL(file);' +
       '}));';
     if (text.indexOf(oldSoundHandler) !== -1) text = text.split(oldSoundHandler).join(newSoundHandler);
 
@@ -95,47 +98,18 @@
     var styleExtra =
       '.home-alarm-lead-value{font-weight:600;color:#246f9e;font-size:.92rem;display:block;margin:4px 0}' +
       '.home-alarm-lead-range{width:100%;accent-color:#246f9e;height:2rem}' +
-      '.home-sound-picks{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px;align-items:flex-start}' +
-      '.home-sound-pick{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;min-width:70px;user-select:none}' +
+      '.home-sound-picks{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px}' +
+      '.home-sound-pick{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;min-width:70px}' +
       '.home-sound-pick input{position:absolute;opacity:0;width:1px;height:1px}' +
-      '.home-sound-circle{width:54px;height:54px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.4rem;background:#edf5fa;border:2px solid #d5e3ec;transition:border-color .15s,background .15s,box-shadow .15s}' +
+      '.home-sound-circle{width:54px;height:54px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.4rem;background:#edf5fa;border:2px solid #d5e3ec}' +
       '.home-sound-pick input:checked+.home-sound-circle{border-color:#246f9e;background:#dceef8;box-shadow:0 0 0 3px rgba(36,111,158,.2)}' +
-      '.home-sound-pick input:focus-visible+.home-sound-circle{outline:2px solid #246f9e;outline-offset:2px}' +
-      '.home-sound-txt{font-size:.75rem;color:#657384;text-align:center;line-height:1.2}' +
+      '.home-sound-txt{font-size:.75rem;color:#657384;text-align:center}' +
       '.home-sound-upload-wrap{margin-top:8px;display:flex;flex-direction:column;gap:6px;width:100%}' +
       '.home-sound-upload-wrap[hidden]{display:none!important}' +
-      '.home-sound-file{font:inherit;font-size:.85rem;max-width:100%}' +
-      '.home-sound-upload-hint{font-size:.8rem;color:#657384}' +
       styleNeedle;
     if (text.indexOf(styleNeedle) !== -1) text = text.split(styleNeedle).join(styleExtra);
 
     (0, eval)(text);
-
-    if (window.SE && SE.sounds && typeof SE.sounds.onAlarmFire === "function" && !SE.sounds._customWrapped) {
-      var origFire = SE.sounds.onAlarmFire.bind(SE.sounds);
-      SE.sounds.onAlarmFire = async function (alarmType, title, body, opts) {
-        opts = opts || {};
-        try {
-          var alarmsMap = (SE.store && SE.store.prefs && SE.store.prefs.get("homeEventAlarms", {})) || {};
-          var conf = alarmsMap[alarmType] || {};
-          var wantCustom = opts.soundMode === "custom" || conf.sound === "custom";
-          if (wantCustom) {
-            var map = (SE.store && SE.store.prefs && SE.store.prefs.get("homeAlarmCustomSounds", {})) || {};
-            var entry = map[alarmType];
-            if (entry && entry.dataUrl) {
-              if (SE.sounds.stopAdhan) SE.sounds.stopAdhan();
-              var audio = new Audio(entry.dataUrl);
-              await audio.play();
-              return { ok: true, custom: true, name: entry.name };
-            }
-          }
-        } catch (err) {
-          console.warn("custom alarm sound failed", err);
-        }
-        return origFire(alarmType, title, body, opts);
-      };
-      SE.sounds._customWrapped = true;
-    }
   } catch (e) {
     console.error("Yom Time home-dashboard bootstrap failed", e);
   }

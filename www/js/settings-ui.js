@@ -298,9 +298,11 @@
       if (active) a.setAttribute("aria-current", "page");
       else a.removeAttribute("aria-current");
     });
-    if (name === "settings") {
+    if (name === "home") {
       renderSoundOptions();
       renderAlarmToggles();
+    }
+    if (name === "settings") {
       renderReminderControls();
       bindReminderControls();
       renderCustomReminder();
@@ -360,10 +362,10 @@
     document.querySelectorAll(".tabbar a[data-tab]").forEach((a) => {
       a.addEventListener("click", (e) => {
         const tab = a.getAttribute("data-tab");
-        if (tab === "settings") {
+        if (tab === "settings" || tab === "home") {
           e.preventDefault();
-          location.hash = "#/settings";
-          showView("settings");
+          location.hash = tab === "settings" ? "#/settings" : "#/home";
+          showView(tab);
         }
       });
     });
@@ -371,6 +373,7 @@
     function onHash() {
       const h = (location.hash || "").replace(/^#\/?/, "");
       if (h === "settings") showView("settings");
+      else if (h === "home") showView("home");
     }
     window.addEventListener("hashchange", onHash);
     if ((location.hash || "").indexOf("settings") >= 0) onHash();

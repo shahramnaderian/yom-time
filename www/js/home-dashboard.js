@@ -48,7 +48,12 @@
     var soundNeedle = "صدای آلارم<select data-home-sound=\"'+x.key+'\"><option value=\"system\" '+((p.sound||\"system\")===\"system\"?'selected':'')+'>زنگ گوشی</option><option value=\"adhan\" '+(p.sound===\"adhan\"?'selected':'')+'>اذان</option></select>";
     var soundRepl =
       "صدای آلارم<select class=\"home-alarm-sound-select\" data-home-sound=\"'+x.key+'\">" +
-      "[{id:'system',fa:'زنگ گوشی',en:'Phone ringtone'},{id:'adhan',fa:'اذان',en:'Adhan'},{id:'happy-chime',fa:'زنگ شاد',en:'Happy chime'},{id:'morning-bells',fa:'ناقوس صبحگاهی',en:'Morning bells'},{id:'cheerful-piano',fa:'پیانوی شاد',en:'Cheerful piano'},{id:'soft-marimba',fa:'ماریمبای ملایم',en:'Soft marimba'}].map(function(o){return '<option value=\"'+o.id+'\" '+((p.sound||'system')===o.id?'selected':'')+'>'+((document.documentElement.lang||'fa').toLowerCase().indexOf('en')===0?o.en:o.fa)+'</option>';}).join('') +
+      "<option value=\"system\" '+((p.sound||\"system\")===\"system\"?'selected':'')+'>زنگ گوشی</option>" +
+      "<option value=\"adhan\" '+(p.sound===\"adhan\"?'selected':'')+'>اذان</option>" +
+      "<option value=\"happy-chime\" '+(p.sound===\"happy-chime\"?'selected':'')+'>زنگ شاد</option>" +
+      "<option value=\"morning-bells\" '+(p.sound===\"morning-bells\"?'selected':'')+'>ناقوس صبحگاهی</option>" +
+      "<option value=\"cheerful-piano\" '+(p.sound===\"cheerful-piano\"?'selected':'')+'>پیانوی شاد</option>" +
+      "<option value=\"soft-marimba\" '+(p.sound===\"soft-marimba\"?'selected':'')+'>ماریمبای ملایم</option>" +
       "</select>";
     if (text.indexOf(soundNeedle) !== -1) text = text.split(soundNeedle).join(soundRepl);
 

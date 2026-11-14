@@ -98,6 +98,8 @@
     "فعال‌سازی یادآوری هفتگی شنبه":"Enable weekly Saturday reminder"
   };
   const attributes = ["placeholder", "aria-label", "title"];
+  const originalText = new WeakMap();
+  const originalAttrs = new WeakMap();
   function isEnglish() { return (SE.i18n && SE.i18n.lang) === "en" || document.documentElement.lang === "en"; }
   function translateText(value) {
     let out = value;
@@ -128,25 +130,35 @@
     document.documentElement.dir = en ? "ltr" : "rtl";
     const button = document.getElementById("lang");
     if (button) button.textContent = en ? "فارسی" : "English";
-    if (!en) return;
     const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
     const nodes = [];
     while (walker.nextNode()) nodes.push(walker.currentNode);
     nodes.forEach(node => {
-      const next = translateText(node.nodeValue);
+      if (!en) {
+        if (originalText.has(node)) { node.nodeValue = originalText.get(node); originalText.delete(node); }
+        return;
+      }
+      const saved = originalText.get(node);
+      if (saved !== undefined && node.nodeValue !== translateText(saved)) originalText.set(node, node.nodeValue);
+      else if (!originalText.has(node)) originalText.set(node, node.nodeValue);
+      const next = translateText(originalText.get(node));
       if (next !== node.nodeValue) node.nodeValue = next;
     });
     document.querySelectorAll("input,textarea,button,select,[aria-label],[title]").forEach(el => {
+      let saved = originalAttrs.get(el);
+      if (!saved) { saved = {}; originalAttrs.set(el, saved); }
       attributes.forEach(attr => {
-        if (el.hasAttribute(attr)) {
-          const old = el.getAttribute(attr), next = translateText(old);
-          if (next !== old) el.setAttribute(attr, next);
+        if (!el.hasAttribute(attr)) return;
+        const current = el.getAttribute(attr);
+        if (!en) {
+          if (Object.prototype.hasOwnProperty.call(saved, attr)) { el.setAttribute(attr, saved[attr]); delete saved[attr]; }
+          return;
         }
+        if (Object.prototype.hasOwnProperty.call(saved, attr) && current !== translateText(saved[attr])) saved[attr] = current;
+        else if (!Object.prototype.hasOwnProperty.call(saved, attr)) saved[attr] = current;
+        const next = translateText(saved[attr]);
+        if (next !== current) el.setAttribute(attr, next);
       });
-      if (el.tagName === "OPTION") {
-        const next = translateText(el.textContent);
-        if (next !== el.textContent) el.textContent = next;
-      }
     });
     if (window.SE_refreshDateBar) window.SE_refreshDateBar();
     if (window.SE_settingsUI) {

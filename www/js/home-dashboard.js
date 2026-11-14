@@ -13,6 +13,14 @@
       } catch (_) {}
     }
     if (!text) throw new Error("failed to load home-dashboard.js");
+    // The main app bootstrap is asynchronous. Wait for its core modules before
+    // evaluating the dashboard so today's prayer times render on first open.
+    for (var wait = 0; wait < 100 && (!window.SE || !SE.place || !SE.place.timesFor || !SE.store || !SE.store.prefs); wait++) {
+      await new Promise(function (resolve) { setTimeout(resolve, 100); });
+    }
+    if (!window.SE || !SE.place || !SE.place.timesFor || !SE.store || !SE.store.prefs) {
+      throw new Error("Prayer-time modules did not finish loading");
+    }
 
     text = text.split('{enabled:false,minutes:5,sound:"system"}').join('{enabled:false,minutes:null,sound:"system"}');
 

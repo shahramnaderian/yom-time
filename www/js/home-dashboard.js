@@ -57,6 +57,11 @@
       "</select>";
     if (text.indexOf(soundNeedle) !== -1) text = text.split(soundNeedle).join(soundRepl);
 
+    var rowNeedle = "return '<div class=\\"home-prayer-row home-prayer-row-alarm\\"><div class=\\"home-prayer-name\\">'+x.label+'</div><time>'+fa(x.time)+'</time>'+controls+'</div>';";
+    var rowRepl = "return '<div class=\\"home-prayer-row home-prayer-row-alarm\\"><div class=\\"home-prayer-name\\">'+x.label+'</div><time>'+fa(x.time)+'</time><span class=\\"home-prayer-sound-label\\">'+({system:'زنگ گوشی',adhan:'اذان','happy-chime':'زنگ شاد','morning-bells':'ناقوس صبحگاهی','cheerful-piano':'پیانوی شاد','soft-marimba':'ماریمبای ملایم'}[p.sound||'system']||'زنگ گوشی')+'</span>'+controls+'</div>';";
+    if (text.indexOf(rowNeedle) !== -1) text = text.split(rowNeedle).join(rowRepl);
+
+
     text = text.split(
       'saveHomeAlarm(el.dataset.homeAlarm,{enabled});if(options)options.hidden=!enabled;'
     ).join(
@@ -87,6 +92,8 @@
     var styleExtra =
       '.home-alarm-lead-value{font-weight:600;color:#246f9e;font-size:.92rem;display:block;margin:4px 0}' +
       '.home-alarm-lead-range{width:100%;accent-color:#246f9e;height:2rem}' +
+      '.home-prayer-row-alarm{grid-template-columns:minmax(0,1fr) auto auto}' +
+      '.home-prayer-sound-label{font-size:.76rem;color:#246f9e;background:#edf5fa;border-radius:8px;padding:4px 7px;white-space:nowrap}' +
       '.home-sound-picks{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px}' +
       '.home-sound-pick{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;min-width:70px}' +
       '.home-sound-pick input{position:absolute;opacity:0;width:1px;height:1px}' +

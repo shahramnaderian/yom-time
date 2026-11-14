@@ -90,7 +90,7 @@
   }
   async function onAlarmFire(alarmType,title,body,opts) {
     opts=opts||{};
-    const pref=opts.soundMode==="adhan"?"adhan":opts.soundMode==="system"?"system":getSoundPref();
+    const pref=opts.soundMode==="adhan"||opts.soundMode==="system"||TONES[opts.soundMode]?opts.soundMode:getSoundPref();
     if(pref==="silent") return {ok:true,silent:true};
     if(pref==="adhan") { const r=await playAdhan(alarmType); if(r.ok)return r; }
     if(TONES[pref]) return playTone(pref);

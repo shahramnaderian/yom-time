@@ -42,6 +42,7 @@
     if (text.indexOf(needle) !== -1) text = text.split(needle).join(replacement);
     else console.warn("Yom Time: autosave patch point not found; loading original app.js");
     (0, eval)(text);
+    try { await loadScript("js/qibla.js"); } catch (qe) { console.warn(qe); }
   } catch (e) {
     console.error("Yom Time app bootstrap failed", e);
   }

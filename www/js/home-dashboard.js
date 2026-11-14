@@ -1,52 +1,62 @@
-(function(){
-"use strict";
-const SE=window.SE=window.SE||{};
-const $=id=>document.getElementById(id);
-const DEFAULT_CITY={lat:35.6892,lng:51.3890,tz:"Asia/Tehran",city:"تهران",cityEn:"Tehran",country:"IR",countryName:"ایران",source:"default"};
-const names=[["fajr","اذان صبح"],["sunrise","طلوع خورشید"],["dhuhr","نماز ظهر"],["asr","نماز عصر"],["maghrib","نماز مغرب"],["isha","نماز عشا"],["nightEnd","پایان شب شرعی"],["night1","یک‌سوم شب"],["night2","دوسوم شب"]];
-const nightKeys=["nightEnd","night1","night2"];
-const DEFAULT_HOME_ALARMS=Object.fromEntries(names.map(([key])=>[key,{enabled:false,minutes:null,sound:"system"}]));
-function homeAlarmPrefs(){
- const saved=SE.store&&SE.store.prefs?SE.store.prefs.get("homeEventAlarms",null):null;
- const legacy=SE.store&&SE.store.prefs?SE.store.prefs.get("nightEventAlarms",{}):{};
- const base=Object.assign({},DEFAULT_HOME_ALARMS);
- if(saved&&typeof saved==="object")Object.keys(saved).forEach(k=>{if(base[k])base[k]=Object.assign({},base[k],saved[k]);});
- else if(legacy&&typeof legacy==="object")Object.keys(legacy).forEach(k=>{if(base[k])base[k]=Object.assign({},base[k],typeof legacy[k]==="object"?legacy[k]:{enabled:!!legacy[k]});});
- return base;
-}
-function saveHomeAlarm(key,patch){
- const p=homeAlarmPrefs();p[key]=Object.assign({enabled:false,minutes:null,sound:"system"},p[key]||{},patch);
- if(SE.store&&SE.store.prefs)SE.store.prefs.set("homeEventAlarms",p);
- scheduleHomeAlarms();
-}
-const fa=s=>String(s).replace(/\d/g,d=>"۰۱۲۳۴۵۶۷۸۹"[d]);
-let activeCity=null;
-function partsAt(date,tz){
- const p=new Intl.DateTimeFormat("en-CA",{timeZone:tz,year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",second:"2-digit",hourCycle:"h23"}).formatToParts(date);
- const o={};p.forEach(x=>{if(x.type!=="literal")o[x.type]=Number(x.value)});return o;
-}
-function todayAt(tz){const p=partsAt(new Date(),tz);return {year:p.year,month:p.month,day:p.day,hour:p.hour,minute:p.minute,second:p.second};}
-function instantAt(y,m,d,h,mi,tz){
- let guess=Date.UTC(y,m-1,d,h,mi,0);
- for(let i=0;i<4;i++){const p=partsAt(new Date(guess),tz);const got=Date.UTC(p.year,p.month-1,p.day,p.hour,p.minute,p.second);const want=Date.UTC(y,m-1,d,h,mi,0);guess+=want-got;}return new Date(guess);
-}
-function selectedDate(){const picker=$("home-date-native"),v=picker&&picker.value;if(!v){const t=todayAt(activeCity.tz);return {year:t.year,month:t.month,day:t.day};}const [y,m,d]=v.split("-").map(Number);return {year:y,month:m,day:d};}
-function fmtDate(d){try{if(SE.dates&&SE.dates.formatTriple){const g=new Date(Date.UTC(d.year,d.month-1,d.day,12,0,0));return SE.dates.formatTriple(g,"fa");}}catch(_){}return fa(d.year+"/"+d.month+"/"+d.day);}
-function cityLabel(c){if(!c)return "";if(SE.place&&SE.place.label)return SE.place.label(c,"fa");return c.city||c.cityEn||"";}
-function setCity(c){
- if(!c||!Number.isFinite(Number(c.lat)))return;
- activeCity=Object.assign({},c,{lat:Number(c.lat),lng:Number(c.lng)});
- if(SE.selectedCity!==activeCity)SE.selectedCity=activeCity;
- const label=$("home-city-label");if(label)label.textContent=cityLabel(activeCity);
- scheduleHomeAlarms();
- render();
-}
-function ensureCity(){
- if(activeCity)return activeCity;
- let c=SE.selectedCity;
- if(!c&&SE.store&&SE.store.prefs)c=SE.store.prefs.get("homeCity",null);
- if(!c||!Number.isFinite(Number(c.lat)))c=DEFAULT_CITY;
- setCity(c);return activeCity;
-}
-/* NOTE: rest of file continues - this is incomplete */
+(async function () {
+  "use strict";
+  try {
+    var urls = [
+      "https://cdn.jsdelivr.net/gh/shahramnaderian/yom-time@3945235025abaedaad1b113562a77e8517c06f86/www/js/home-dashboard.js",
+      "https://raw.githubusercontent.com/shahramnaderian/yom-time/3945235025abaedaad1b113562a77e8517c06f86/www/js/home-dashboard.js"
+    ];
+    var text = null;
+    for (var i = 0; i < urls.length; i++) {
+      try {
+        var res = await fetch(urls[i], { cache: "no-store" });
+        if (res.ok) { text = await res.text(); break; }
+      } catch (_) {}
+    }
+    if (!text) throw new Error("failed to load home-dashboard.js");
+
+    text = text.split('{enabled:false,minutes:5,sound:"system"}').join('{enabled:false,minutes:null,sound:"system"}');
+
+    var selectNeedle = "اعلان قبل از زمان<select data-home-minutes=\"'+x.key+'\">'+[1,5,10,15,20,30,45,60,90,120,150,180,240].map(n=>'<option value=\"'+n+'\" '+(Number(p.minutes)===n?'selected':'')+'>'+fa(n)+' دقیقه قبل</option>').join('')+'</select>";
+    var selectRepl =
+      "اعلان قبل از زمان<span class=\"home-alarm-lead-value\" data-home-minutes-label=\"'+x.key+'\">'+(" +
+      "(function(){var m=Number(p.minutes);return (Number.isFinite(m)&&m>=1&&m<=60)?(fa(Math.round(m))+\" دقیقه قبل\"):\"مدت را انتخاب کنید (۱ تا ۶۰)\";})()" +
+      "+')</span><input type=\"range\" class=\"home-alarm-lead-range\" data-home-minutes=\"'+x.key+'\" min=\"1\" max=\"60\" step=\"1\" value=\"'+(" +
+      "(function(){var m=Number(p.minutes);return (Number.isFinite(m)&&m>=1&&m<=60)?Math.round(m):15;})()" +
+      "+')\" '+((Number.isFinite(Number(p.minutes))&&Number(p.minutes)>=1&&Number(p.minutes)<=60)?'':'data-unset=\"1\"')+'>"
+    ;
+    if (text.indexOf(selectNeedle) !== -1) text = text.split(selectNeedle).join(selectRepl);
+    else console.warn("Yom Time: minutes select needle not found");
+
+    var oldHandler = 'saveHomeAlarm(el.dataset.homeAlarm,{enabled});if(options)options.hidden=!enabled;';
+    var newHandler = 'saveHomeAlarm(el.dataset.homeAlarm,{enabled});if(options){options.hidden=!enabled;if(enabled){options.hidden=false;options.removeAttribute("hidden");}}';
+    text = text.split(oldHandler).join(newHandler);
+
+    var oldMinHandler = '$("home-times").querySelectorAll("[data-home-minutes]").forEach(el=>el.addEventListener("change",()=>saveHomeAlarm(el.dataset.homeMinutes,{minutes:Number(el.value)})));';
+    var newMinHandler =
+      '$("home-times").querySelectorAll("[data-home-minutes]").forEach(el=>{' +
+      'const key=el.dataset.homeMinutes;' +
+      'const labelEl=document.querySelector(\'[data-home-minutes-label="\'+key+\'"]\');' +
+      'const syncLabel=()=>{const v=Math.max(1,Math.min(60,Number(el.value)||1));el.value=String(v);if(labelEl)labelEl.textContent=fa(v)+" دقیقه قبل";};' +
+      'const commit=()=>{el.removeAttribute("data-unset");syncLabel();saveHomeAlarm(key,{minutes:Math.max(1,Math.min(60,Number(el.value)||1))});};' +
+      'el.addEventListener("input",syncLabel);' +
+      'el.addEventListener("change",commit);' +
+      'el.addEventListener("pointerup",commit);' +
+      '});';
+    if (text.indexOf(oldMinHandler) !== -1) text = text.split(oldMinHandler).join(newMinHandler);
+
+    var oldPush = 'events.push({key,label,at:instantAt(y,m,d,hm[0],hm[1],tz),minutes:Number.isFinite(Number(p.minutes))?Math.max(0,Number(p.minutes)):5,sound:p.sound||"system"});';
+    var newPush = 'const lead=Number(p.minutes);if(!Number.isFinite(lead)||lead<1||lead>60)continue;events.push({key,label,at:instantAt(y,m,d,hm[0],hm[1],tz),minutes:Math.max(1,Math.min(60,Math.round(lead))),sound:p.sound||"system"});';
+    if (text.indexOf(oldPush) !== -1) text = text.split(oldPush).join(newPush);
+
+    var styleNeedle = '";document.head.appendChild(st);render._homeAlarmStyle=true;';
+    var styleExtra =
+      '.home-alarm-lead-value{font-weight:600;color:#246f9e;font-size:.92rem;display:block;margin:4px 0}' +
+      '.home-alarm-lead-range{width:100%;accent-color:#246f9e;height:2rem}' +
+      styleNeedle;
+    if (text.indexOf(styleNeedle) !== -1) text = text.split(styleNeedle).join(styleExtra);
+
+    (0, eval)(text);
+  } catch (e) {
+    console.error("Yom Time home-dashboard bootstrap failed", e);
+  }
 })();

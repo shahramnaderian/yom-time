@@ -49,6 +49,24 @@ jobs:
       - name: Generate Android project
         run: npx cap add android
 
+      - name: Install native notification ringtone picker
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          source = Path("native/android/RingtonePickerPlugin.java")
+          target = Path("android/app/src/main/java/app/yomtime/owghat/RingtonePickerPlugin.java")
+          target.parent.mkdir(parents=True, exist_ok=True)
+          target.write_text(source.read_text())
+          activity = Path("android/app/src/main/java/app/yomtime/owghat/MainActivity.java")
+          code = activity.read_text()
+          if "RingtonePickerPlugin.class" not in code:
+              code = code.replace("import com.getcapacitor.BridgeActivity;", "import com.getcapacitor.BridgeActivity;\\nimport app.yomtime.owghat.RingtonePickerPlugin;")
+              code = re.sub(r'(public void onCreate\\(Bundle savedInstanceState\\) \\{)', r'\\1\\n        registerPlugin(RingtonePickerPlugin.class);', code, count=1)
+              activity.write_text(code)
+          print("Registered RingtonePickerPlugin in", activity)
+          PY
+
       - name: Render high-resolution launcher icons
         run: |
           sudo apt-get update

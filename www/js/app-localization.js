@@ -158,6 +158,15 @@
   const originalText = new WeakMap();
   const originalAttrs = new WeakMap();
   let lastAppliedLanguage = null;
+  try {
+    const savedLanguage = localStorage.getItem("yom-time-language");
+    if (savedLanguage === "en" || savedLanguage === "fa") {
+      if (SE.i18n && SE.i18n.setLang) SE.i18n.setLang(savedLanguage);
+      document.documentElement.lang = savedLanguage;
+      document.documentElement.dir = savedLanguage === "en" ? "ltr" : "rtl";
+    }
+  } catch (_) {}
+
   function isEnglish() { return (SE.i18n && SE.i18n.lang) === "en" || document.documentElement.lang === "en"; }
   function translateText(value) {
     let out = value;
@@ -242,7 +251,12 @@
     setTimeout(() => { scheduled = false; apply(); }, 30);
   }
   document.addEventListener("click", event => {
-    if (event.target && (event.target.id === "lang" || event.target.closest && event.target.closest("#lang"))) setTimeout(schedule, 80);
+    if (event.target && (event.target.id === "lang" || event.target.closest && event.target.closest("#lang"))) {
+      setTimeout(() => {
+        try { if (SE.i18n && SE.i18n.lang) localStorage.setItem("yom-time-language", SE.i18n.lang); } catch (_) {}
+        schedule();
+      }, 80);
+    }
   }, true);
   const observer = new MutationObserver(schedule);
   observer.observe(document.body, { childList: true, subtree: true, characterData: true });

@@ -50,8 +50,8 @@
       "صدای آلارم<div class=\"home-sound-picks\" role=\"radiogroup\" aria-label=\"صدای آلارم\">" +
       "<label class=\"home-sound-pick\"><input type=\"radio\" name=\"home-sound-'+x.key+'\" data-home-sound=\"'+x.key+'\" value=\"adhan\" '+(p.sound===\"adhan\"?'checked':'')+'><span class=\"home-sound-circle\">🕌</span><span class=\"home-sound-txt\">اذان</span></label>" +
       "<label class=\"home-sound-pick\"><input type=\"radio\" name=\"home-sound-'+x.key+'\" data-home-sound=\"'+x.key+'\" value=\"system\" '+((!p.sound||p.sound===\"system\")?'checked':'')+'><span class=\"home-sound-circle\">📱</span><span class=\"home-sound-txt\">زنگ گوشی</span></label>" +
-      "<label class=\"home-sound-pick\"><input type=\"radio\" name=\"home-sound-'+x.key+'\" data-home-sound=\"'+x.key+'\" value=\"custom\" '+(p.sound===\"custom\"?'checked':'')+'><span class=\"home-sound-circle\">🎵</span><span class=\"home-sound-txt\">از دستگاه</span></label></div>" +
-      "<div class=\"home-sound-upload-wrap\" data-home-upload-wrap=\"'+x.key+'\" '+(p.sound===\"custom\"?'':'hidden')+'>'+" +
+      "<label class=\"home-sound-pick\"><input type=\"radio\" name=\"home-sound-'+x.key+'\" data-home-sound=\"'+x.key+'\" value=\"happy-chime\" '+(p.sound===\"happy-chime\"?'checked':'')+'><span class=\"home-sound-circle\">🎵</span><span class=\"home-sound-txt\">زنگ ملایم</span></label></div>" +
+      "<div class=\"home-sound-upload-wrap\" data-home-upload-wrap=\"'+x.key+'\" '+(p.sound===\"happy-chime\"?'':'hidden')+'>'+" +
       "'<input type=\"file\" accept=\"audio/*,.mp3,.m4a,.ogg,.wav,.aac\" data-home-upload=\"'+x.key+'\" class=\"home-sound-file\">'+" +
       "'<span class=\"home-sound-upload-hint\" data-home-upload-hint=\"'+x.key+'\">'+(" +
       "(function(){try{var c=SE.store&&SE.store.prefs&&SE.store.prefs.get('homeAlarmCustomSounds',{});var n=c&&c[x.key]&&c[x.key].name;return n?('فایل: '+n):'یک فایل صوتی از گوشی انتخاب کنید';}catch(_){return 'یک فایل صوتی از گوشی انتخاب کنید';}})()" +

@@ -42,7 +42,7 @@
     st.id = "home-qibla-styles";
     st.textContent = [
       ".home-qibla-card{margin:12px 4px;padding:14px 16px;border-radius:16px;background:#fff;box-shadow:0 2px 12px rgba(0,0,0,.06);display:flex;align-items:center;gap:14px;flex-wrap:wrap}",
-      ".home-qibla-icon{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#edf5fa,#dceef8);display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0}",
+      ".home-qibla-icon{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#edf5fa,#dceef8);display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0}.home-qibla-icon img{width:100%;height:100%;object-fit:cover;border-radius:50%}",
       ".home-qibla-body{flex:1;min-width:140px}",
       ".home-qibla-title{font-weight:700;font-size:.95rem;color:#2B1A1A;margin:0 0 4px}",
       ".home-qibla-meta{font-size:.85rem;color:#657384;margin:0}",
@@ -72,7 +72,7 @@
       card.id = "home-qibla-card";
       card.className = "home-qibla-card";
       card.innerHTML =
-        '<div class="home-qibla-icon" aria-hidden="true">🕋</div>' +
+        '<div class="home-qibla-icon" aria-hidden="true"><img src="images/kaaba-illustration.svg" alt="" loading="lazy"></div>' +
         '<div class="home-qibla-body">' +
         '  <p class="home-qibla-title">قبله‌نما</p>' +
         '  <p class="home-qibla-angle" id="home-qibla-angle">—</p>' +

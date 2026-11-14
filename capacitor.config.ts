@@ -2,7 +2,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'app.yomtime.owghat',
-  appName: 'yom ti',
+  appName: 'yomeah',
   webDir: 'www',
   server: {
     androidScheme: 'https'

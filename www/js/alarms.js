@@ -22,6 +22,18 @@
     return SE.store.prefs.get("alarms", DEFAULT_ENABLED);
   }
 
+  // Monthly prayer notifications use the same per-event lead time selected
+  // on the Home screen. Keep every scheduled lead within the 1–60 minute UI range.
+  function getEventLeadMinutes(key) {
+    const prefs = SE.store && SE.store.prefs;
+    const map = prefs ? (prefs.get("homeEventAlarms", {}) || {}) : {};
+    const configured = map[key] && map[key].minutes;
+    const minutes = Number(configured);
+    return Number.isFinite(minutes)
+      ? Math.max(1, Math.min(60, Math.round(minutes)))
+      : 5;
+  }
+
   function setEnabled(map) {
     SE.store.prefs.set("alarms", map);
   }
@@ -86,8 +98,8 @@
       const when = timeToDate(String(timeStr), targetDate, !targetDate, timeZone);
       if (!when) return;
 
-      // Prayer alarms are scheduled five minutes before the actual event.
-      const leadMinutes = 5;
+      // Use the same per-event 1–60 minute lead time configured on Home.
+      const leadMinutes = getEventLeadMinutes(t.key);
       const alarmAt = new Date(when.getTime() - leadMinutes * 60000);
       if (alarmAt.getTime() <= Date.now()) return;
 
@@ -190,7 +202,7 @@
 
   function getLeadMinutes(value) {
     const minutes = Number(value);
-    return Number.isFinite(minutes) ? Math.max(0, minutes) : 5;
+    return Number.isFinite(minutes) ? Math.max(1, Math.min(60, Math.round(minutes))) : 5;
   }
 
   async function scheduleHomeEvents(events, placeName) {

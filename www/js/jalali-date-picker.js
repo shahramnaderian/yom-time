@@ -33,6 +33,8 @@
       ".jalali-picker[hidden],.jalali-picker-backdrop[hidden]{display:none!important}",
       ".jalali-picker-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:16px}",
       ".jalali-picker-title{font-weight:700;color:#176348;text-align:center;flex:1}",
+      ".jalali-picker-jump{display:flex;gap:8px;margin:-7px 0 14px}",
+      ".jalali-picker-jump select,.jalali-picker-jump input{min-width:0;flex:1;border:1px solid #dce5df;border-radius:10px;padding:9px;background:#f8faf8;color:#263746;font:inherit}",
       ".jalali-picker-nav,.jalali-picker-today,.jalali-picker-close{border:0;border-radius:10px;background:#edf4ef;color:#176348;padding:9px 12px;font:inherit;cursor:pointer}",
       ".jalali-picker-week,.jalali-picker-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px;text-align:center}",
       ".jalali-picker-week{font-size:.75rem;color:#718092;margin-bottom:8px}",
@@ -52,6 +54,14 @@
     backdrop.innerHTML = '<section class="jalali-picker" role="dialog" aria-modal="true" aria-label="انتخاب تاریخ شمسی"><div class="jalali-picker-head"><button type="button" class="jalali-picker-nav" data-step="-1" aria-label="ماه قبل">‹</button><div class="jalali-picker-title"></div><button type="button" class="jalali-picker-nav" data-step="1" aria-label="ماه بعد">›</button></div><div class="jalali-picker-week"></div><div class="jalali-picker-days"></div><div class="jalali-picker-actions"><button type="button" class="jalali-picker-today">امروز</button><button type="button" class="jalali-picker-close">بستن</button></div></section>';
     document.body.appendChild(backdrop);
     var title = backdrop.querySelector(".jalali-picker-title");
+    var jump = document.createElement("div"); jump.className = "jalali-picker-jump";
+    var monthSelect = document.createElement("select"); monthSelect.setAttribute("aria-label", "انتخاب ماه");
+    months.forEach(function(name, index) { var option = document.createElement("option"); option.value = String(index + 1); option.textContent = name; monthSelect.appendChild(option); });
+    var yearInput = document.createElement("input"); yearInput.type = "number"; yearInput.inputMode = "numeric"; yearInput.min = "1200"; yearInput.max = "1600"; yearInput.step = "1"; yearInput.setAttribute("aria-label", "انتخاب سال");
+    jump.appendChild(monthSelect); jump.appendChild(yearInput);
+    title.parentNode.insertBefore(jump, title.parentNode.nextSibling);
+    monthSelect.addEventListener("change", function() { shown = addMonths({year:shown.year, month:Number(monthSelect.value), day:shown.day}, 0); render(); });
+    yearInput.addEventListener("change", function() { var y = Number(yearInput.value); if (!Number.isInteger(y) || y < 1200 || y > 1600) { yearInput.value = String(shown.year); return; } shown = {year:y, month:shown.month, day:Math.min(shown.day, SE.jalali.daysInMonth(y, shown.month, "j"))}; render(); });
     var week = backdrop.querySelector(".jalali-picker-week");
     var days = backdrop.querySelector(".jalali-picker-days");
     var shown = currentJalali();
@@ -64,6 +74,7 @@
     function same(a,b) { return a.year===b.year && a.month===b.month && a.day===b.day; }
     function render() {
       title.textContent = months[shown.month-1] + " " + fa(shown.year);
+      monthSelect.value = String(shown.month); yearInput.value = String(shown.year);
       days.replaceChildren();
       var first = SE.jalali.jToG(shown.year, shown.month, 1);
       var offset = (new Date(Date.UTC(first.year, first.month-1, first.day)).getUTCDay() + 1) % 7;

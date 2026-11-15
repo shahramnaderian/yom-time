@@ -25,6 +25,7 @@
     var input = document.getElementById("home-date");
     var native = document.getElementById("home-date-native");
     if (!input || !native || !SE.jalali || !SE.jalali.jToG) return;
+    input.dataset.jalaliPickerReady = "1";
     var style = document.createElement("style");
     style.textContent = [
       ".jalali-picker-backdrop{position:fixed;inset:0;z-index:10000;background:rgba(13,28,24,.48);display:flex;align-items:center;justify-content:center;padding:18px}",
@@ -104,8 +105,9 @@
       if (step) { shown = addMonths(shown, Number(step.dataset.step)); render(); }
     });
     backdrop.querySelector(".jalali-picker-today").addEventListener("click", function () {
-      var today = currentJalali();
-      choose(today);
+      var todayButton = document.getElementById("home-today");
+      if (todayButton) todayButton.click();
+      close();
     });
     backdrop.querySelector(".jalali-picker-close").addEventListener("click", close);
     document.addEventListener("keydown", function (event) {

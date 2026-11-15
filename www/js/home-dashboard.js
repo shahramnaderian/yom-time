@@ -124,7 +124,7 @@
       ' const candidates=[];',
       ' function collectUpcoming(y,m,d){',
       '  const dayEv=SE.place.timesFor(activeCity,y,m,d,SE.methods&&SE.methods.getCurrentMethod?SE.methods.getCurrentMethod():"legacy");',
-      '  const dayNight={nightEnd:dayEv.nauticalBegin,night1:dayEv.night1,night2:dayEv.night2};',
+      '  const dayNight=nightPartsFor(activeCity,y,m,d,dayEv);',
       '  names.forEach(([key,label])=>{',
       '   const tm=nightKeys.includes(key)?dayNight[key]:dayEv[key];',
       '   if(!tm)return;',
@@ -156,7 +156,7 @@
 
     // Keep prayer calculations on the app's Legacy method and derive night thirds from sunset to the following Fajr.
     text = text.replaceAll('SE.methods&&SE.methods.getCurrentMethod?SE.methods.getCurrentMethod():"legacy"', '"legacy"');
-    var nightHelper = 'function nightPartsFor(place,y,m,d,ev){const next=new Date(Date.UTC(y,m-1,d+1)),ny=next.getUTCFullYear(),nm=next.getUTCMonth()+1,nd=next.getUTCDate(),nextEv=SE.place.timesFor(place,ny,nm,nd,"legacy");const mins=s=>{if(!s)return null;const a=String(s).split(":").map(Number);return a.length===2&&a.every(Number.isFinite)?a[0]*60+a[1]:null;};const sunset=mins(ev.sunset),fajr=mins(nextEv.fajr);if(sunset===null||fajr===null)return {nightEnd:ev.fajr,night1:null,night2:null};const end=fajr<=sunset?fajr+1440:fajr,span=end-sunset;const fmt=n=>String(Math.floor(n/60)%24).padStart(2,"0")+":"+String(Math.floor(n%60)).padStart(2,"0");return {nightEnd:ev.fajr,night1:fmt((sunset+span/3)%1440),night2:fmt((sunset+span*2/3)%1440)};}';
+    var nightHelper = 'function nightPartsFor(place,y,m,d,ev){const next=new Date(Date.UTC(y,m-1,d+1)),ny=next.getUTCFullYear(),nm=next.getUTCMonth()+1,nd=next.getUTCDate(),nextEv=SE.place.timesFor(place,ny,nm,nd,SE.methods&&SE.methods.getCurrentMethod?SE.methods.getCurrentMethod():"legacy");const mins=s=>{if(!s)return null;const a=String(s).split(":").map(Number);return a.length===2&&a.every(Number.isFinite)?a[0]*60+a[1]:null;};const sunset=mins(ev.sunset),fajr=mins(nextEv.fajr);if(sunset===null||fajr===null)return {nightEnd:ev.fajr,night1:null,night2:null};const end=fajr<=sunset?fajr+1440:fajr,span=end-sunset;const fmt=n=>String(Math.floor(n/60)%24).padStart(2,"0")+":"+String(Math.floor(n%60)).padStart(2,"0");return {nightEnd:ev.fajr,night1:fmt((sunset+span/3)%1440),night2:fmt((sunset+span*2/3)%1440)};}';
     text = text.replace('let activeCity=null;', nightHelper+'\nlet activeCity=null;');
     text = text.replace('const nightTimes={nightEnd:ev.nauticalBegin,night1:ev.night1,night2:ev.night2};','const nightTimes=nightPartsFor(activeCity,d.year,d.month,d.day,ev);');
     text = text.replace('const nightTimes={nightEnd:ev.nauticalBegin,night1:ev.night1,night2:ev.night2};','const nightTimes=nightPartsFor(activeCity,y,m,d,ev);');

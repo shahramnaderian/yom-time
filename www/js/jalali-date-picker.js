@@ -25,7 +25,7 @@
     var input = document.getElementById("home-date");
     var native = document.getElementById("home-date-native");
     if (!input || !native || !SE.jalali || !SE.jalali.jToG) return;
-    input.dataset.jalaliPickerReady = "1";
+    // Mark the custom picker ready only after its event handlers are installed.
     var style = document.createElement("style");
     style.textContent = [
       ".jalali-picker-backdrop{position:fixed;inset:0;z-index:10000;background:rgba(13,28,24,.48);display:flex;align-items:center;justify-content:center;padding:18px}",
@@ -96,11 +96,21 @@
       }
     }
     function open() {
-      selected = currentJalali();
-      shown = {year:selected.year,month:selected.month,day:1};
-      render();
-      backdrop.hidden = false;
-      backdrop.querySelector(".jalali-picker-close").focus();
+      try {
+        selected = currentJalali();
+        shown = {year:selected.year,month:selected.month,day:1};
+        render();
+        backdrop.hidden = false;
+        backdrop.querySelector(".jalali-picker-close").focus();
+      } catch (error) {
+        // Keep date selection usable if a browser or calendar implementation
+        // fails while rendering the custom Jalali dialog.
+        try {
+          if (native.showPicker) native.showPicker();
+          else native.click();
+        } catch (_) { native.click(); }
+        console.error("Yom Time Jalali date picker failed to open", error);
+      }
     }
     function close() { backdrop.hidden = true; input.focus(); }
     function choose(value) {
@@ -136,6 +146,7 @@
     input.addEventListener("keydown", function (event) {
       if (event.key === "Enter" || event.key === " ") { event.preventDefault(); open(); }
     });
+    input.dataset.jalaliPickerReady = "1";
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init, {once:true});
   else init();

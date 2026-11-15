@@ -21,14 +21,20 @@
     var max = SE.jalali.daysInMonth(year, month, "j");
     return {year:year, month:month, day:Math.min(date.day, max)};
   }
+  var initAttempts = 0;
   function init() {
     var input = document.getElementById("home-date");
     var native = document.getElementById("home-date-native");
-    if (!input || !native || !SE.jalali || !SE.jalali.jToG) return;
+    if (!input || !native || !SE.jalali || !SE.jalali.jToG) {
+      if (initAttempts++ < 40) window.setTimeout(init, 250);
+      return;
+    }
+    if (input.dataset.jalaliPickerReady === "1") return;
     // Mark the custom picker ready only after its event handlers are installed.
     var style = document.createElement("style");
     style.textContent = [
       ".jalali-picker-backdrop{position:fixed;inset:0;z-index:10000;background:rgba(13,28,24,.48);display:flex;align-items:center;justify-content:center;padding:18px}",
+      ".jalali-picker-trigger{border:0;border-radius:12px;background:#176348;color:#fff;padding:12px 14px;font:inherit;cursor:pointer;white-space:nowrap}",
       ".jalali-picker{width:min(100%,380px);background:#fff;border-radius:22px;padding:18px;box-shadow:0 18px 60px rgba(0,0,0,.24);color:#263746;font-family:inherit;direction:rtl}",
       ".jalali-picker[hidden],.jalali-picker-backdrop[hidden]{display:none!important}",
       ".jalali-picker-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:16px}",
@@ -138,6 +144,13 @@
     document.addEventListener("keydown", function (event) {
       if (!backdrop.hidden && event.key === "Escape") close();
     });
+    var trigger = document.createElement("button");
+    trigger.type = "button";
+    trigger.className = "jalali-picker-trigger";
+    trigger.textContent = "تقویم";
+    trigger.setAttribute("aria-label", "باز کردن تقویم شمسی");
+    input.insertAdjacentElement("afterend", trigger);
+    trigger.addEventListener("click", function (event) { event.preventDefault(); open(); });
     input.addEventListener("click", function (event) {
       event.preventDefault();
       event.stopImmediatePropagation();

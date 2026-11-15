@@ -3,8 +3,8 @@
   try {
     var urls = [
       "./js/home-dashboard-core.js",
-      "https://cdn.jsdelivr.net/gh/shahramnaderian/yom-time@3945235025abaedaad1b113562a77e8517c06f86/www/js/home-dashboard.js",
-      "https://raw.githubusercontent.com/shahramnaderian/yom-time/3945235025abaedaad1b113562a77e8517c06f86/www/js/home-dashboard.js"
+      "https://cdn.jsdelivr.net/gh/shahramnaderian/yom-time@main/www/js/home-dashboard.js",
+      "https://raw.githubusercontent.com/shahramnaderian/yom-time/main/www/js/home-dashboard.js"
     ];
     var text = null, i, res;
     for (i = 0; i < urls.length; i++) {

@@ -197,16 +197,6 @@ function render(){
  $("home-times").querySelectorAll("[data-home-sound]").forEach(el=>el.addEventListener("change",()=>saveHomeAlarm(el.dataset.homeSound,{sound:el.value})));
  if(!render._homeAlarmInteractions){const root=$("home-times");["pointerdown","touchstart","click"].forEach(type=>root.addEventListener(type,e=>{if(e.target.closest(".home-alarm-options"))e.stopPropagation()},true));render._homeAlarmInteractions=true;}
  if(!render._homeAlarmStyle){const st=document.createElement("style");st.textContent=".home-prayer-row-alarm{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:8px}.home-prayer-row-alarm .home-alarm-controls{grid-column:1/-1;display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap;border-top:1px solid #edf0f2;padding-top:10px}.home-alarm-toggle{display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:140px;border-radius:11px;background:#edf5fa;padding:8px 12px;color:#657384;font-size:.85rem}.home-alarm-toggle .alarm-name{font-size:.85rem}.home-alarm-toggle input[type=\"checkbox\"]{position:absolute;opacity:0;width:0;height:0}.home-alarm-toggle .switch{width:44px;height:26px;border-radius:13px;background:#ccc;position:relative;transition:background .2s;flex-shrink:0}.home-alarm-toggle .switch::after{content:\"\";position:absolute;width:22px;height:22px;border-radius:50%;background:#fff;top:2px;inset-inline-start:2px;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}.home-alarm-toggle input:checked + .switch{background:#246f9e}.home-alarm-toggle input:checked + .switch::after{transform:translateX(-18px)}html[dir=\"ltr\"] .home-alarm-toggle input:checked + .switch::after{transform:translateX(18px)}.home-alarm-options[hidden]{display:none!important}.home-alarm-options{display:flex;flex:1;gap:10px;flex-wrap:wrap}.home-alarm-options label{display:flex;flex:1;min-width:135px;flex-direction:column;gap:5px;color:#657384;font-size:.8rem}.home-alarm-options select{width:100%;min-height:42px;border:1px solid #dce2e8;border-radius:10px;padding:8px;background:#fff;color:#35495a;font:inherit;font-size:.88rem}.home-alarm-toggle input:focus-visible+span{outline:2px solid #246f9e}";document.head.appendChild(st);render._homeAlarmStyle=true;}
- const now=new Date(),local=todayAt(tz);
- let next=list.find(x=>{const [h,m]=x.time.split(":").map(Number);return h*60+m>local.hour*60+local.minute});
- let target={year:local.year,month:local.month,day:local.day};
- if(!next){next=list[0];const tomorrow=new Date(Date.UTC(target.year,target.month-1,target.day+1));target={year:tomorrow.getUTCFullYear(),month:tomorrow.getUTCMonth()+1,day:tomorrow.getUTCDate()}}
- if(next){
-  const [h,mi]=next.time.split(":").map(Number),targetInstant=instantAt(target.year,target.month,target.day,h,mi,tz),diff=Math.max(0,targetInstant-now),sec=Math.floor(diff/1000);
-  $("home-next-name").textContent="رویداد بعدی: "+next.label;
-  $("home-next-time").textContent=fa(next.time);
-  $("home-countdown").textContent=fa(String(Math.floor(sec/3600)).padStart(2,"0")+":"+String(Math.floor(sec%3600/60)).padStart(2,"0")+":"+String(sec%60).padStart(2,"0"));
- }
 }
 async function scheduleHomeAlarms(){
  if(!activeCity||!SE.alarms||!SE.alarms.scheduleHomeEvents)return;

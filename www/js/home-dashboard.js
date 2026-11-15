@@ -123,8 +123,8 @@
       ' const now=new Date();',
       ' const candidates=[];',
       ' function collectUpcoming(y,m,d){',
-      '  const dayEv=SE.place.timesFor(activeCity,y,m,d,"legacy");',
-      '  const dayNight=nightPartsFor(activeCity,y,m,d,dayEv);',
+      '  const dayEv=SE.place.timesFor(activeCity,y,m,d,SE.methods&&SE.methods.getCurrentMethod?SE.methods.getCurrentMethod():"legacy");',
+      '  const dayNight={nightEnd:dayEv.nauticalBegin,night1:dayEv.night1,night2:dayEv.night2};',
       '  names.forEach(([key,label])=>{',
       '   const tm=nightKeys.includes(key)?dayNight[key]:dayEv[key];',
       '   if(!tm)return;',
@@ -160,6 +160,16 @@
     text = text.replace('let activeCity=null;', nightHelper+'\nlet activeCity=null;');
     text = text.replace('const nightTimes={nightEnd:ev.nauticalBegin,night1:ev.night1,night2:ev.night2};','const nightTimes=nightPartsFor(activeCity,d.year,d.month,d.day,ev);');
     text = text.replace('const nightTimes={nightEnd:ev.nauticalBegin,night1:ev.night1,night2:ev.night2};','const nightTimes=nightPartsFor(activeCity,y,m,d,ev);');
+    // Keep the date controls available and make the Today action emit the same change event as manual selection.
+    text = text.replace(
+      ' const picker=$("home-date-native");',
+      ' const picker=$("home-date-native");const dateControls=document.querySelector(".home-date-controls");if(dateControls){dateControls.hidden=false;dateControls.removeAttribute("hidden");}'
+    );
+    text = text.replace(
+      'picker.value=dateValue(t.year,t.month,t.day);syncJalaliDate();render()',
+      'picker.value=dateValue(t.year,t.month,t.day);picker.dispatchEvent(new Event("change",{bubbles:true}))'
+    );
+
     (0, eval)(text);
   } catch (e) {
     console.error("Yom Time home-dashboard bootstrap failed", e);

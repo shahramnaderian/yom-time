@@ -245,9 +245,9 @@ function init(){
   syncJalaliDate();
  }
  ensureTodayDate();
- input.addEventListener("click",()=>{ensureTodayDate();try{if(picker.showPicker)picker.showPicker();else picker.click()}catch(e){picker.click()}});
+ input.addEventListener("click",()=>{if(input.dataset.jalaliPickerReady==="1")return;ensureTodayDate();try{if(picker.showPicker)picker.showPicker();else picker.click()}catch(e){picker.click()}});
  picker.addEventListener("change",()=>{syncJalaliDate();render()});
- $("home-today").addEventListener("click",()=>{const t=todayAt(activeCity.tz||"Asia/Tehran");picker.value=dateValue(t.year,t.month,t.day);syncJalaliDate();render()});
+ $("home-today").addEventListener("click",()=>{const t=todayAt(activeCity.tz||"Asia/Tehran");picker.value=dateValue(t.year,t.month,t.day);picker.dispatchEvent(new Event("change",{bubbles:true}))});
  const settingsButton=$("home-reminder-settings");
  if(settingsButton) settingsButton.addEventListener("click",()=>{
   location.hash="#/settings";

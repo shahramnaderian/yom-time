@@ -107,6 +107,10 @@
       var g = SE.jalali.jToG(value.year, value.month, value.day);
       native.value = g.year + "-" + pad(g.month) + "-" + pad(g.day);
       selected = value;
+      // Notify the dashboard through the same native input path used by the
+      // browser date control. The dashboard listens for "change" to refresh
+      // both the displayed date and the prayer-time calculation.
+      native.dispatchEvent(new Event("input", {bubbles:true}));
       native.dispatchEvent(new Event("change", {bubbles:true}));
       close();
     }

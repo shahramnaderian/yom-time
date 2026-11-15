@@ -246,8 +246,20 @@ function init(){
  }
  ensureTodayDate();
  input.addEventListener("click",()=>{if(input.dataset.jalaliPickerReady==="1")return;ensureTodayDate();try{if(picker.showPicker)picker.showPicker();else picker.click()}catch(e){picker.click()}});
+ function applyHomeDate(y,m,d){
+  picker.value=dateValue(y,m,d);
+  // Keep the visible Jalali field and prayer-time dashboard in sync via one
+  // event path, regardless of whether the date came from the calendar or Today.
+  picker.dispatchEvent(new Event("input",{bubbles:true}));
+  picker.dispatchEvent(new Event("change",{bubbles:true}));
+ }
  picker.addEventListener("change",()=>{syncJalaliDate();render()});
- $("home-today").addEventListener("click",()=>{const t=todayAt(activeCity.tz||"Asia/Tehran");picker.value=dateValue(t.year,t.month,t.day);picker.dispatchEvent(new Event("change",{bubbles:true}))});
+ const todayButton=$("home-today");
+ if(todayButton)todayButton.addEventListener("click",()=>{
+  const tz=(activeCity&&activeCity.tz)||"Asia/Tehran";
+  const t=todayAt(tz);
+  applyHomeDate(t.year,t.month,t.day);
+ });
  const settingsButton=$("home-reminder-settings");
  if(settingsButton) settingsButton.addEventListener("click",()=>{
   location.hash="#/settings";

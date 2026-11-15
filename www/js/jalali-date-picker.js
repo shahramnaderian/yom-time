@@ -21,12 +21,19 @@
     var max = SE.jalali.daysInMonth(year, month, "j");
     return {year:year, month:month, day:Math.min(date.day, max)};
   }
-  var initAttempts = 0;
+  var initTimer = null;
+  function retryInit() {
+    if (initTimer) return;
+    initTimer = window.setTimeout(function () {
+      initTimer = null;
+      init();
+    }, 400);
+  }
   function init() {
     var input = document.getElementById("home-date");
     var native = document.getElementById("home-date-native");
-    if (!input || !native || !SE.jalali || !SE.jalali.jToG) {
-      if (initAttempts++ < 40) window.setTimeout(init, 250);
+    if (!input || !native || !SE.jalali || !SE.jalali.jToG || !SE.jalali.gToJ || !SE.jalali.daysInMonth) {
+      retryInit();
       return;
     }
     if (input.dataset.jalaliPickerReady === "1") return;
@@ -161,6 +168,22 @@
     });
     input.dataset.jalaliPickerReady = "1";
   }
+
+  // In some mobile WebViews the dashboard creates/replaces the date controls
+  // after this script runs. Keep initialization alive and recover on first tap.
+  document.addEventListener("click", function (event) {
+    var target = event.target && event.target.closest ? event.target.closest("#home-date") : null;
+    if (!target || target.dataset.jalaliPickerReady === "1") return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    init();
+    window.setTimeout(function () {
+      var trigger = document.querySelector(".jalali-picker-trigger");
+      if (trigger && target.dataset.jalaliPickerReady === "1") trigger.click();
+    }, 0);
+  }, true);
+
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init, {once:true});
   else init();
+  retryInit();
 })();

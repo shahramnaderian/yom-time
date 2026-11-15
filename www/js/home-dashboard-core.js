@@ -261,11 +261,16 @@ function init(){
   applyHomeDate(t.year,t.month,t.day);
  });
  const settingsButton=$("home-reminder-settings");
- if(settingsButton) settingsButton.addEventListener("click",()=>{
-  location.hash="#/settings";
-  if(window.SE_settingsUI&&window.SE_settingsUI.showView)window.SE_settingsUI.showView("settings");
-  setTimeout(()=>{const target=$("view-settings");if(target)target.scrollIntoView({behavior:"smooth",block:"start"})},120);
- });
+ if(settingsButton&&!settingsButton.dataset.settingsNavigationBound){
+  settingsButton.dataset.settingsNavigationBound="1";
+  settingsButton.addEventListener("click",()=>{
+   const settingsView=$("view-settings");
+   document.querySelectorAll(".view").forEach(view=>{view.hidden=view!==settingsView;});
+   location.hash="#/settings";
+   if(window.SE_settingsUI&&typeof window.SE_settingsUI.showView==="function")window.SE_settingsUI.showView("settings");
+   if(settingsView){settingsView.hidden=false;setTimeout(()=>settingsView.scrollIntoView({behavior:"smooth",block:"start"}),120);}
+  });
+ }
  // bind custom daily reminder (moved to home)
  if(window.SE_settingsUI){
   try{

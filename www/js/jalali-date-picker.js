@@ -75,7 +75,7 @@
     function render() {
       title.textContent = months[shown.month-1] + " " + fa(shown.year);
       monthSelect.value = String(shown.month); yearInput.value = String(shown.year);
-      days.replaceChildren();
+      while (days.firstChild) days.removeChild(days.firstChild);
       var first = SE.jalali.jToG(shown.year, shown.month, 1);
       var offset = (new Date(Date.UTC(first.year, first.month-1, first.day)).getUTCDay() + 1) % 7;
       var count = SE.jalali.daysInMonth(shown.year, shown.month, "j");

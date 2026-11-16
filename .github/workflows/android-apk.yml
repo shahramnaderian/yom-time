@@ -44,6 +44,10 @@ jobs:
       - name: Verify bundled Adhan audio
         run: |
           test -s www/sounds/adhan.mp3
+          # Keep the Android build installable even if the optional Fajr recording is absent.
+          if [ ! -s www/sounds/adhan-fajr.mp3 ]; then
+            cp www/sounds/adhan.mp3 www/sounds/adhan-fajr.mp3
+          fi
           test -s www/sounds/adhan-fajr.mp3
 
       - name: Generate Android project

@@ -28,8 +28,8 @@ function partsAt(date,tz){
 }
 function todayAt(tz){const p=partsAt(new Date(),tz);return {year:p.year,month:p.month,day:p.day,hour:p.hour,minute:p.minute,second:p.second};}
 function dateValue(y,m,d){return [y,String(m).padStart(2,"0"),String(d).padStart(2,"0")].join("-");}
-function selectedDate(){const picker=$("home-date-native"),v=picker&&picker.value;if(!v){const t=todayAt(activeCity.tz);return {year:t.year,month:t.month,day:t.day}}const a=v.split("-").map(Number);return {year:a[0],month:a[1],day:a[2]};}
-function syncJalaliDate(){const input=$("home-date"),picker=$("home-date-native");if(!input||!picker||!picker.value)return;const a=picker.value.split("-").map(Number),j=SE.jalali&&SE.jalali.gToJ?SE.jalali.gToJ(a[0],a[1],a[2]):null;input.value=j?fa(j.year)+"/"+fa(String(j.month).padStart(2,"0"))+"/"+fa(String(j.day).padStart(2,"0")):picker.value;}
+function selectedDate(){const t=todayAt((activeCity&&activeCity.tz)||"Asia/Tehran");return {year:t.year,month:t.month,day:t.day};}
+
 function instantAt(y,m,d,h,mi,tz){
  const guess=Date.UTC(y,m-1,d,h,mi);
  const p=partsAt(new Date(guess),tz);
@@ -43,7 +43,6 @@ function setCity(city){
  if(SE.store&&SE.store.prefs)SE.store.prefs.set("homeCity",activeCity);
  const label=$("home-city-label");if(label)label.textContent=cityLabel(activeCity);
  const input=$("home-city-search");if(input)input.value=cityLabel(activeCity);
- const t=todayAt(activeCity.tz||"Asia/Tehran");$("home-date-native").value=dateValue(t.year,t.month,t.day);syncJalaliDate();
  render();
  scheduleHomeAlarms();
 }
@@ -219,7 +218,6 @@ async function scheduleHomeAlarms(){
  }catch(e){}
 }
 function init(){
- const input=$("home-date");if(!input)return;
  // Rebuild alarms when Android brings the app back after exact-alarm access
  // changes or a long period without opening the app.
  if(!init._alarmResumeBound && SE.native && SE.native.plugin){
@@ -231,35 +229,9 @@ function init(){
    });
   }
  }
- injectPicker();
  const saved=SE.store&&SE.store.prefs?SE.store.prefs.get("homeCity",null):null;
  const isOldDefault=saved&&(saved.source==="default"||saved.city==="مریوان"||saved.cityEn==="Marivan");
  setCity(saved&&saved.lat!=null&&!isOldDefault?saved:DEFAULT_CITY);
- const picker=$("home-date-native");
- // Always initialize the date control to today's date for the selected city's timezone.
- function ensureTodayDate(){
-  if(!picker.value){
-   const t=todayAt((activeCity&&activeCity.tz)||"Asia/Tehran");
-   picker.value=dateValue(t.year,t.month,t.day);
-  }
-  syncJalaliDate();
- }
- ensureTodayDate();
- input.addEventListener("click",()=>{if(input.dataset.jalaliPickerReady==="1")return;ensureTodayDate();try{if(picker.showPicker)picker.showPicker();else picker.click()}catch(e){picker.click()}});
- function applyHomeDate(y,m,d){
-  picker.value=dateValue(y,m,d);
-  // Keep the visible Jalali field and prayer-time dashboard in sync via one
-  // event path, regardless of whether the date came from the calendar or Today.
-  picker.dispatchEvent(new Event("input",{bubbles:true}));
-  picker.dispatchEvent(new Event("change",{bubbles:true}));
- }
- picker.addEventListener("change",()=>{syncJalaliDate();render()});
- const todayButton=$("home-today");
- if(todayButton)todayButton.addEventListener("click",()=>{
-  const tz=(activeCity&&activeCity.tz)||"Asia/Tehran";
-  const t=todayAt(tz);
-  applyHomeDate(t.year,t.month,t.day);
- });
  const settingsButton=$("home-reminder-settings");
  if(settingsButton&&!settingsButton.dataset.settingsNavigationBound){
   settingsButton.dataset.settingsNavigationBound="1";

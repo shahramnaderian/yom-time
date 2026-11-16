@@ -82,11 +82,14 @@
         '<div class="home-qibla-actions">' +
         '  <button type="button" class="primary" id="home-qibla-open">'+(isEnglish()?'Open Qibla compass':'باز کردن قبله‌نما')+'</button>' +
         '</div>';
-      var times = home.querySelector(".home-times-card");
-      var next = home.querySelector(".home-next-card");
-      if (times) home.insertBefore(card, times);
-      else if (next && next.nextSibling) home.insertBefore(card, next.nextSibling);
-      else home.appendChild(card);
+      var alarms = home.querySelector("#alarm-toggles");
+      var alarmCard = alarms && alarms.closest(".card");
+      if (alarmCard && alarmCard.parentNode === home) {
+        if (alarmCard.nextSibling) home.insertBefore(card, alarmCard.nextSibling);
+        else home.appendChild(card);
+      } else {
+        home.appendChild(card);
+      }
       var btn = document.getElementById("home-qibla-open");
       if (btn && !btn.dataset.bound) {
         btn.dataset.bound = "1";

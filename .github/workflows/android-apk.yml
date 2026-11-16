@@ -237,6 +237,12 @@ jobs:
           foreground.parent.mkdir(parents=True, exist_ok=True)
           cairosvg.svg2png(bytestring=source, write_to=str(foreground),
                            output_width=432, output_height=432)
+          # Capacitor's Android template ships a v24 vector robot with the same
+          # resource name. Android 7+ prefers it over the custom PNG unless removed.
+          v24_foreground = root / "drawable-v24" / "ic_launcher_foreground.xml"
+          if v24_foreground.exists():
+              v24_foreground.unlink()
+          print("Removed Capacitor default Android robot foreground override.")
           values = root / "values"
           values.mkdir(parents=True, exist_ok=True)
           (values / "ic_launcher_background.xml").write_text(
@@ -274,6 +280,8 @@ jobs:
           for path in required:
               if not path.is_file() or path.stat().st_size < 100:
                   raise SystemExit(f"Missing or invalid launcher icon: {path}")
+          if v24_foreground.exists():
+              raise SystemExit("Default Android robot foreground still overrides custom icon")
           if '@mipmap/ic_launcher' not in manifest.read_text():
               raise SystemExit("Manifest does not reference the custom launcher icon")
           print("Verified custom Kaaba/Jerusalem launcher icons after Capacitor sync.")

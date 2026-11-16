@@ -109,6 +109,7 @@
       }
     }
     function open() {
+      if (!backdrop.hidden) return;
       try {
         selected = currentJalali();
         shown = {year:selected.year,month:selected.month,day:1};
@@ -143,8 +144,16 @@
       if (step) { shown = addMonths(shown, Number(step.dataset.step)); render(); }
     });
     backdrop.querySelector(".jalali-picker-today").addEventListener("click", function () {
+      var before = native.value;
       var todayButton = document.getElementById("home-today");
       if (todayButton) todayButton.click();
+      // The dashboard may still be initializing when the picker becomes usable.
+      // If its Today handler is not bound yet, fall back to the device-local date.
+      if (native.value === before) {
+        var today = SE.jalali.todayJalali();
+        choose(today);
+        return;
+      }
       close();
     });
     backdrop.querySelector(".jalali-picker-close").addEventListener("click", close);
@@ -158,6 +167,12 @@
     trigger.setAttribute("aria-label", "باز کردن تقویم شمسی");
     input.insertAdjacentElement("afterend", trigger);
     trigger.addEventListener("click", function (event) { event.preventDefault(); open(); });
+    input.addEventListener("pointerup", function (event) {
+      if (event.pointerType === "touch") {
+        event.preventDefault();
+        open();
+      }
+    }, true);
     input.addEventListener("click", function (event) {
       event.preventDefault();
       event.stopImmediatePropagation();

@@ -217,6 +217,68 @@ jobs:
                   print(line)
           PY
 
+      - name: Reapply and verify launcher icons after Capacitor sync
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import cairosvg
+          import re
+
+          root = Path("android/app/src/main/res")
+          source = Path("www/icons/icon.svg").read_bytes()
+          sizes = {"mdpi": 48, "hdpi": 72, "xhdpi": 96, "xxhdpi": 144, "xxxhdpi": 192}
+          for density, size in sizes.items():
+              folder = root / f"mipmap-{density}"
+              folder.mkdir(parents=True, exist_ok=True)
+              for name in ("ic_launcher", "ic_launcher_round"):
+                  cairosvg.svg2png(bytestring=source, write_to=str(folder / f"{name}.png"),
+                                   output_width=size, output_height=size)
+          foreground = root / "drawable" / "ic_launcher_foreground.png"
+          foreground.parent.mkdir(parents=True, exist_ok=True)
+          cairosvg.svg2png(bytestring=source, write_to=str(foreground),
+                           output_width=432, output_height=432)
+          values = root / "values"
+          values.mkdir(parents=True, exist_ok=True)
+          (values / "ic_launcher_background.xml").write_text(
+              '<resources><color name="ic_launcher_background">#1A0B2E</color></resources>\\n')
+          adaptive = root / "mipmap-anydpi-v26"
+          adaptive.mkdir(parents=True, exist_ok=True)
+          icon_xml = (
+              '<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">'
+              '<background android:drawable="@color/ic_launcher_background"/>'
+              '<foreground android:drawable="@drawable/ic_launcher_foreground"/>'
+              '</adaptive-icon>\\n')
+          (adaptive / "ic_launcher.xml").write_text(icon_xml)
+          (adaptive / "ic_launcher_round.xml").write_text(icon_xml)
+
+          manifest = Path("android/app/src/main/AndroidManifest.xml")
+          xml = manifest.read_text()
+          xml, count = re.subn(
+              r'<application\\b([^>]*)>',
+              lambda m: '<application' + re.sub(
+                  r'\\s+android:(?:roundIcon|icon)="[^"]*"',
+                  '',
+                  m.group(1)
+              ) + ' android:icon="@mipmap/ic_launcher" android:roundIcon="@mipmap/ic_launcher_round">',
+              xml,
+              count=1
+          )
+          if count != 1:
+              raise SystemExit("Could not enforce launcher icons in AndroidManifest.xml")
+          manifest.write_text(xml)
+
+          required = [root / "mipmap-mdpi/ic_launcher.png",
+                      root / "mipmap-xxxhdpi/ic_launcher.png",
+                      foreground,
+                      adaptive / "ic_launcher.xml"]
+          for path in required:
+              if not path.is_file() or path.stat().st_size < 100:
+                  raise SystemExit(f"Missing or invalid launcher icon: {path}")
+          if '@mipmap/ic_launcher' not in manifest.read_text():
+              raise SystemExit("Manifest does not reference the custom launcher icon")
+          print("Verified custom Kaaba/Jerusalem launcher icons after Capacitor sync.")
+          PY
+
       - name: Build debug APK
         run: |
           cd android

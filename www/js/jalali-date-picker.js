@@ -6,13 +6,39 @@
   var digits = "۰۱۲۳۴۵۶۷۸۹";
   function fa(value) { return String(value).replace(/\d/g, function (d) { return digits[Number(d)]; }); }
   function pad(n) { return String(n).padStart(2, "0"); }
+  // The selected date and the real "today" are different concepts.
+  // Resolve today in the currently selected city's timezone, not from the
+  // device timezone and never from the date currently selected in the picker.
+  function todayJalali() {
+    var timezone = "Asia/Tehran";
+    try {
+      var prefs = SE.store && SE.store.prefs;
+      var city = prefs && prefs.get("homeCity", null);
+      if (city && city.tz) timezone = city.tz;
+    } catch (_) {}
+    try {
+      var parts = new Intl.DateTimeFormat("en-CA", {
+        timeZone: timezone, year: "numeric", month: "2-digit", day: "2-digit"
+      }).formatToParts(new Date());
+      var date = {};
+      parts.forEach(function (part) {
+        if (part.type !== "literal") date[part.type] = Number(part.value);
+      });
+      if (date.year && date.month && date.day) {
+        return SE.jalali.gToJ(date.year, date.month, date.day);
+      }
+    } catch (_) {}
+    return SE.jalali && SE.jalali.todayJalali
+      ? SE.jalali.todayJalali()
+      : {year:1405,month:1,day:1};
+  }
   function currentJalali() {
     var native = document.getElementById("home-date-native");
     if (native && native.value && SE.jalali && SE.jalali.gToJ) {
       var a = native.value.split("-").map(Number);
       return SE.jalali.gToJ(a[0], a[1], a[2]);
     }
-    return SE.jalali && SE.jalali.todayJalali ? SE.jalali.todayJalali() : {year:1405,month:1,day:1};
+    return todayJalali();
   }
   function addMonths(date, amount) {
     var total = date.year * 12 + date.month - 1 + amount;
@@ -103,7 +129,7 @@
         button.textContent = fa(day);
         var value = {year:shown.year,month:shown.month,day:day};
         if (same(value, selected)) button.classList.add("is-selected");
-        if (same(value, currentJalali())) button.classList.add("is-today");
+        if (same(value, todayJalali())) button.classList.add("is-today");
         button.addEventListener("click", function (v) { return function () { choose(v); }; }(value));
         days.appendChild(button);
       }
@@ -144,17 +170,12 @@
       if (step) { shown = addMonths(shown, Number(step.dataset.step)); render(); }
     });
     backdrop.querySelector(".jalali-picker-today").addEventListener("click", function () {
-      var before = native.value;
-      var todayButton = document.getElementById("home-today");
-      if (todayButton) todayButton.click();
-      // The dashboard may still be initializing when the picker becomes usable.
-      // If its Today handler is not bound yet, fall back to the device-local date.
-      if (native.value === before) {
-        var today = SE.jalali.todayJalali();
-        choose(today);
-        return;
-      }
-      close();
+      // Use the same timezone-aware date as the dashboard's Today control.
+      // choose() updates the native date input and dispatches both input and
+      // change, so the visible Jalali field and prayer times refresh together.
+      var today = todayJalali();
+      shown = {year:today.year, month:today.month, day:1};
+      choose(today);
     });
     backdrop.querySelector(".jalali-picker-close").addEventListener("click", close);
     document.addEventListener("keydown", function (event) {

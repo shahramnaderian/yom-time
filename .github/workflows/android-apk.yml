@@ -240,23 +240,23 @@ jobs:
           values = root / "values"
           values.mkdir(parents=True, exist_ok=True)
           (values / "ic_launcher_background.xml").write_text(
-              '<resources><color name="ic_launcher_background">#1A0B2E</color></resources>\\n')
+              '<resources><color name="ic_launcher_background">#1A0B2E</color></resources>\n')
           adaptive = root / "mipmap-anydpi-v26"
           adaptive.mkdir(parents=True, exist_ok=True)
           icon_xml = (
               '<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">'
               '<background android:drawable="@color/ic_launcher_background"/>'
               '<foreground android:drawable="@drawable/ic_launcher_foreground"/>'
-              '</adaptive-icon>\\n')
+              '</adaptive-icon>\n')
           (adaptive / "ic_launcher.xml").write_text(icon_xml)
           (adaptive / "ic_launcher_round.xml").write_text(icon_xml)
 
           manifest = Path("android/app/src/main/AndroidManifest.xml")
           xml = manifest.read_text()
           xml, count = re.subn(
-              r'<application\\b([^>]*)>',
+              r'<application\b([^>]*)>',
               lambda m: '<application' + re.sub(
-                  r'\\s+android:(?:roundIcon|icon)="[^"]*"',
+                  r'\s+android:(?:roundIcon|icon)="[^"]*"',
                   '',
                   m.group(1)
               ) + ' android:icon="@mipmap/ic_launcher" android:roundIcon="@mipmap/ic_launcher_round">',
